@@ -7,6 +7,7 @@ function CommunityFeed({ onBack, posts, onAddPost }) {
   const [postType, setPostType] = useState('share')
   const [postText, setPostText] = useState('')
   const [likedPosts, setLikedPosts] = useState(new Set())
+  const [activeFilter, setActiveFilter] = useState('all')
 
   // Post type configurations
   const postTypes = [
@@ -96,11 +97,20 @@ function CommunityFeed({ onBack, posts, onAddPost }) {
 
         {/* Post Type Filters */}
         <div className="post-filters">
-          <button className="filter-btn active">All</button>
+          <button
+            className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
+            onClick={() => setActiveFilter('all')}
+          >
+            All
+          </button>
           {postTypes.map(pt => {
             const IconComponent = pt.icon
             return (
-              <button key={pt.type} className="filter-btn">
+              <button
+                key={pt.type}
+                className={`filter-btn ${activeFilter === pt.type ? 'active' : ''}`}
+                onClick={() => setActiveFilter(pt.type)}
+              >
                 <IconComponent size={14} />
                 <span>{pt.label}</span>
               </button>
@@ -110,14 +120,14 @@ function CommunityFeed({ onBack, posts, onAddPost }) {
 
         {/* Posts Feed */}
         <div className="posts-feed">
-          {posts.length === 0 ? (
+          {posts.filter(p => activeFilter === 'all' || p.type === activeFilter).length === 0 ? (
             <div className="empty-feed">
               <MessageSquare size={48} />
               <h3>No posts yet</h3>
               <p>Be the first to share something with your neighbors!</p>
             </div>
           ) : (
-            posts.map((post) => {
+            posts.filter(p => activeFilter === 'all' || p.type === activeFilter).map((post) => {
               const typeConfig = getPostTypeConfig(post.type)
               const IconComponent = typeConfig.icon
               const isLiked = likedPosts.has(post.id)
