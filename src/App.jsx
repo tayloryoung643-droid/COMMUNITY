@@ -4,6 +4,7 @@ import Home from './Home'
 import Announcements from './Announcements'
 import Packages from './Packages'
 import Events from './Events'
+import Neighbors from './Neighbors'
 
 function App() {
   const [buildingCode, setBuildingCode] = useState('')
@@ -25,8 +26,9 @@ function App() {
       setCurrentScreen('packages')
     } else if (featureTitle === 'Events') {
       setCurrentScreen('events')
+    } else if (featureTitle === 'Neighbors') {
+      setCurrentScreen('neighbors')
     }
-    // We'll add more screens later for Neighbors
   }
 
   const handleBack = () => {
@@ -45,6 +47,10 @@ function App() {
 
   if (currentScreen === 'events') {
     return <Events onBack={handleBack} />
+  }
+
+  if (currentScreen === 'neighbors') {
+    return <Neighbors onBack={handleBack} />
   }
 
   if (currentScreen === 'home') {
