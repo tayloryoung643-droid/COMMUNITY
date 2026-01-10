@@ -1,0 +1,93 @@
+.home-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+  padding: 0;
+}
+
+.home-header {
+  background: white;
+  padding: 32px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.building-name {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin: 0 0 8px 0;
+  text-align: center;
+}
+
+.welcome-message {
+  font-size: 16px;
+  color: #64748b;
+  margin: 0;
+  text-align: center;
+  font-weight: 400;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 32px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  background: white;
+  border: none;
+  border-radius: 16px;
+  padding: 32px 24px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  background: #f8fafc;
+}
+
+.feature-card:active {
+  transform: translateY(-2px);
+}
+
+.feature-icon {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.feature-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e3a5f;
+  margin: 0;
+}
+
+.feature-description {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 24px 16px;
+  }
+
+  .building-name {
+    font-size: 28px;
+  }
+}

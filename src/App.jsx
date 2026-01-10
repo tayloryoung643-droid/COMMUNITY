@@ -1,17 +1,25 @@
 import { useState } from 'react'
 import './App.css'
+import Home from './Home'
 
 function App() {
   const [buildingCode, setBuildingCode] = useState('')
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const handleLogin = () => {
     if (buildingCode.trim()) {
-      alert(`Welcome! You entered: ${buildingCode}`)
+      setIsLoggedIn(true)
     } else {
       alert('Please enter a building code')
     }
   }
 
+  // If logged in, show the Home screen
+  if (isLoggedIn) {
+    return <Home buildingCode={buildingCode} />
+  }
+
+  // Otherwise, show the Login screen
   return (
     <div className="container">
       <div className="login-card">
