@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ArrowLeft, Plus, Check, Calendar, Clock, Home, ArrowUpDown } from 'lucide-react'
 import './ElevatorBooking.css'
 
 function ElevatorBooking({ onBack }) {
@@ -94,35 +95,48 @@ function ElevatorBooking({ onBack }) {
 
   return (
     <div className="elevator-booking-container">
+      {/* Background orbs */}
+      <div className="bg-orb bg-orb-1"></div>
+      <div className="bg-orb bg-orb-2"></div>
+
       <header className="elevator-booking-header">
-        <button className="back-button" onClick={onBack}>
-          ← Back
+        <button className="back-button-glass" onClick={onBack}>
+          <ArrowLeft size={20} />
+          <span>Back</span>
         </button>
-        <h1 className="page-title">Elevator Booking</h1>
+        <h1 className="page-title-light">Elevator Booking</h1>
       </header>
 
       <main className="elevator-booking-content">
         {/* Request Booking Button */}
         {!showForm && (
-          <button className="request-booking-button" onClick={handleRequestBooking}>
-            + Request Booking
+          <button className="request-booking-button animate-in delay-1" onClick={handleRequestBooking}>
+            <Plus size={20} />
+            <span>Request Booking</span>
           </button>
         )}
 
         {/* Success Message */}
         {showSuccess && (
           <div className="success-message">
-            ✓ Request Submitted - Pending Approval
+            <Check size={20} />
+            <span>Request Submitted - Pending Approval</span>
           </div>
         )}
 
         {/* Booking Request Form */}
         {showForm && (
-          <div className="booking-form-container">
-            <h2 className="form-title">Request Elevator Booking</h2>
+          <div className="booking-form-container animate-in delay-1">
+            <div className="form-header">
+              <ArrowUpDown size={24} />
+              <h2 className="form-title">Request Elevator Booking</h2>
+            </div>
             <form onSubmit={handleSubmit} className="booking-form">
               <div className="form-group">
-                <label htmlFor="date">Select Date</label>
+                <label htmlFor="date">
+                  <Calendar size={16} />
+                  Select Date
+                </label>
                 <input
                   type="date"
                   id="date"
@@ -135,7 +149,10 @@ function ElevatorBooking({ onBack }) {
               </div>
 
               <div className="form-group">
-                <label htmlFor="timeSlot">Time Slot</label>
+                <label htmlFor="timeSlot">
+                  <Clock size={16} />
+                  Time Slot
+                </label>
                 <select
                   id="timeSlot"
                   name="timeSlot"
@@ -151,7 +168,10 @@ function ElevatorBooking({ onBack }) {
               </div>
 
               <div className="form-group">
-                <label htmlFor="movingType">Moving Type</label>
+                <label htmlFor="movingType">
+                  <Home size={16} />
+                  Moving Type
+                </label>
                 <select
                   id="movingType"
                   name="movingType"
@@ -178,27 +198,29 @@ function ElevatorBooking({ onBack }) {
         )}
 
         {/* Upcoming Reservations */}
-        <section className="reservations-section">
+        <section className="reservations-section animate-in delay-2">
           <h2 className="section-title">Upcoming Reservations</h2>
           <div className="reservations-list">
-            {reservations.map((reservation) => (
-              <article key={reservation.id} className="reservation-card">
+            {reservations.map((reservation, index) => (
+              <article key={reservation.id} className={`reservation-card animate-in delay-${(index % 4) + 3}`}>
+                <div className="card-accent"></div>
                 <div className="reservation-header">
                   <div className="reservation-date">
                     <span className="date-text">{formatDate(reservation.date)}</span>
                     <span className="time-slot">{reservation.timeSlot}</span>
                   </div>
                   <span className={`status-badge ${reservation.status.toLowerCase()}`}>
+                    {reservation.status === "Confirmed" && <Check size={12} />}
                     {reservation.status}
                   </span>
                 </div>
                 <div className="reservation-details">
                   <div className="detail-item">
-                    <span className="detail-label">Unit:</span>
+                    <span className="detail-label">Unit</span>
                     <span className="detail-value">{reservation.unit}</span>
                   </div>
                   <div className="detail-item">
-                    <span className="detail-label">Type:</span>
+                    <span className="detail-label">Type</span>
                     <span className="detail-value">{reservation.type}</span>
                   </div>
                 </div>

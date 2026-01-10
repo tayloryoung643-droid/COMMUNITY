@@ -1,124 +1,250 @@
 .neighbors-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
-  padding-bottom: 32px;
+  background: linear-gradient(180deg,
+    var(--navy-dark) 0%,
+    var(--navy-primary) 50%,
+    var(--navy-secondary) 100%
+  );
+  position: relative;
+  overflow: hidden;
 }
 
+/* Background orbs */
+.neighbors-container .bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.neighbors-container .bg-orb-1 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, var(--accent-purple) 0%, transparent 70%);
+  top: -150px;
+  right: -150px;
+  animation: float 20s ease-in-out infinite;
+}
+
+.neighbors-container .bg-orb-2 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, var(--accent-cyan) 0%, transparent 70%);
+  bottom: 10%;
+  left: -100px;
+  animation: float 25s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.05);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+}
+
+/* Header */
 .neighbors-header {
-  background: white;
-  padding: 20px 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 10;
+  padding: var(--spacing-lg);
+  background: linear-gradient(180deg,
+    rgba(10, 22, 40, 0.8) 0%,
+    transparent 100%
+  );
   display: flex;
   align-items: center;
-  gap: 16px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  gap: var(--spacing-md);
 }
 
+.back-button-glass {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--blur-md));
+  -webkit-backdrop-filter: blur(var(--blur-md));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  transition: all var(--transition-base);
+}
+
+.back-button-glass:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--glass-border-hover);
+  color: var(--text-primary);
+  transform: translateX(-4px);
+}
+
+.page-title-light {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* Content */
 .neighbors-content {
-  max-width: 1000px;
+  position: relative;
+  z-index: 10;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 20px;
+  padding: var(--spacing-lg);
 }
 
+/* Floor sections */
 .floor-section {
-  margin-bottom: 40px;
+  margin-bottom: var(--spacing-2xl);
 }
 
 .floor-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: white;
-  margin: 0 0 20px 0;
-  padding-left: 4px;
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-lg) 0;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .your-floor-badge {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: white;
-  background: #3b82f6;
-  padding: 4px 12px;
-  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
+/* Neighbors grid */
 .neighbors-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--spacing-md);
 }
 
+/* Neighbor cards - social profile style */
 .neighbor-card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--blur-md));
+  -webkit-backdrop-filter: blur(var(--blur-md));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-lg);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: var(--spacing-md);
+  transition: all var(--transition-base);
 }
 
 .neighbor-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--glass-border-hover);
+  transform: translateY(-8px);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    0 0 60px rgba(139, 92, 246, 0.1);
+}
+
+/* Avatar with colored gradient ring */
+.avatar-ring {
+  padding: 4px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+}
+
+.avatar-ring-blue {
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+}
+
+.avatar-ring-purple {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+}
+
+.avatar-ring-cyan {
+  background: linear-gradient(135deg, #06b6d4, #10b981);
+}
+
+.avatar-ring-green {
+  background: linear-gradient(135deg, #10b981, #22d3ee);
+}
+
+.avatar-ring-pink {
+  background: linear-gradient(135deg, #ec4899, #f472b6);
+}
+
+.avatar-ring-orange {
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
 }
 
 .neighbor-avatar {
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 100%);
+  background: var(--navy-dark);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
-  border: 3px solid #3b82f6;
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.05em;
 }
 
+/* Neighbor info */
 .neighbor-info {
   text-align: center;
   flex: 1;
 }
 
 .neighbor-name {
-  font-size: 18px;
+  font-size: var(--font-size-lg);
   font-weight: 600;
-  color: #1e3a5f;
-  margin: 0 0 4px 0;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
 }
 
 .neighbor-unit {
-  font-size: 14px;
-  color: #64748b;
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
   margin: 0;
 }
 
+/* Wave button - prominent with gradient */
 .wave-button {
   width: 100%;
-  padding: 10px 16px;
-  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-base);
   font-weight: 600;
   color: white;
-  background: #1e3a5f;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: inherit;
+  transition: all var(--transition-base);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .wave-button:hover {
-  background: #2c5282;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
 }
 
 .wave-button:active {
@@ -126,21 +252,22 @@
 }
 
 .wave-button.waved {
-  background: #22c55e;
+  background: linear-gradient(135deg, var(--accent-green), #22d3ee);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .wave-button.waved:hover {
-  background: #16a34a;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
 }
 
-/* Responsive design for mobile */
+/* Responsive design */
 @media (max-width: 768px) {
   .neighbors-header {
-    padding: 16px;
+    padding: var(--spacing-md);
   }
 
   .neighbors-content {
-    padding: 16px 12px;
+    padding: var(--spacing-md);
   }
 
   .neighbors-grid {
@@ -148,11 +275,29 @@
   }
 
   .floor-title {
-    font-size: 20px;
+    font-size: var(--font-size-lg);
     flex-wrap: wrap;
   }
 
   .your-floor-badge {
-    font-size: 11px;
+    font-size: 10px;
+  }
+
+  .neighbor-avatar {
+    width: 64px;
+    height: 64px;
+    font-size: var(--font-size-lg);
+  }
+
+  .neighbors-container .bg-orb-1 {
+    width: 300px;
+    height: 300px;
+    top: -100px;
+    right: -100px;
+  }
+
+  .neighbors-container .bg-orb-2 {
+    width: 200px;
+    height: 200px;
   }
 }

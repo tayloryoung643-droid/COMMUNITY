@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ArrowLeft, Calendar, Clock, MapPin, Users, Check } from 'lucide-react'
 import './Events.css'
 
 function Events({ onBack }) {
@@ -98,36 +99,45 @@ function Events({ onBack }) {
 
   return (
     <div className="events-container">
+      {/* Background orbs */}
+      <div className="bg-orb bg-orb-1"></div>
+      <div className="bg-orb bg-orb-2"></div>
+
       <header className="events-header">
-        <button className="back-button" onClick={onBack}>
-          ← Back
+        <button className="back-button-glass" onClick={onBack}>
+          <ArrowLeft size={20} />
+          <span>Back</span>
         </button>
-        <h1 className="page-title">Events</h1>
+        <h1 className="page-title-light">Events</h1>
       </header>
 
       <main className="events-content">
         {/* Upcoming Events Section */}
-        <section className="events-section">
+        <section className="events-section animate-in delay-1">
           <h2 className="section-title">Upcoming Events</h2>
           <div className="events-list">
-            {upcomingEvents.map((event) => (
-              <article key={event.id} className="event-card">
+            {upcomingEvents.map((event, index) => (
+              <article key={event.id} className={`event-card animate-in delay-${(index % 4) + 2}`}>
+                <div className="card-accent"></div>
                 <div className="event-header">
                   <h3 className="event-title">{event.title}</h3>
-                  <span className="event-attendees">{event.attendees} going</span>
+                  <span className="event-attendees">
+                    <Users size={14} />
+                    {event.attendees} going
+                  </span>
                 </div>
 
                 <div className="event-details">
                   <div className="event-detail-item">
-                    <span className="detail-icon">📅</span>
+                    <Calendar size={16} />
                     <span className="detail-text">{formatDate(event.date)}</span>
                   </div>
                   <div className="event-detail-item">
-                    <span className="detail-icon">🕐</span>
+                    <Clock size={16} />
                     <span className="detail-text">{event.time}</span>
                   </div>
                   <div className="event-detail-item">
-                    <span className="detail-icon">📍</span>
+                    <MapPin size={16} />
                     <span className="detail-text">{event.location}</span>
                   </div>
                 </div>
@@ -138,7 +148,14 @@ function Events({ onBack }) {
                   className={`rsvp-button ${event.userRSVPd ? 'rsvpd' : ''}`}
                   onClick={() => handleRSVP(event.id)}
                 >
-                  {event.userRSVPd ? 'Going ✓' : 'RSVP'}
+                  {event.userRSVPd ? (
+                    <>
+                      <Check size={18} />
+                      <span>Going</span>
+                    </>
+                  ) : (
+                    <span>RSVP</span>
+                  )}
                 </button>
               </article>
             ))}
@@ -146,27 +163,30 @@ function Events({ onBack }) {
         </section>
 
         {/* Past Events Section */}
-        <section className="events-section">
+        <section className="events-section animate-in delay-3">
           <h2 className="section-title">Past Events</h2>
           <div className="events-list">
-            {pastEvents.map((event) => (
-              <article key={event.id} className="event-card past">
+            {pastEvents.map((event, index) => (
+              <article key={event.id} className={`event-card past animate-in delay-${(index % 4) + 4}`}>
                 <div className="event-header">
                   <h3 className="event-title">{event.title}</h3>
-                  <span className="event-attendees">{event.attendees} attended</span>
+                  <span className="event-attendees past">
+                    <Users size={14} />
+                    {event.attendees} attended
+                  </span>
                 </div>
 
                 <div className="event-details">
                   <div className="event-detail-item">
-                    <span className="detail-icon">📅</span>
+                    <Calendar size={16} />
                     <span className="detail-text">{formatDate(event.date)}</span>
                   </div>
                   <div className="event-detail-item">
-                    <span className="detail-icon">🕐</span>
+                    <Clock size={16} />
                     <span className="detail-text">{event.time}</span>
                   </div>
                   <div className="event-detail-item">
-                    <span className="detail-icon">📍</span>
+                    <MapPin size={16} />
                     <span className="detail-text">{event.location}</span>
                   </div>
                 </div>
