@@ -1,6 +1,6 @@
 import './Home.css'
 
-function Home({ buildingCode }) {
+function Home({ buildingCode, onNavigate }) {
   // For now, we'll just use fake data
   // Later, we can look up the real building name and floor
   const buildingName = "The Paramount"
@@ -13,6 +13,12 @@ function Home({ buildingCode }) {
     { icon: "👋", title: "Neighbors", description: "Meet your community" }
   ]
 
+  const handleFeatureClick = (featureTitle) => {
+    if (onNavigate) {
+      onNavigate(featureTitle)
+    }
+  }
+
   return (
     <div className="home-container">
       <header className="home-header">
@@ -22,7 +28,11 @@ function Home({ buildingCode }) {
 
       <main className="features-grid">
         {features.map((feature, index) => (
-          <button key={index} className="feature-card">
+          <button
+            key={index}
+            className="feature-card"
+            onClick={() => handleFeatureClick(feature.title)}
+          >
             <span className="feature-icon">{feature.icon}</span>
             <h2 className="feature-title">{feature.title}</h2>
             <p className="feature-description">{feature.description}</p>

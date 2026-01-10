@@ -1,22 +1,40 @@
 import { useState } from 'react'
 import './App.css'
 import Home from './Home'
+import Announcements from './Announcements'
 
 function App() {
   const [buildingCode, setBuildingCode] = useState('')
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [currentScreen, setCurrentScreen] = useState('login')
 
   const handleLogin = () => {
     if (buildingCode.trim()) {
-      setIsLoggedIn(true)
+      setCurrentScreen('home')
     } else {
       alert('Please enter a building code')
     }
   }
 
-  // If logged in, show the Home screen
-  if (isLoggedIn) {
-    return <Home buildingCode={buildingCode} />
+  const handleNavigation = (featureTitle) => {
+    // When someone clicks a feature card, navigate to that screen
+    if (featureTitle === 'Announcements') {
+      setCurrentScreen('announcements')
+    }
+    // We'll add more screens later for Packages, Events, Neighbors
+  }
+
+  const handleBack = () => {
+    // Go back to the Home screen
+    setCurrentScreen('home')
+  }
+
+  // Show different screens based on currentScreen value
+  if (currentScreen === 'announcements') {
+    return <Announcements onBack={handleBack} />
+  }
+
+  if (currentScreen === 'home') {
+    return <Home buildingCode={buildingCode} onNavigate={handleNavigation} />
   }
 
   // Otherwise, show the Login screen
