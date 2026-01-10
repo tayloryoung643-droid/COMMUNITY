@@ -1,0 +1,165 @@
+.packages-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+  padding-bottom: 32px;
+}
+
+.packages-header {
+  background: white;
+  padding: 20px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.packages-summary {
+  background: white;
+  padding: 16px 24px;
+  margin: 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.packages-count {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e3a5f;
+  margin: 0;
+  text-align: center;
+}
+
+.packages-list {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.package-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  border-left: 4px solid #3b82f6;
+}
+
+.package-card.picked-up {
+  opacity: 0.7;
+  border-left-color: #94a3b8;
+}
+
+.package-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.package-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.package-carrier {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.carrier-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.carrier-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e3a5f;
+}
+
+.package-status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.package-status.ready {
+  background-color: #22c55e;
+  color: white;
+}
+
+.package-status.completed {
+  background-color: #94a3b8;
+  color: white;
+}
+
+.package-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.package-detail-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.detail-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  min-width: 70px;
+}
+
+.detail-value {
+  font-size: 14px;
+  color: #1e3a5f;
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+  .packages-header {
+    padding: 16px;
+  }
+
+  .packages-summary {
+    padding: 12px 16px;
+  }
+
+  .packages-list {
+    padding: 16px 12px;
+  }
+
+  .package-card {
+    padding: 16px;
+  }
+
+  .package-header {
+    flex-wrap: wrap;
+  }
+
+  .carrier-name {
+    font-size: 16px;
+  }
+
+  .package-status {
+    width: 100%;
+    text-align: center;
+  }
+
+  .detail-label {
+    min-width: 60px;
+  }
+}

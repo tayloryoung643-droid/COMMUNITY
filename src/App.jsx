@@ -2,6 +2,7 @@ import { useState } from 'react'
 import './App.css'
 import Home from './Home'
 import Announcements from './Announcements'
+import Packages from './Packages'
 
 function App() {
   const [buildingCode, setBuildingCode] = useState('')
@@ -19,8 +20,10 @@ function App() {
     // When someone clicks a feature card, navigate to that screen
     if (featureTitle === 'Announcements') {
       setCurrentScreen('announcements')
+    } else if (featureTitle === 'Packages') {
+      setCurrentScreen('packages')
     }
-    // We'll add more screens later for Packages, Events, Neighbors
+    // We'll add more screens later for Events, Neighbors
   }
 
   const handleBack = () => {
@@ -31,6 +34,10 @@ function App() {
   // Show different screens based on currentScreen value
   if (currentScreen === 'announcements') {
     return <Announcements onBack={handleBack} />
+  }
+
+  if (currentScreen === 'packages') {
+    return <Packages onBack={handleBack} />
   }
 
   if (currentScreen === 'home') {
