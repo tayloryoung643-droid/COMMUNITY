@@ -10,7 +10,8 @@ function Home({ buildingCode, onNavigate }) {
     { icon: "📢", title: "Announcements", description: "Building updates & news" },
     { icon: "📦", title: "Packages", description: "Track your deliveries" },
     { icon: "📅", title: "Events", description: "Community gatherings" },
-    { icon: "👋", title: "Neighbors", description: "Meet your community" }
+    { icon: "👋", title: "Neighbors", description: "Meet your community" },
+    { icon: "🚨", title: "Emergency", description: "Important contacts" }
   ]
 
   const handleFeatureClick = (featureTitle) => {

@@ -1,0 +1,144 @@
+.emergency-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+  padding-bottom: 32px;
+}
+
+.emergency-header {
+  background: white;
+  padding: 20px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.emergency-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+.emergency-section {
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 20px 0;
+  padding-left: 4px;
+}
+
+.contacts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contact-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-left: 4px solid #ef4444;
+}
+
+.contact-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.contact-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.contact-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.contact-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e3a5f;
+  margin: 0 0 4px 0;
+}
+
+.contact-subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 4px 0;
+}
+
+.contact-phone {
+  font-size: 16px;
+  color: #1e3a5f;
+  font-weight: 500;
+  margin: 0;
+  font-family: monospace;
+}
+
+.call-button {
+  padding: 10px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  color: white;
+  background: #ef4444;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.call-button:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.call-button:active {
+  transform: translateY(0);
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+  .emergency-header {
+    padding: 16px;
+  }
+
+  .emergency-content {
+    padding: 16px 12px;
+  }
+
+  .contact-card {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .call-button {
+    width: 100%;
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+}

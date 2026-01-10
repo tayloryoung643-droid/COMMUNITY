@@ -5,6 +5,7 @@ import Announcements from './Announcements'
 import Packages from './Packages'
 import Events from './Events'
 import Neighbors from './Neighbors'
+import Emergency from './Emergency'
 
 function App() {
   const [buildingCode, setBuildingCode] = useState('')
@@ -28,6 +29,8 @@ function App() {
       setCurrentScreen('events')
     } else if (featureTitle === 'Neighbors') {
       setCurrentScreen('neighbors')
+    } else if (featureTitle === 'Emergency') {
+      setCurrentScreen('emergency')
     }
   }
 
@@ -51,6 +54,10 @@ function App() {
 
   if (currentScreen === 'neighbors') {
     return <Neighbors onBack={handleBack} />
+  }
+
+  if (currentScreen === 'emergency') {
+    return <Emergency onBack={handleBack} />
   }
 
   if (currentScreen === 'home') {
