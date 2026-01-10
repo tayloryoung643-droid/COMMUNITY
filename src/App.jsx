@@ -42,6 +42,12 @@ function App() {
     setCurrentScreen('home')
   }
 
+  const handleLogout = () => {
+    // Reset to login screen and clear building code
+    setBuildingCode('')
+    setCurrentScreen('login')
+  }
+
   // Show different screens based on currentScreen value
   if (currentScreen === 'announcements') {
     return <Announcements onBack={handleBack} />
@@ -68,7 +74,7 @@ function App() {
   }
 
   if (currentScreen === 'home') {
-    return <Home buildingCode={buildingCode} onNavigate={handleNavigation} />
+    return <Home buildingCode={buildingCode} onNavigate={handleNavigation} onLogout={handleLogout} />
   }
 
   // Otherwise, show the Login screen

@@ -1,92 +1,197 @@
+/* Login screen styles */
 .container {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
-  padding: 20px;
+  padding: var(--spacing-lg);
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .login-card {
   background: white;
-  padding: 48px 40px;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  padding: var(--spacing-2xl) var(--spacing-xl);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
   max-width: 420px;
   width: 100%;
+  animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .app-title {
-  font-size: 42px;
+  font-size: var(--font-size-4xl);
   font-weight: 700;
-  color: #1e3a5f;
-  margin: 0 0 12px 0;
+  color: var(--navy-primary);
+  margin: 0 0 var(--spacing-sm) 0;
   text-align: center;
   letter-spacing: -0.5px;
 }
 
 .tagline {
-  font-size: 16px;
-  color: #64748b;
-  margin: 0 0 40px 0;
+  font-size: var(--font-size-base);
+  color: var(--gray-500);
+  margin: 0 0 var(--spacing-xl) 0;
   text-align: center;
   font-weight: 400;
 }
 
 .form-group {
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-lg);
 }
 
 .form-group label {
   display: block;
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
-  color: #1e3a5f;
-  margin-bottom: 8px;
+  color: var(--navy-primary);
+  margin-bottom: var(--spacing-sm);
   text-align: left;
 }
 
 .form-group input {
   width: 100%;
   padding: 14px 16px;
-  font-size: 16px;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  font-size: var(--font-size-base);
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
   box-sizing: border-box;
   font-family: inherit;
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #2c5282;
+  border-color: var(--navy-secondary);
   box-shadow: 0 0 0 3px rgba(44, 82, 130, 0.1);
 }
 
 .form-group input::placeholder {
-  color: #94a3b8;
+  color: var(--gray-400);
 }
 
 .login-button {
   width: 100%;
   padding: 14px 16px;
-  font-size: 16px;
+  font-size: var(--font-size-base);
   font-weight: 600;
   color: white;
-  background: #1e3a5f;
+  background: var(--navy-primary);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-base);
   font-family: inherit;
+  box-shadow: var(--shadow-sm);
 }
 
 .login-button:hover {
-  background: #2c5282;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
+  background: var(--navy-secondary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .login-button:active {
   transform: translateY(0);
+}
+
+/* Shared back button styles - used across all pages */
+.back-button {
+  background: transparent;
+  border: none;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--navy-primary);
+  cursor: pointer;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.back-button:hover {
+  background: var(--gray-100);
+  transform: translateX(-2px);
+}
+
+.back-button:active {
+  transform: translateX(0);
+}
+
+/* Shared page title styles */
+.page-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--navy-primary);
+  margin: 0;
+}
+
+/* Shared header styles for all pages */
+.page-header-common {
+  background: white;
+  padding: var(--spacing-lg) var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Page transition wrapper */
+.page-wrapper {
+  animation: pageEnter 0.3s ease;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: var(--spacing-md);
+  }
+
+  .login-card {
+    padding: var(--spacing-xl) var(--spacing-lg);
+  }
+
+  .app-title {
+    font-size: var(--font-size-3xl);
+  }
+
+  .page-header-common {
+    padding: var(--spacing-md);
+  }
 }

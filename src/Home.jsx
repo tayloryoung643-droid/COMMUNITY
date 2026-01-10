@@ -1,6 +1,6 @@
 import './Home.css'
 
-function Home({ buildingCode, onNavigate }) {
+function Home({ buildingCode, onNavigate, onLogout }) {
   // For now, we'll just use fake data
   // Later, we can look up the real building name and floor
   const buildingName = "The Paramount"
@@ -24,8 +24,15 @@ function Home({ buildingCode, onNavigate }) {
   return (
     <div className="home-container">
       <header className="home-header">
-        <h1 className="building-name">{buildingName}</h1>
-        <p className="welcome-message">Welcome! You're on Floor {floor}</p>
+        <div className="header-content">
+          <div>
+            <h1 className="building-name">{buildingName}</h1>
+            <p className="welcome-message">Welcome! You're on Floor {floor}</p>
+          </div>
+          <button className="logout-button" onClick={onLogout}>
+            Logout
+          </button>
+        </div>
       </header>
 
       <main className="features-grid">
