@@ -6,6 +6,7 @@ import Packages from './Packages'
 import Events from './Events'
 import Neighbors from './Neighbors'
 import Emergency from './Emergency'
+import ElevatorBooking from './ElevatorBooking'
 
 function App() {
   const [buildingCode, setBuildingCode] = useState('')
@@ -31,6 +32,8 @@ function App() {
       setCurrentScreen('neighbors')
     } else if (featureTitle === 'Emergency') {
       setCurrentScreen('emergency')
+    } else if (featureTitle === 'Elevator Booking') {
+      setCurrentScreen('elevator-booking')
     }
   }
 
@@ -58,6 +61,10 @@ function App() {
 
   if (currentScreen === 'emergency') {
     return <Emergency onBack={handleBack} />
+  }
+
+  if (currentScreen === 'elevator-booking') {
+    return <ElevatorBooking onBack={handleBack} />
   }
 
   if (currentScreen === 'home') {

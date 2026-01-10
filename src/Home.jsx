@@ -11,7 +11,8 @@ function Home({ buildingCode, onNavigate }) {
     { icon: "📦", title: "Packages", description: "Track your deliveries" },
     { icon: "📅", title: "Events", description: "Community gatherings" },
     { icon: "👋", title: "Neighbors", description: "Meet your community" },
-    { icon: "🚨", title: "Emergency", description: "Important contacts" }
+    { icon: "🚨", title: "Emergency", description: "Important contacts" },
+    { icon: "🛗", title: "Elevator Booking", description: "Reserve for moving" }
   ]
 
   const handleFeatureClick = (featureTitle) => {
