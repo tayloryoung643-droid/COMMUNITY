@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Megaphone, Package, Calendar, Users, AlertTriangle, ArrowUpDown, LogOut, ChevronRight, Clock, Sparkles, MessageSquare, HelpCircle, Flag, Hand, UserPlus, PartyPopper, X, Send } from 'lucide-react'
 import './Home.css'
 
-function Home({ buildingCode, onNavigate, onLogout }) {
+function Home({ buildingCode, onNavigate, onLogout, onAddPost }) {
   const buildingName = "The Paramount"
   const floor = "12"
   const [showPostModal, setShowPostModal] = useState(false)
@@ -73,6 +73,14 @@ function Home({ buildingCode, onNavigate, onLogout }) {
 
   const features = [
     {
+      icon: MessageSquare,
+      title: "Community",
+      description: "Posts from neighbors",
+      gradient: "linear-gradient(135deg, #8b5cf6, #3b82f6)",
+      badge: 4,
+      hasActivity: true
+    },
+    {
       icon: Megaphone,
       title: "Announcements",
       description: "Building updates & news",
@@ -135,6 +143,13 @@ function Home({ buildingCode, onNavigate, onLogout }) {
 
   const handlePostSubmit = () => {
     if (postText.trim()) {
+      // Save the post via onAddPost
+      if (onAddPost) {
+        onAddPost({
+          type: postType,
+          text: postText.trim()
+        })
+      }
       setShowPostModal(false)
       setPostText('')
       setShowPostSuccess(true)
