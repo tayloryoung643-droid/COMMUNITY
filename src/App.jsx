@@ -14,6 +14,7 @@ import Settings from './Settings'
 import CalendarView from './CalendarView'
 import BuildingInfo from './BuildingInfo'
 import ManagerOnboardingStep1 from './ManagerOnboardingStep1'
+import ManagerOnboardingStep2 from './ManagerOnboardingStep2'
 
 function App() {
   const [buildingCode, setBuildingCode] = useState('')
@@ -98,9 +99,14 @@ function App() {
 
   const handleOnboardingStep1Continue = (formData) => {
     setOnboardingData(formData)
-    // For now, just log and alert - will add Step 2 later
-    console.log('Onboarding Step 1 data:', formData)
-    alert('Step 1 complete! Step 2 coming soon.')
+    setCurrentScreen('manager-onboarding-step2')
+  }
+
+  const handleOnboardingStep2Continue = (formData) => {
+    setOnboardingData(formData)
+    // For now, just log and alert - will add Step 3 later
+    console.log('Onboarding Step 2 data:', formData)
+    alert('Step 2 complete! Step 3 coming soon.')
   }
 
   const handleNavigation = (featureTitle) => {
@@ -191,6 +197,16 @@ function App() {
       <ManagerOnboardingStep1
         onBack={() => setCurrentScreen('login')}
         onContinue={handleOnboardingStep1Continue}
+      />
+    )
+  }
+
+  if (currentScreen === 'manager-onboarding-step2') {
+    return (
+      <ManagerOnboardingStep2
+        onBack={() => setCurrentScreen('manager-onboarding-step1')}
+        onContinue={handleOnboardingStep2Continue}
+        initialData={onboardingData}
       />
     )
   }
