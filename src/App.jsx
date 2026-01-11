@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import Login from './Login'
 import Home from './Home'
 import Announcements from './Announcements'
 import Packages from './Packages'
@@ -12,6 +13,7 @@ import BulletinBoard from './BulletinBoard'
 import Settings from './Settings'
 import CalendarView from './CalendarView'
 import BuildingInfo from './BuildingInfo'
+import ManagerOnboardingStep1 from './ManagerOnboardingStep1'
 
 function App() {
   const [buildingCode, setBuildingCode] = useState('')
@@ -76,12 +78,29 @@ function App() {
     setPosts(prevPosts => [post, ...prevPosts])
   }
 
-  const handleLogin = () => {
-    if (buildingCode.trim()) {
-      setCurrentScreen('home')
-    } else {
-      alert('Please enter a building code')
-    }
+  // Store manager onboarding data
+  const [onboardingData, setOnboardingData] = useState(null)
+
+  const handleResidentLogin = (code) => {
+    setBuildingCode(code)
+    setCurrentScreen('home')
+  }
+
+  const handleManagerLogin = (email, password) => {
+    // For now, just log and show alert - will implement actual auth later
+    console.log('Manager login:', email)
+    alert('Manager login coming soon! Use the register link to set up a new building.')
+  }
+
+  const handleRegisterClick = () => {
+    setCurrentScreen('manager-onboarding-step1')
+  }
+
+  const handleOnboardingStep1Continue = (formData) => {
+    setOnboardingData(formData)
+    // For now, just log and alert - will add Step 2 later
+    console.log('Onboarding Step 1 data:', formData)
+    alert('Step 1 complete! Step 2 coming soon.')
   }
 
   const handleNavigation = (featureTitle) => {
@@ -167,34 +186,26 @@ function App() {
     return <CalendarView onBack={handleBack} />
   }
 
+  if (currentScreen === 'manager-onboarding-step1') {
+    return (
+      <ManagerOnboardingStep1
+        onBack={() => setCurrentScreen('login')}
+        onContinue={handleOnboardingStep1Continue}
+      />
+    )
+  }
+
   if (currentScreen === 'home') {
     return <Home buildingCode={buildingCode} onNavigate={handleNavigation} />
   }
 
   // Otherwise, show the Login screen
   return (
-    <div className="container">
-      <div className="login-card">
-        <h1 className="app-title">Community</h1>
-        <p className="tagline">Know your neighbors, finally.</p>
-
-        <div className="form-group">
-          <label htmlFor="building-code">Building Code</label>
-          <input
-            id="building-code"
-            type="text"
-            placeholder="e.g., PARAMOUNT-2024"
-            value={buildingCode}
-            onChange={(e) => setBuildingCode(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-          />
-        </div>
-
-        <button className="login-button" onClick={handleLogin}>
-          Enter
-        </button>
-      </div>
-    </div>
+    <Login
+      onResidentLogin={handleResidentLogin}
+      onManagerLogin={handleManagerLogin}
+      onRegisterClick={handleRegisterClick}
+    />
   )
 }
 
