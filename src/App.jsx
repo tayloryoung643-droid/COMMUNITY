@@ -16,6 +16,7 @@ import BuildingInfo from './BuildingInfo'
 import ManagerOnboardingStep1 from './ManagerOnboardingStep1'
 import ManagerOnboardingStep2 from './ManagerOnboardingStep2'
 import ManagerOnboardingStep3 from './ManagerOnboardingStep3'
+import ManagerOnboardingStep4 from './ManagerOnboardingStep4'
 
 function App() {
   const [buildingCode, setBuildingCode] = useState('')
@@ -115,16 +116,26 @@ function App() {
 
   const handleOnboardingStep3Continue = (formData) => {
     setOnboardingData(formData)
-    // For now, just log and alert - will add Step 4 later
-    console.log('Onboarding Step 3 data:', formData)
-    alert('Step 3 complete! Step 4 (Launch) coming soon.')
+    setCurrentScreen('manager-onboarding-step4')
   }
 
   const handleOnboardingStep3Skip = (formData) => {
     setOnboardingData(formData)
-    // For now, just log and alert - will add Step 4 later
-    console.log('Onboarding Step 3 skipped:', formData)
-    alert('Step 3 skipped! Step 4 (Launch) coming soon.')
+    setCurrentScreen('manager-onboarding-step4')
+  }
+
+  const handleOnboardingStep4Launch = (formData) => {
+    setOnboardingData(formData)
+    // Show success message and go to dashboard
+    if (formData.invitesSent) {
+      alert(`Success! Invites sent to ${formData.inviteCount} residents!`)
+    }
+    setCurrentScreen('manager-dashboard')
+  }
+
+  const handleOnboardingStep4Skip = (formData) => {
+    setOnboardingData(formData)
+    setCurrentScreen('manager-dashboard')
   }
 
   const handleNavigation = (featureTitle) => {
@@ -238,6 +249,90 @@ function App() {
         onSkip={handleOnboardingStep3Skip}
         initialData={onboardingData}
       />
+    )
+  }
+
+  if (currentScreen === 'manager-onboarding-step4') {
+    return (
+      <ManagerOnboardingStep4
+        onBack={() => setCurrentScreen('manager-onboarding-step3')}
+        onLaunch={handleOnboardingStep4Launch}
+        onSkip={handleOnboardingStep4Skip}
+        initialData={onboardingData}
+      />
+    )
+  }
+
+  if (currentScreen === 'manager-dashboard') {
+    // Simple placeholder dashboard for now
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(180deg, #0a1628 0%, #132337 50%, #1a3a5c 100%)',
+        padding: '24px',
+        color: 'white'
+      }}>
+        <div style={{
+          maxWidth: '800px',
+          margin: '0 auto',
+          textAlign: 'center',
+          paddingTop: '60px'
+        }}>
+          <div style={{
+            width: '80px',
+            height: '80px',
+            background: 'linear-gradient(135deg, #10b981, #06b6d4)',
+            borderRadius: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 24px',
+            fontSize: '40px'
+          }}>
+            🎉
+          </div>
+          <h1 style={{ fontSize: '32px', marginBottom: '16px' }}>
+            Welcome to your Dashboard!
+          </h1>
+          <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '32px' }}>
+            Your building "{onboardingData?.building?.name || 'Building'}" is all set up.
+          </p>
+          <div style={{
+            background: 'rgba(255,255,255,0.08)',
+            borderRadius: '16px',
+            padding: '24px',
+            marginBottom: '24px'
+          }}>
+            <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '8px' }}>Building Code</p>
+            <p style={{
+              fontSize: '28px',
+              fontWeight: 'bold',
+              fontFamily: 'monospace',
+              color: '#06b6d4',
+              letterSpacing: '0.1em'
+            }}>
+              {onboardingData?.building?.code || 'CODE'}
+            </p>
+          </div>
+          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>
+            Manager Dashboard coming soon...
+          </p>
+          <button
+            onClick={() => setCurrentScreen('login')}
+            style={{
+              marginTop: '24px',
+              padding: '12px 24px',
+              background: 'transparent',
+              border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: '8px',
+              color: 'rgba(255,255,255,0.6)',
+              cursor: 'pointer'
+            }}
+          >
+            Back to Login
+          </button>
+        </div>
+      </div>
     )
   }
 
