@@ -1,9 +1,38 @@
-import { Package, Calendar, Users, ArrowUpDown, Settings, ChevronRight, Sparkles, MessageSquare, Hand, UserPlus, PartyPopper, Pin } from 'lucide-react'
+import { useState } from 'react'
+import { Package, Calendar, Users, ArrowUpDown, Settings, ChevronRight, Sparkles, MessageSquare, Hand, UserPlus, PartyPopper, Pin, Mail, X, Image, Send, Check } from 'lucide-react'
 import './Home.css'
 
 function Home({ buildingCode, onNavigate }) {
   const buildingName = "The Paramount"
   const floor = "12"
+  const userUnit = "1201"
+
+  // Contact Manager modal state
+  const [showContactModal, setShowContactModal] = useState(false)
+  const [contactForm, setContactForm] = useState({
+    subject: 'Maintenance Request',
+    message: '',
+    hasPhoto: false
+  })
+  const [showContactSuccess, setShowContactSuccess] = useState(false)
+
+  const subjectOptions = [
+    'Maintenance Request',
+    'Question',
+    'Complaint',
+    'Feedback',
+    'Other'
+  ]
+
+  const handleContactSubmit = () => {
+    if (contactForm.message.trim()) {
+      // For now, just show success - would send email later
+      setShowContactModal(false)
+      setShowContactSuccess(true)
+      setContactForm({ subject: 'Maintenance Request', message: '', hasPhoto: false })
+      setTimeout(() => setShowContactSuccess(false), 3000)
+    }
+  }
 
   // Get time-aware greeting
   const getGreeting = () => {
@@ -182,9 +211,15 @@ function Home({ buildingCode, onNavigate }) {
             <h1 className="building-name">{buildingName}</h1>
             <p className="floor-info">Floor {floor} Resident</p>
           </div>
-          <button className="settings-button" onClick={() => handleFeatureClick('Settings')}>
-            <Settings size={20} />
-          </button>
+          <div className="header-actions">
+            <button className="contact-manager-btn" onClick={() => setShowContactModal(true)}>
+              <Mail size={18} />
+              <span>Contact Manager</span>
+            </button>
+            <button className="settings-button" onClick={() => handleFeatureClick('Settings')}>
+              <Settings size={20} />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -303,6 +338,79 @@ function Home({ buildingCode, onNavigate }) {
           </div>
         </div>
       </section>
+
+      {/* Contact Manager Modal */}
+      {showContactModal && (
+        <div className="modal-overlay" onClick={() => setShowContactModal(false)}>
+          <div className="contact-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Contact Building Manager</h2>
+              <button className="modal-close" onClick={() => setShowContactModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="contact-form-group">
+                <label className="contact-label">Subject</label>
+                <select
+                  className="contact-select"
+                  value={contactForm.subject}
+                  onChange={(e) => setContactForm(prev => ({ ...prev, subject: e.target.value }))}
+                >
+                  {subjectOptions.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="contact-form-group">
+                <label className="contact-label">Message</label>
+                <textarea
+                  className="contact-textarea"
+                  placeholder="Describe your issue or question..."
+                  value={contactForm.message}
+                  onChange={(e) => setContactForm(prev => ({ ...prev, message: e.target.value }))}
+                  rows={5}
+                />
+              </div>
+              <div className="contact-form-group">
+                <button
+                  className={`attach-photo-btn ${contactForm.hasPhoto ? 'has-photo' : ''}`}
+                  onClick={() => setContactForm(prev => ({ ...prev, hasPhoto: !prev.hasPhoto }))}
+                >
+                  <Image size={18} />
+                  <span>{contactForm.hasPhoto ? 'Photo attached' : 'Attach Photo (optional)'}</span>
+                  {contactForm.hasPhoto && <Check size={16} className="check-icon" />}
+                </button>
+              </div>
+              <div className="contact-unit-info">
+                <span className="unit-label">From:</span>
+                <span className="unit-value">Unit {userUnit}</span>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="modal-cancel" onClick={() => setShowContactModal(false)}>
+                Cancel
+              </button>
+              <button
+                className="modal-submit"
+                onClick={handleContactSubmit}
+                disabled={!contactForm.message.trim()}
+              >
+                <Send size={18} />
+                <span>Send Message</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Contact Success Toast */}
+      {showContactSuccess && (
+        <div className="contact-success-toast">
+          <Check size={20} />
+          <span>Message Sent!</span>
+        </div>
+      )}
     </div>
   )
 }

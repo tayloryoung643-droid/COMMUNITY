@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { ArrowLeft, Camera, User, Home, Calendar, FileText, Eye, EyeOff, Hand, Bell, Mail, Package, PartyPopper, MessageSquare, LogOut, ChevronRight, AlertTriangle, Phone } from 'lucide-react'
+import { ArrowLeft, Camera, User, Home, Calendar, FileText, Eye, EyeOff, Hand, Bell, Mail, Package, PartyPopper, MessageSquare, LogOut, ChevronRight, AlertTriangle, Phone, HelpCircle } from 'lucide-react'
 import './Settings.css'
 
-function Settings({ onBack, onLogout }) {
+function Settings({ onBack, onLogout, onNavigate }) {
   // Profile state
   const [profile, setProfile] = useState({
     displayName: 'Taylor Young',
@@ -265,6 +265,27 @@ function Settings({ onBack, onLogout }) {
                 <span className="toggle-knob"></span>
               </button>
             </div>
+          </div>
+        </section>
+
+        {/* Building Info & FAQ Section */}
+        <section className="settings-section">
+          <h2 className="section-title">
+            <HelpCircle size={18} />
+            <span>Resources</span>
+          </h2>
+
+          <div className="settings-card">
+            <button className="settings-link-row" onClick={() => onNavigate && onNavigate('BuildingInfo')}>
+              <div className="link-row-info">
+                <HelpCircle size={18} />
+                <div className="link-row-text">
+                  <span className="link-row-label">Building Info & FAQ</span>
+                  <span className="link-row-description">Hours, policies, and guidelines</span>
+                </div>
+              </div>
+              <ChevronRight size={18} className="link-row-arrow" />
+            </button>
           </div>
         </section>
 

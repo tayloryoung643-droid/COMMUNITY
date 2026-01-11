@@ -11,6 +11,7 @@ import CommunityFeed from './CommunityFeed'
 import BulletinBoard from './BulletinBoard'
 import Settings from './Settings'
 import CalendarView from './CalendarView'
+import BuildingInfo from './BuildingInfo'
 
 function App() {
   const [buildingCode, setBuildingCode] = useState('')
@@ -105,6 +106,8 @@ function App() {
       setCurrentScreen('settings')
     } else if (featureTitle === 'Calendar') {
       setCurrentScreen('calendar')
+    } else if (featureTitle === 'BuildingInfo') {
+      setCurrentScreen('building-info')
     }
   }
 
@@ -153,7 +156,11 @@ function App() {
   }
 
   if (currentScreen === 'settings') {
-    return <Settings onBack={handleBack} onLogout={handleLogout} />
+    return <Settings onBack={handleBack} onLogout={handleLogout} onNavigate={handleNavigation} />
+  }
+
+  if (currentScreen === 'building-info') {
+    return <BuildingInfo onBack={() => setCurrentScreen('settings')} />
   }
 
   if (currentScreen === 'calendar') {
