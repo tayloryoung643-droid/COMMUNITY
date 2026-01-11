@@ -308,6 +308,25 @@
   transition: transform var(--transition-base);
 }
 
+/* Demo Login Link */
+.demo-login-link {
+  display: block;
+  width: 100%;
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-align: center;
+}
+
+.demo-login-link:hover {
+  color: var(--text-secondary);
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .login-container {

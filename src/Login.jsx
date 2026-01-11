@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Building2, User, Mail, Lock, ArrowRight } from 'lucide-react'
 import './Login.css'
 
-function Login({ onResidentLogin, onManagerLogin, onRegisterClick }) {
+function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin }) {
   const [activeTab, setActiveTab] = useState('resident')
   const [buildingCode, setBuildingCode] = useState('')
   const [managerEmail, setManagerEmail] = useState('')
@@ -146,6 +146,10 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick }) {
                 <ArrowRight size={14} />
               </button>
             </div>
+
+            <button className="demo-login-link" onClick={onDemoLogin}>
+              Demo login (skip to dashboard)
+            </button>
           </div>
         )}
       </div>

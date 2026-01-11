@@ -17,6 +17,7 @@ import ManagerOnboardingStep1 from './ManagerOnboardingStep1'
 import ManagerOnboardingStep2 from './ManagerOnboardingStep2'
 import ManagerOnboardingStep3 from './ManagerOnboardingStep3'
 import ManagerOnboardingStep4 from './ManagerOnboardingStep4'
+import ManagerDashboard from './ManagerDashboard'
 
 function App() {
   const [buildingCode, setBuildingCode] = useState('')
@@ -135,6 +136,21 @@ function App() {
 
   const handleOnboardingStep4Skip = (formData) => {
     setOnboardingData(formData)
+    setCurrentScreen('manager-dashboard')
+  }
+
+  const handleDemoLogin = () => {
+    // Set demo building data for testing
+    setOnboardingData({
+      building: {
+        name: 'The Paramount',
+        code: 'PARA123'
+      },
+      manager: {
+        name: 'Taylor Young',
+        email: 'taylor@paramount.com'
+      }
+    })
     setCurrentScreen('manager-dashboard')
   }
 
@@ -264,75 +280,20 @@ function App() {
   }
 
   if (currentScreen === 'manager-dashboard') {
-    // Simple placeholder dashboard for now
+    const buildingData = onboardingData ? {
+      name: onboardingData.building?.name || 'The Paramount',
+      code: onboardingData.building?.code || 'PARA123',
+      manager: {
+        name: onboardingData.manager?.name || 'Taylor Young',
+        email: onboardingData.manager?.email || 'taylor@paramount.com'
+      }
+    } : null
+
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(180deg, #0a1628 0%, #132337 50%, #1a3a5c 100%)',
-        padding: '24px',
-        color: 'white'
-      }}>
-        <div style={{
-          maxWidth: '800px',
-          margin: '0 auto',
-          textAlign: 'center',
-          paddingTop: '60px'
-        }}>
-          <div style={{
-            width: '80px',
-            height: '80px',
-            background: 'linear-gradient(135deg, #10b981, #06b6d4)',
-            borderRadius: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 24px',
-            fontSize: '40px'
-          }}>
-            🎉
-          </div>
-          <h1 style={{ fontSize: '32px', marginBottom: '16px' }}>
-            Welcome to your Dashboard!
-          </h1>
-          <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '32px' }}>
-            Your building "{onboardingData?.building?.name || 'Building'}" is all set up.
-          </p>
-          <div style={{
-            background: 'rgba(255,255,255,0.08)',
-            borderRadius: '16px',
-            padding: '24px',
-            marginBottom: '24px'
-          }}>
-            <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '8px' }}>Building Code</p>
-            <p style={{
-              fontSize: '28px',
-              fontWeight: 'bold',
-              fontFamily: 'monospace',
-              color: '#06b6d4',
-              letterSpacing: '0.1em'
-            }}>
-              {onboardingData?.building?.code || 'CODE'}
-            </p>
-          </div>
-          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>
-            Manager Dashboard coming soon...
-          </p>
-          <button
-            onClick={() => setCurrentScreen('login')}
-            style={{
-              marginTop: '24px',
-              padding: '12px 24px',
-              background: 'transparent',
-              border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: '8px',
-              color: 'rgba(255,255,255,0.6)',
-              cursor: 'pointer'
-            }}
-          >
-            Back to Login
-          </button>
-        </div>
-      </div>
+      <ManagerDashboard
+        onLogout={handleLogout}
+        buildingData={buildingData}
+      />
     )
   }
 
@@ -346,6 +307,7 @@ function App() {
       onResidentLogin={handleResidentLogin}
       onManagerLogin={handleManagerLogin}
       onRegisterClick={handleRegisterClick}
+      onDemoLogin={handleDemoLogin}
     />
   )
 }
