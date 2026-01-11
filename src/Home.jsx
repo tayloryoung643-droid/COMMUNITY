@@ -1,7 +1,7 @@
-import { Megaphone, Package, Calendar, Users, AlertTriangle, ArrowUpDown, LogOut, ChevronRight, Clock, Sparkles, MessageSquare, Hand, UserPlus, PartyPopper, Pin } from 'lucide-react'
+import { Package, Calendar, Users, AlertTriangle, ArrowUpDown, Settings, ChevronRight, Sparkles, MessageSquare, Hand, UserPlus, PartyPopper, Pin } from 'lucide-react'
 import './Home.css'
 
-function Home({ buildingCode, onNavigate, onLogout }) {
+function Home({ buildingCode, onNavigate }) {
   const buildingName = "The Paramount"
   const floor = "12"
 
@@ -121,11 +121,11 @@ function Home({ buildingCode, onNavigate, onLogout }) {
       hasActivity: true
     },
     {
-      icon: Megaphone,
-      title: "Announcements",
-      description: "Building updates & news",
-      gradient: "linear-gradient(135deg, #3b82f6, #06b6d4)",
-      badge: dynamicData.unreadAnnouncements,
+      icon: Calendar,
+      title: "Calendar",
+      description: "Events & announcements",
+      gradient: "linear-gradient(135deg, #3b82f6, #10b981)",
+      badge: dynamicData.unreadAnnouncements + dynamicData.upcomingEvents,
       hasActivity: true
     },
     {
@@ -135,14 +135,6 @@ function Home({ buildingCode, onNavigate, onLogout }) {
       gradient: "linear-gradient(135deg, #8b5cf6, #ec4899)",
       badge: dynamicData.packagesWaiting,
       hasActivity: true
-    },
-    {
-      icon: Calendar,
-      title: "Events",
-      description: "Community gatherings",
-      gradient: "linear-gradient(135deg, #10b981, #06b6d4)",
-      badge: null,
-      hasActivity: false
     },
     {
       icon: Users,
@@ -198,9 +190,8 @@ function Home({ buildingCode, onNavigate, onLogout }) {
             <h1 className="building-name">{buildingName}</h1>
             <p className="floor-info">Floor {floor} Resident</p>
           </div>
-          <button className="logout-button" onClick={onLogout}>
-            <LogOut size={18} />
-            <span>Logout</span>
+          <button className="settings-button" onClick={() => handleFeatureClick('Settings')}>
+            <Settings size={20} />
           </button>
         </div>
       </header>
@@ -219,7 +210,7 @@ function Home({ buildingCode, onNavigate, onLogout }) {
                 <button
                   key={index}
                   className="banner-item"
-                  onClick={() => handleFeatureClick(item.type === 'packages' ? 'Packages' : 'Events')}
+                  onClick={() => handleFeatureClick(item.type === 'packages' ? 'Packages' : 'Calendar')}
                 >
                   <IconComponent size={16} />
                   <span>{item.text}</span>
@@ -273,7 +264,7 @@ function Home({ buildingCode, onNavigate, onLogout }) {
               <div
                 key={index}
                 className="upcoming-card"
-                onClick={() => handleFeatureClick(item.category === 'maintenance' ? 'Announcements' : 'Events')}
+                onClick={() => handleFeatureClick('Calendar')}
               >
                 <div className="upcoming-date-block">
                   <span className="upcoming-date">{item.date}</span>

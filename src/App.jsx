@@ -9,6 +9,8 @@ import Emergency from './Emergency'
 import ElevatorBooking from './ElevatorBooking'
 import CommunityFeed from './CommunityFeed'
 import BulletinBoard from './BulletinBoard'
+import Settings from './Settings'
+import CalendarView from './CalendarView'
 
 function App() {
   const [buildingCode, setBuildingCode] = useState('')
@@ -99,6 +101,10 @@ function App() {
       setCurrentScreen('community')
     } else if (featureTitle === 'Bulletin Board') {
       setCurrentScreen('bulletin-board')
+    } else if (featureTitle === 'Settings') {
+      setCurrentScreen('settings')
+    } else if (featureTitle === 'Calendar') {
+      setCurrentScreen('calendar')
     }
   }
 
@@ -146,8 +152,16 @@ function App() {
     return <BulletinBoard onBack={handleBack} />
   }
 
+  if (currentScreen === 'settings') {
+    return <Settings onBack={handleBack} onLogout={handleLogout} />
+  }
+
+  if (currentScreen === 'calendar') {
+    return <CalendarView onBack={handleBack} />
+  }
+
   if (currentScreen === 'home') {
-    return <Home buildingCode={buildingCode} onNavigate={handleNavigation} onLogout={handleLogout} />
+    return <Home buildingCode={buildingCode} onNavigate={handleNavigation} />
   }
 
   // Otherwise, show the Login screen

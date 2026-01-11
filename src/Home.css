@@ -106,28 +106,27 @@
   margin-top: 2px;
 }
 
-/* Logout button */
-.logout-button {
+/* Settings button */
+.settings-button {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
+  justify-content: center;
+  width: 44px;
+  height: 44px;
   background: var(--glass-bg);
   backdrop-filter: blur(var(--blur-md));
   -webkit-backdrop-filter: blur(var(--blur-md));
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
   transition: all var(--transition-base);
 }
 
-.logout-button:hover {
+.settings-button:hover {
   background: rgba(255, 255, 255, 0.12);
   border-color: var(--glass-border-hover);
   color: var(--text-primary);
-  transform: translateY(-2px);
+  transform: rotate(45deg);
 }
 
 /* Today Banner - Hero Section */
