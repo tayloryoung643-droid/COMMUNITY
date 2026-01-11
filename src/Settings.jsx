@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, Camera, User, Home, Calendar, FileText, Eye, EyeOff, Hand, Bell, Mail, Package, PartyPopper, MessageSquare, LogOut, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Camera, User, Home, Calendar, FileText, Eye, EyeOff, Hand, Bell, Mail, Package, PartyPopper, MessageSquare, LogOut, ChevronRight, AlertTriangle, Phone } from 'lucide-react'
 import './Settings.css'
 
 function Settings({ onBack, onLogout }) {
@@ -264,6 +264,56 @@ function Settings({ onBack, onLogout }) {
               >
                 <span className="toggle-knob"></span>
               </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Emergency Contacts Section */}
+        <section className="settings-section">
+          <h2 className="section-title">
+            <AlertTriangle size={18} />
+            <span>Emergency Contacts</span>
+          </h2>
+
+          <div className="settings-card emergency-card">
+            <div className="emergency-contact">
+              <div className="emergency-info">
+                <span className="emergency-label">Building Emergency Line</span>
+                <span className="emergency-number">416-555-0911</span>
+              </div>
+              <a href="tel:4165550911" className="call-btn">
+                <Phone size={16} />
+              </a>
+            </div>
+
+            <div className="emergency-contact">
+              <div className="emergency-info">
+                <span className="emergency-label">After-hours Maintenance</span>
+                <span className="emergency-number">416-555-0199</span>
+              </div>
+              <a href="tel:4165550199" className="call-btn">
+                <Phone size={16} />
+              </a>
+            </div>
+
+            <div className="emergency-contact">
+              <div className="emergency-info">
+                <span className="emergency-label">Building Manager</span>
+                <span className="emergency-number">416-555-0100</span>
+              </div>
+              <a href="tel:4165550100" className="call-btn">
+                <Phone size={16} />
+              </a>
+            </div>
+
+            <div className="emergency-contact emergency-911">
+              <div className="emergency-info">
+                <span className="emergency-label">911 / Fire / Poison Control</span>
+                <span className="emergency-number">911</span>
+              </div>
+              <a href="tel:911" className="call-btn urgent">
+                <Phone size={16} />
+              </a>
             </div>
           </div>
         </section>

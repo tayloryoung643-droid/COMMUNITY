@@ -1,4 +1,4 @@
-import { Package, Calendar, Users, AlertTriangle, ArrowUpDown, Settings, ChevronRight, Sparkles, MessageSquare, Hand, UserPlus, PartyPopper, Pin } from 'lucide-react'
+import { Package, Calendar, Users, ArrowUpDown, Settings, ChevronRight, Sparkles, MessageSquare, Hand, UserPlus, PartyPopper, Pin } from 'lucide-react'
 import './Home.css'
 
 function Home({ buildingCode, onNavigate }) {
@@ -141,14 +141,6 @@ function Home({ buildingCode, onNavigate }) {
       title: "Neighbors",
       description: "Meet your community",
       gradient: "linear-gradient(135deg, #f59e0b, #ef4444)",
-      badge: null,
-      hasActivity: false
-    },
-    {
-      icon: AlertTriangle,
-      title: "Emergency",
-      description: "Important contacts",
-      gradient: "linear-gradient(135deg, #ef4444, #f59e0b)",
       badge: null,
       hasActivity: false
     },

@@ -355,6 +355,75 @@
   color: var(--text-muted);
 }
 
+/* Emergency Contacts */
+.emergency-card {
+  padding: 0 !important;
+}
+
+.emergency-contact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.emergency-contact:last-child {
+  border-bottom: none;
+}
+
+.emergency-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.emergency-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.emergency-number {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
+.call-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border-radius: var(--radius-lg);
+  color: white;
+  text-decoration: none;
+  transition: all var(--transition-base);
+}
+
+.call-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.call-btn.urgent {
+  background: linear-gradient(135deg, #ef4444, #f97316);
+}
+
+.call-btn.urgent:hover {
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.emergency-911 {
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.emergency-911 .emergency-number {
+  color: #ef4444;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .settings-header {
