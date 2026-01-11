@@ -166,14 +166,6 @@ function Home({ buildingCode, onNavigate }) {
       hasActivity: true
     },
     {
-      icon: Users,
-      title: "Neighbors",
-      description: "Meet your community",
-      gradient: "linear-gradient(135deg, #f59e0b, #ef4444)",
-      badge: null,
-      hasActivity: false
-    },
-    {
       icon: ArrowUpDown,
       title: "Elevator Booking",
       description: "Reserve for moving",

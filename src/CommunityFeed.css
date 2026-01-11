@@ -134,6 +134,49 @@
   color: var(--accent-cyan);
 }
 
+/* Tab Bar */
+.community-tabs {
+  display: flex;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--spacing-md);
+}
+
+.community-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.community-tab:hover {
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.community-tab.active {
+  color: white;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.community-tab svg {
+  flex-shrink: 0;
+}
+
 /* Post Filters */
 .post-filters {
   display: flex;
@@ -535,6 +578,228 @@
   cursor: not-allowed;
 }
 
+/* Neighbors Tab Content */
+.neighbors-tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+/* Floor Accordion */
+.floor-accordion {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--blur-md));
+  -webkit-backdrop-filter: blur(var(--blur-md));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: all var(--transition-base);
+}
+
+.floor-accordion:hover {
+  border-color: var(--glass-border-hover);
+}
+
+.floor-accordion.expanded {
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.floor-accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.floor-accordion-header:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.floor-header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.floor-label {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.floor-resident-count {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.floor-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: all var(--transition-base);
+}
+
+.floor-accordion.expanded .floor-chevron {
+  color: var(--accent-purple);
+}
+
+/* Floor Residents */
+.floor-residents {
+  border-top: 1px solid var(--glass-border);
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Resident Row - Compact */
+.resident-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  height: 56px;
+  border-bottom: 1px solid var(--glass-border);
+  transition: all var(--transition-base);
+}
+
+.resident-row:last-child {
+  border-bottom: none;
+}
+
+.resident-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Resident Avatar with Colored Ring */
+.resident-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: white;
+  background: var(--navy-dark);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.resident-avatar::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* Avatar color variants */
+.resident-avatar.avatar-ring-blue::before {
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+}
+
+.resident-avatar.avatar-ring-purple::before {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+}
+
+.resident-avatar.avatar-ring-cyan::before {
+  background: linear-gradient(135deg, #06b6d4, #10b981);
+}
+
+.resident-avatar.avatar-ring-green::before {
+  background: linear-gradient(135deg, #10b981, #84cc16);
+}
+
+.resident-avatar.avatar-ring-pink::before {
+  background: linear-gradient(135deg, #ec4899, #f43f5e);
+}
+
+.resident-avatar.avatar-ring-orange::before {
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+}
+
+/* Resident Info */
+.resident-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.resident-name {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.resident-dot {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.resident-unit {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Resident Wave Button - Compact Icon Style */
+.resident-wave-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  flex-shrink: 0;
+}
+
+.resident-wave-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--glass-border-hover);
+  color: var(--text-secondary);
+}
+
+.resident-wave-btn.waved {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border-color: transparent;
+  color: white;
+}
+
+.resident-wave-btn.waved:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .community-feed-header {
@@ -564,6 +829,14 @@
 
   .type-btn {
     flex: none;
+  }
+
+  .resident-row {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .floor-accordion-header {
+    padding: var(--spacing-md);
   }
 
   .community-feed-container .bg-orb-1 {
