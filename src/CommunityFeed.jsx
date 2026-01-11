@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, MessageSquare, HelpCircle, Flag, Heart, MessageCircle, Share2, MoreHorizontal, Send, X, Sparkles, Users, Hand, ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowLeft, MessageSquare, HelpCircle, Flag, Heart, MessageCircle, Share2, MoreHorizontal, Send, X, Sparkles, Users, Hand, ChevronDown, ChevronUp, Search } from 'lucide-react'
 import './CommunityFeed.css'
 
 function CommunityFeed({ onBack, posts, onAddPost }) {
@@ -8,7 +8,8 @@ function CommunityFeed({ onBack, posts, onAddPost }) {
   const [postText, setPostText] = useState('')
   const [likedPosts, setLikedPosts] = useState(new Set())
   const [activeFilter, setActiveFilter] = useState('all')
-  const [activeTab, setActiveTab] = useState('feed')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [mobileNeighborsExpanded, setMobileNeighborsExpanded] = useState(false)
 
   // Neighbors data and state
   const currentUserFloor = 12
@@ -74,6 +75,27 @@ function CommunityFeed({ onBack, posts, onAddPost }) {
       if (b === currentUserFloor) return 1
       return b - a
     })
+
+  // Filter neighbors by search query
+  const filteredNeighborsByFloor = searchQuery.trim()
+    ? Object.fromEntries(
+        Object.entries(neighborsByFloor).map(([floor, residents]) => [
+          floor,
+          residents.filter(n =>
+            n.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            n.unit.includes(searchQuery)
+          )
+        ]).filter(([, residents]) => residents.length > 0)
+      )
+    : neighborsByFloor
+
+  const filteredSortedFloors = searchQuery.trim()
+    ? Object.keys(filteredNeighborsByFloor).map(Number).sort((a, b) => {
+        if (a === currentUserFloor) return -1
+        if (b === currentUserFloor) return 1
+        return b - a
+      })
+    : sortedFloors
 
   // Post type configurations
   const postTypes = [
@@ -154,180 +176,253 @@ function CommunityFeed({ onBack, posts, onAddPost }) {
         <h1 className="page-title-light">Community</h1>
       </header>
 
-      <main className="community-feed-content">
-        {/* New Post Button */}
-        <button className="new-post-button" onClick={() => setShowPostModal(true)}>
-          <Sparkles size={20} />
-          <span>Share something with your neighbors</span>
-        </button>
+      <main className="community-split-layout">
+        {/* Left Column - Neighbors Sidebar */}
+        <aside className="neighbors-sidebar">
+          {/* Desktop view */}
+          <div className="sidebar-desktop">
+            <div className="sidebar-header">
+              <Users size={18} />
+              <h2>Neighbors</h2>
+            </div>
 
-        {/* Tab Bar */}
-        <div className="community-tabs">
-          <button
-            className={`community-tab ${activeTab === 'feed' ? 'active' : ''}`}
-            onClick={() => setActiveTab('feed')}
-          >
-            <MessageSquare size={18} />
-            <span>Feed</span>
-          </button>
-          <button
-            className={`community-tab ${activeTab === 'neighbors' ? 'active' : ''}`}
-            onClick={() => setActiveTab('neighbors')}
-          >
-            <Users size={18} />
-            <span>Neighbors</span>
-          </button>
-        </div>
+            <div className="sidebar-search">
+              <Search size={16} />
+              <input
+                type="text"
+                placeholder="Search neighbors..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
 
-        {/* Feed Tab Content */}
-        {activeTab === 'feed' && (
-          <>
-            {/* Post Type Filters */}
-            <div className="post-filters">
-              <button
-                className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
-                onClick={() => setActiveFilter('all')}
-              >
-                All
-              </button>
-              {postTypes.map(pt => {
-                const IconComponent = pt.icon
+            <div className="sidebar-floors">
+              {filteredSortedFloors.map((floor) => {
+                const isExpanded = expandedFloors.includes(floor)
+                const floorNeighbors = filteredNeighborsByFloor[floor]
+                const isYourFloor = floor === currentUserFloor
+
                 return (
-                  <button
-                    key={pt.type}
-                    className={`filter-btn ${activeFilter === pt.type ? 'active' : ''}`}
-                    onClick={() => setActiveFilter(pt.type)}
-                  >
-                    <IconComponent size={14} />
-                    <span>{pt.label}</span>
-                  </button>
+                  <div key={floor} className={`sidebar-floor ${isExpanded ? 'expanded' : ''}`}>
+                    <button
+                      className="sidebar-floor-header"
+                      onClick={() => toggleFloor(floor)}
+                    >
+                      <div className="floor-header-left">
+                        <span className="floor-name">
+                          {isYourFloor ? `Floor ${floor}` : `Floor ${floor}`}
+                        </span>
+                        <span className="floor-count">({floorNeighbors.length})</span>
+                        {isYourFloor && <span className="your-floor-badge">YOUR FLOOR</span>}
+                      </div>
+                      <div className="floor-chevron">
+                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </div>
+                    </button>
+
+                    {isExpanded && (
+                      <div className="sidebar-residents">
+                        {floorNeighbors.map((neighbor) => (
+                          <div key={neighbor.id} className="sidebar-resident-row">
+                            <div className={`sidebar-avatar avatar-ring-${neighbor.color}`}>
+                              {getInitials(neighbor.name)}
+                            </div>
+                            <div className="sidebar-resident-info">
+                              <span className="sidebar-resident-name">{neighbor.name}</span>
+                              <span className="sidebar-resident-unit">{neighbor.unit}</span>
+                            </div>
+                            <button
+                              className={`sidebar-wave-btn ${neighbor.waved ? 'waved' : ''}`}
+                              onClick={() => handleWave(neighbor.id)}
+                            >
+                              <Hand size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )
               })}
             </div>
+          </div>
 
-            {/* Posts Feed */}
-            <div className="posts-feed">
-              {posts.filter(p => activeFilter === 'all' || p.type === activeFilter).length === 0 ? (
-                <div className="empty-feed">
-                  <MessageSquare size={48} />
-                  <h3>No posts yet</h3>
-                  <p>Be the first to share something with your neighbors!</p>
+          {/* Mobile collapsed view */}
+          <div className="sidebar-mobile">
+            <button
+              className="mobile-neighbors-toggle"
+              onClick={() => setMobileNeighborsExpanded(!mobileNeighborsExpanded)}
+            >
+              <div className="mobile-toggle-left">
+                <Users size={18} />
+                <span>Neighbors</span>
+              </div>
+              <div className="mobile-toggle-right">
+                <span className="neighbor-count">{neighbors.length}</span>
+                {mobileNeighborsExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </div>
+            </button>
+
+            {mobileNeighborsExpanded && (
+              <div className="mobile-neighbors-content">
+                <div className="sidebar-search">
+                  <Search size={16} />
+                  <input
+                    type="text"
+                    placeholder="Search neighbors..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </div>
-              ) : (
-                posts.filter(p => activeFilter === 'all' || p.type === activeFilter).map((post) => {
-                  const typeConfig = getPostTypeConfig(post.type)
-                  const IconComponent = typeConfig.icon
-                  const isLiked = likedPosts.has(post.id)
 
-                  return (
-                    <article key={post.id} className="post-card">
-                      <div className="post-header">
-                        <div className="post-author">
-                          <div className="author-avatar" style={{ background: `linear-gradient(135deg, ${typeConfig.color}, ${typeConfig.color}88)` }}>
-                            {post.author.charAt(0)}
-                          </div>
-                          <div className="author-info">
-                            <span className="author-name">{post.author}</span>
-                            <span className="post-meta">
-                              <span className="post-unit">{post.unit}</span>
-                              <span className="meta-dot">·</span>
-                              <span className="post-time">{formatTimeAgo(post.timestamp)}</span>
-                            </span>
-                          </div>
-                        </div>
-                        <div className="post-type-badge" style={{ background: `${typeConfig.color}20`, color: typeConfig.color }}>
-                          <IconComponent size={12} />
-                          <span>{typeConfig.label}</span>
-                        </div>
-                      </div>
+                <div className="sidebar-floors">
+                  {filteredSortedFloors.map((floor) => {
+                    const isExpanded = expandedFloors.includes(floor)
+                    const floorNeighbors = filteredNeighborsByFloor[floor]
+                    const isYourFloor = floor === currentUserFloor
 
-                      <div className="post-content">
-                        <p>{post.text}</p>
-                      </div>
-
-                      <div className="post-actions">
+                    return (
+                      <div key={floor} className={`sidebar-floor ${isExpanded ? 'expanded' : ''}`}>
                         <button
-                          className={`action-btn ${isLiked ? 'liked' : ''}`}
-                          onClick={() => handleLike(post.id)}
+                          className="sidebar-floor-header"
+                          onClick={() => toggleFloor(floor)}
                         >
-                          <Heart size={18} fill={isLiked ? '#ef4444' : 'none'} />
-                          <span>{post.likes + (isLiked ? 1 : 0)}</span>
+                          <div className="floor-header-left">
+                            <span className="floor-name">Floor {floor}</span>
+                            <span className="floor-count">({floorNeighbors.length})</span>
+                            {isYourFloor && <span className="your-floor-badge">YOUR FLOOR</span>}
+                          </div>
+                          <div className="floor-chevron">
+                            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                          </div>
                         </button>
-                        <button className="action-btn">
-                          <MessageCircle size={18} />
-                          <span>{post.comments}</span>
-                        </button>
-                        <button className="action-btn">
-                          <Share2 size={18} />
-                        </button>
-                        <button className="action-btn more-btn">
-                          <MoreHorizontal size={18} />
-                        </button>
+
+                        {isExpanded && (
+                          <div className="sidebar-residents">
+                            {floorNeighbors.map((neighbor) => (
+                              <div key={neighbor.id} className="sidebar-resident-row">
+                                <div className={`sidebar-avatar avatar-ring-${neighbor.color}`}>
+                                  {getInitials(neighbor.name)}
+                                </div>
+                                <div className="sidebar-resident-info">
+                                  <span className="sidebar-resident-name">{neighbor.name}</span>
+                                  <span className="sidebar-resident-unit">{neighbor.unit}</span>
+                                </div>
+                                <button
+                                  className={`sidebar-wave-btn ${neighbor.waved ? 'waved' : ''}`}
+                                  onClick={() => handleWave(neighbor.id)}
+                                >
+                                  <Hand size={14} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    </article>
-                  )
-                })
-              )}
-            </div>
-          </>
-        )}
-
-        {/* Neighbors Tab Content */}
-        {activeTab === 'neighbors' && (
-          <div className="neighbors-tab-content">
-            {sortedFloors.map((floor) => {
-              const isExpanded = expandedFloors.includes(floor)
-              const floorNeighbors = neighborsByFloor[floor]
-              const isYourFloor = floor === currentUserFloor
-
-              return (
-                <div key={floor} className={`floor-accordion ${isExpanded ? 'expanded' : ''}`}>
-                  <button
-                    className="floor-accordion-header"
-                    onClick={() => toggleFloor(floor)}
-                  >
-                    <div className="floor-header-left">
-                      <span className="floor-label">
-                        {isYourFloor ? 'Your Floor' : `Floor ${floor}`}
-                      </span>
-                      {!isExpanded && (
-                        <span className="floor-resident-count">
-                          {floorNeighbors.length} resident{floorNeighbors.length !== 1 ? 's' : ''}
-                        </span>
-                      )}
-                    </div>
-                    <div className="floor-chevron">
-                      {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                    </div>
-                  </button>
-
-                  {isExpanded && (
-                    <div className="floor-residents">
-                      {floorNeighbors.map((neighbor) => (
-                        <div key={neighbor.id} className="resident-row">
-                          <div className={`resident-avatar avatar-ring-${neighbor.color}`}>
-                            {getInitials(neighbor.name)}
-                          </div>
-                          <div className="resident-info">
-                            <span className="resident-name">{neighbor.name}</span>
-                            <span className="resident-dot">·</span>
-                            <span className="resident-unit">Unit {neighbor.unit}</span>
-                          </div>
-                          <button
-                            className={`resident-wave-btn ${neighbor.waved ? 'waved' : ''}`}
-                            onClick={() => handleWave(neighbor.id)}
-                          >
-                            <Hand size={16} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                    )
+                  })}
                 </div>
+              </div>
+            )}
+          </div>
+        </aside>
+
+        {/* Right Column - Feed */}
+        <section className="feed-column">
+          {/* New Post Button */}
+          <button className="new-post-button" onClick={() => setShowPostModal(true)}>
+            <Sparkles size={20} />
+            <span>Share something with your neighbors</span>
+          </button>
+
+          {/* Post Type Filters */}
+          <div className="post-filters">
+            <button
+              className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setActiveFilter('all')}
+            >
+              All
+            </button>
+            {postTypes.map(pt => {
+              const IconComponent = pt.icon
+              return (
+                <button
+                  key={pt.type}
+                  className={`filter-btn ${activeFilter === pt.type ? 'active' : ''}`}
+                  onClick={() => setActiveFilter(pt.type)}
+                >
+                  <IconComponent size={14} />
+                  <span>{pt.label}</span>
+                </button>
               )
             })}
           </div>
-        )}
+
+          {/* Posts Feed */}
+          <div className="posts-feed">
+            {posts.filter(p => activeFilter === 'all' || p.type === activeFilter).length === 0 ? (
+              <div className="empty-feed">
+                <MessageSquare size={48} />
+                <h3>No posts yet</h3>
+                <p>Be the first to share something with your neighbors!</p>
+              </div>
+            ) : (
+              posts.filter(p => activeFilter === 'all' || p.type === activeFilter).map((post) => {
+                const typeConfig = getPostTypeConfig(post.type)
+                const IconComponent = typeConfig.icon
+                const isLiked = likedPosts.has(post.id)
+
+                return (
+                  <article key={post.id} className="post-card">
+                    <div className="post-header">
+                      <div className="post-author">
+                        <div className="author-avatar" style={{ background: `linear-gradient(135deg, ${typeConfig.color}, ${typeConfig.color}88)` }}>
+                          {post.author.charAt(0)}
+                        </div>
+                        <div className="author-info">
+                          <span className="author-name">{post.author}</span>
+                          <span className="post-meta">
+                            <span className="post-unit">{post.unit}</span>
+                            <span className="meta-dot">·</span>
+                            <span className="post-time">{formatTimeAgo(post.timestamp)}</span>
+                          </span>
+                        </div>
+                      </div>
+                      <div className="post-type-badge" style={{ background: `${typeConfig.color}20`, color: typeConfig.color }}>
+                        <IconComponent size={12} />
+                        <span>{typeConfig.label}</span>
+                      </div>
+                    </div>
+
+                    <div className="post-content">
+                      <p>{post.text}</p>
+                    </div>
+
+                    <div className="post-actions">
+                      <button
+                        className={`action-btn ${isLiked ? 'liked' : ''}`}
+                        onClick={() => handleLike(post.id)}
+                      >
+                        <Heart size={18} fill={isLiked ? '#ef4444' : 'none'} />
+                        <span>{post.likes + (isLiked ? 1 : 0)}</span>
+                      </button>
+                      <button className="action-btn">
+                        <MessageCircle size={18} />
+                        <span>{post.comments}</span>
+                      </button>
+                      <button className="action-btn">
+                        <Share2 size={18} />
+                      </button>
+                      <button className="action-btn more-btn">
+                        <MoreHorizontal size={18} />
+                      </button>
+                    </div>
+                  </article>
+                )
+              })
+            )}
+          </div>
+        </section>
       </main>
 
       {/* Post Modal */}
