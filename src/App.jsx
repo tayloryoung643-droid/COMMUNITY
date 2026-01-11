@@ -15,6 +15,7 @@ import CalendarView from './CalendarView'
 import BuildingInfo from './BuildingInfo'
 import ManagerOnboardingStep1 from './ManagerOnboardingStep1'
 import ManagerOnboardingStep2 from './ManagerOnboardingStep2'
+import ManagerOnboardingStep3 from './ManagerOnboardingStep3'
 
 function App() {
   const [buildingCode, setBuildingCode] = useState('')
@@ -104,9 +105,26 @@ function App() {
 
   const handleOnboardingStep2Continue = (formData) => {
     setOnboardingData(formData)
-    // For now, just log and alert - will add Step 3 later
-    console.log('Onboarding Step 2 data:', formData)
-    alert('Step 2 complete! Step 3 coming soon.')
+    setCurrentScreen('manager-onboarding-step3')
+  }
+
+  const handleOnboardingStep2Skip = (formData) => {
+    setOnboardingData(formData)
+    setCurrentScreen('manager-onboarding-step3')
+  }
+
+  const handleOnboardingStep3Continue = (formData) => {
+    setOnboardingData(formData)
+    // For now, just log and alert - will add Step 4 later
+    console.log('Onboarding Step 3 data:', formData)
+    alert('Step 3 complete! Step 4 (Launch) coming soon.')
+  }
+
+  const handleOnboardingStep3Skip = (formData) => {
+    setOnboardingData(formData)
+    // For now, just log and alert - will add Step 4 later
+    console.log('Onboarding Step 3 skipped:', formData)
+    alert('Step 3 skipped! Step 4 (Launch) coming soon.')
   }
 
   const handleNavigation = (featureTitle) => {
@@ -206,6 +224,18 @@ function App() {
       <ManagerOnboardingStep2
         onBack={() => setCurrentScreen('manager-onboarding-step1')}
         onContinue={handleOnboardingStep2Continue}
+        onSkip={handleOnboardingStep2Skip}
+        initialData={onboardingData}
+      />
+    )
+  }
+
+  if (currentScreen === 'manager-onboarding-step3') {
+    return (
+      <ManagerOnboardingStep3
+        onBack={() => setCurrentScreen('manager-onboarding-step2')}
+        onContinue={handleOnboardingStep3Continue}
+        onSkip={handleOnboardingStep3Skip}
         initialData={onboardingData}
       />
     )

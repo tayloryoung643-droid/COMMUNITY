@@ -24,7 +24,7 @@ import {
 } from 'lucide-react'
 import './ManagerOnboardingStep2.css'
 
-function ManagerOnboardingStep2({ onBack, onContinue, initialData }) {
+function ManagerOnboardingStep2({ onBack, onContinue, onSkip, initialData }) {
   const fileInputRef = useRef(null)
 
   // Input method tabs
@@ -275,6 +275,14 @@ function ManagerOnboardingStep2({ onBack, onContinue, initialData }) {
     })
   }
 
+  // Handle skip
+  const handleSkip = () => {
+    onSkip({
+      ...initialData,
+      faq: null
+    })
+  }
+
   return (
     <div className="onboarding-container">
       {/* Background orbs */}
@@ -305,7 +313,7 @@ function ManagerOnboardingStep2({ onBack, onContinue, initialData }) {
           <div className="progress-line"></div>
           <div className="progress-step">
             <div className="step-number">3</div>
-            <span className="step-label">Customize</span>
+            <span className="step-label">Residents</span>
           </div>
           <div className="progress-line"></div>
           <div className="progress-step">
@@ -325,7 +333,7 @@ function ManagerOnboardingStep2({ onBack, onContinue, initialData }) {
           </div>
           <h1 className="onboarding-title">Let's build your building's FAQ</h1>
           <p className="onboarding-subtitle">
-            Upload documents, photos of bulletin boards, or paste text - our AI will organize everything for residents
+            Upload documents, photos of bulletin boards, or paste text - or skip this and set up your FAQ later
           </p>
         </div>
 
@@ -683,12 +691,17 @@ function ManagerOnboardingStep2({ onBack, onContinue, initialData }) {
             Back to Step 1
           </button>
 
-          {generatedFAQ && (
-            <button className="continue-btn" onClick={handleContinue}>
-              Continue to Step 3
-              <ArrowRight size={20} />
+          <div className="nav-right">
+            <button className="skip-link" onClick={handleSkip}>
+              Skip for now
             </button>
-          )}
+            {generatedFAQ && (
+              <button className="continue-btn" onClick={handleContinue}>
+                Continue to Step 3
+                <ArrowRight size={20} />
+              </button>
+            )}
+          </div>
         </div>
       </main>
     </div>

@@ -167,12 +167,12 @@ function ManagerOnboardingStep1({ onBack, onContinue }) {
           <div className="progress-line"></div>
           <div className="progress-step">
             <div className="step-number">2</div>
-            <span className="step-label">Features</span>
+            <span className="step-label">FAQ</span>
           </div>
           <div className="progress-line"></div>
           <div className="progress-step">
             <div className="step-number">3</div>
-            <span className="step-label">Customize</span>
+            <span className="step-label">Residents</span>
           </div>
           <div className="progress-line"></div>
           <div className="progress-step">

@@ -851,6 +851,27 @@
   transition: all var(--transition-base);
 }
 
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.skip-link {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.skip-link:hover {
+  color: var(--text-secondary);
+}
+
 .back-link:hover {
   color: var(--text-primary);
 }
@@ -903,8 +924,19 @@
     gap: var(--spacing-md);
   }
 
+  .nav-right {
+    flex-direction: column-reverse;
+    width: 100%;
+    gap: var(--spacing-sm);
+  }
+
   .bottom-nav .continue-btn {
     width: 100%;
+  }
+
+  .skip-link {
+    width: 100%;
+    text-align: center;
   }
 }
 
