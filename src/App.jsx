@@ -8,6 +8,7 @@ import Neighbors from './Neighbors'
 import Emergency from './Emergency'
 import ElevatorBooking from './ElevatorBooking'
 import CommunityFeed from './CommunityFeed'
+import BulletinBoard from './BulletinBoard'
 
 function App() {
   const [buildingCode, setBuildingCode] = useState('')
@@ -96,6 +97,8 @@ function App() {
       setCurrentScreen('elevator-booking')
     } else if (featureTitle === 'Community') {
       setCurrentScreen('community')
+    } else if (featureTitle === 'Bulletin Board') {
+      setCurrentScreen('bulletin-board')
     }
   }
 
@@ -137,6 +140,10 @@ function App() {
 
   if (currentScreen === 'community') {
     return <CommunityFeed onBack={handleBack} posts={posts} onAddPost={handleAddPost} />
+  }
+
+  if (currentScreen === 'bulletin-board') {
+    return <BulletinBoard onBack={handleBack} />
   }
 
   if (currentScreen === 'home') {

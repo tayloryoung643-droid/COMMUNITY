@@ -1,4 +1,4 @@
-import { Megaphone, Package, Calendar, Users, AlertTriangle, ArrowUpDown, LogOut, ChevronRight, Clock, Sparkles, MessageSquare, Hand, UserPlus, PartyPopper, Wrench, Wine, Users2, Bell } from 'lucide-react'
+import { Megaphone, Package, Calendar, Users, AlertTriangle, ArrowUpDown, LogOut, ChevronRight, Clock, Sparkles, MessageSquare, Hand, UserPlus, PartyPopper, Pin } from 'lucide-react'
 import './Home.css'
 
 function Home({ buildingCode, onNavigate, onLogout }) {
@@ -167,6 +167,14 @@ function Home({ buildingCode, onNavigate, onLogout }) {
       gradient: "linear-gradient(135deg, #06b6d4, #3b82f6)",
       badge: null,
       hasActivity: false
+    },
+    {
+      icon: Pin,
+      title: "Bulletin Board",
+      description: "Buy, sell & rent locally",
+      gradient: "linear-gradient(135deg, #ec4899, #f59e0b)",
+      badge: 12,
+      hasActivity: true
     }
   ]
 
