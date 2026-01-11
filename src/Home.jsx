@@ -1,14 +1,9 @@
-import { useState } from 'react'
-import { Megaphone, Package, Calendar, Users, AlertTriangle, ArrowUpDown, LogOut, ChevronRight, Clock, Sparkles, MessageSquare, HelpCircle, Flag, Hand, UserPlus, PartyPopper, X, Send } from 'lucide-react'
+import { Megaphone, Package, Calendar, Users, AlertTriangle, ArrowUpDown, LogOut, ChevronRight, Clock, Sparkles, MessageSquare, Hand, UserPlus, PartyPopper, Wrench, Wine, Users2, Bell } from 'lucide-react'
 import './Home.css'
 
-function Home({ buildingCode, onNavigate, onLogout, onAddPost }) {
+function Home({ buildingCode, onNavigate, onLogout }) {
   const buildingName = "The Paramount"
   const floor = "12"
-  const [showPostModal, setShowPostModal] = useState(false)
-  const [postType, setPostType] = useState(null)
-  const [postText, setPostText] = useState('')
-  const [showPostSuccess, setShowPostSuccess] = useState(false)
 
   // Get time-aware greeting
   const getGreeting = () => {
@@ -32,11 +27,56 @@ function Home({ buildingCode, onNavigate, onLogout, onAddPost }) {
     { icon: Calendar, text: "Rooftop BBQ tonight at 6pm", type: "events" },
   ]
 
-  // Quick actions
-  const quickActions = [
-    { icon: MessageSquare, label: "Share", description: "Post to neighbors", type: "share" },
-    { icon: HelpCircle, label: "Ask", description: "Ask your neighbors", type: "ask" },
-    { icon: Flag, label: "Report", description: "Report an issue", type: "report" },
+  // Coming up this month - events and announcements combined, sorted by date
+  const upcomingItems = [
+    {
+      date: "Jan 15",
+      time: "9am - 12pm",
+      title: "Water shut off - Floors 10-15",
+      category: "maintenance",
+      categoryLabel: "Maintenance",
+      color: "#f59e0b"
+    },
+    {
+      date: "Jan 18",
+      time: "7pm",
+      title: "Building Town Hall",
+      category: "meeting",
+      categoryLabel: "Meeting",
+      color: "#3b82f6"
+    },
+    {
+      date: "Jan 22",
+      time: "10am - 2pm",
+      title: "Fire alarm testing",
+      category: "maintenance",
+      categoryLabel: "Maintenance",
+      color: "#f59e0b"
+    },
+    {
+      date: "Jan 25",
+      time: "7:30pm",
+      title: "Wine & Cheese Social",
+      category: "social",
+      categoryLabel: "Social",
+      color: "#8b5cf6"
+    },
+    {
+      date: "Jan 28",
+      time: "8am",
+      title: "Yoga in the Courtyard",
+      category: "social",
+      categoryLabel: "Social",
+      color: "#8b5cf6"
+    },
+    {
+      date: "Feb 1",
+      time: "All day",
+      title: "Pest control inspection",
+      category: "maintenance",
+      categoryLabel: "Maintenance",
+      color: "#f59e0b"
+    }
   ]
 
   // Recent activity feed
@@ -136,45 +176,6 @@ function Home({ buildingCode, onNavigate, onLogout, onAddPost }) {
     }
   }
 
-  const handleQuickAction = (type) => {
-    setPostType(type)
-    setShowPostModal(true)
-  }
-
-  const handlePostSubmit = () => {
-    if (postText.trim()) {
-      // Save the post via onAddPost
-      if (onAddPost) {
-        onAddPost({
-          type: postType,
-          text: postText.trim()
-        })
-      }
-      setShowPostModal(false)
-      setPostText('')
-      setShowPostSuccess(true)
-      setTimeout(() => setShowPostSuccess(false), 3000)
-    }
-  }
-
-  const getPostPlaceholder = () => {
-    switch(postType) {
-      case 'share': return "What's on your mind? Share with your neighbors..."
-      case 'ask': return "What would you like to ask your neighbors?"
-      case 'report': return "Describe the issue you'd like to report..."
-      default: return "Write something..."
-    }
-  }
-
-  const getPostTitle = () => {
-    switch(postType) {
-      case 'share': return "Share with neighbors"
-      case 'ask': return "Ask your neighbors"
-      case 'report': return "Report an issue"
-      default: return "New post"
-    }
-  }
-
   return (
     <div className="home-container">
       {/* Background gradient orbs */}
@@ -252,52 +253,36 @@ function Home({ buildingCode, onNavigate, onLogout, onAddPost }) {
         </div>
       </main>
 
-      {/* Quick Actions */}
-      <section className="quick-actions-section animate-in delay-5">
-        <div className="quick-actions-content">
-          <div className="quick-actions-grid">
-            {quickActions.map((action, index) => {
-              const IconComponent = action.icon
-              return (
-                <button
-                  key={index}
-                  className="quick-action-btn"
-                  onClick={() => handleQuickAction(action.type)}
-                >
-                  <div className="quick-action-icon">
-                    <IconComponent size={20} />
-                  </div>
-                  <div className="quick-action-text">
-                    <span className="quick-action-label">{action.label}</span>
-                    <span className="quick-action-desc">{action.description}</span>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Micro-content: Upcoming this week */}
-      <section className="upcoming-section animate-in delay-6">
+      {/* Coming Up This Month */}
+      <section className="upcoming-section animate-in delay-5">
         <div className="upcoming-content">
           <h3 className="upcoming-title">
-            <Clock size={16} />
-            <span>Coming up this week</span>
+            <Calendar size={16} />
+            <span>Coming up this month</span>
           </h3>
-          <div className="upcoming-items">
-            <div className="upcoming-item" onClick={() => handleFeatureClick('Events')}>
-              <span className="upcoming-day">Tomorrow</span>
-              <span className="upcoming-text">Yoga in the Courtyard - 8am</span>
-            </div>
-            <div className="upcoming-item" onClick={() => handleFeatureClick('Events')}>
-              <span className="upcoming-day">Sat</span>
-              <span className="upcoming-text">Building Town Hall - 7pm</span>
-            </div>
-            <div className="upcoming-item" onClick={() => handleFeatureClick('Events')}>
-              <span className="upcoming-day">Sun</span>
-              <span className="upcoming-text">Wine & Cheese Social - 7:30pm</span>
-            </div>
+          <div className="upcoming-list">
+            {upcomingItems.map((item, index) => (
+              <div
+                key={index}
+                className="upcoming-card"
+                onClick={() => handleFeatureClick(item.category === 'maintenance' ? 'Announcements' : 'Events')}
+              >
+                <div className="upcoming-date-block">
+                  <span className="upcoming-date">{item.date}</span>
+                  <span className="upcoming-time">{item.time}</span>
+                </div>
+                <div className="upcoming-info">
+                  <span className="upcoming-event-title">{item.title}</span>
+                  <span
+                    className="upcoming-category-tag"
+                    style={{ background: `${item.color}20`, color: item.color }}
+                  >
+                    {item.categoryLabel}
+                  </span>
+                </div>
+                <ChevronRight size={16} className="upcoming-arrow" />
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -327,51 +312,6 @@ function Home({ buildingCode, onNavigate, onLogout, onAddPost }) {
           </div>
         </div>
       </section>
-
-      {/* Post Success Message */}
-      {showPostSuccess && (
-        <div className="post-success">
-          <Sparkles size={18} />
-          <span>Posted to your neighbors!</span>
-        </div>
-      )}
-
-      {/* Post Modal */}
-      {showPostModal && (
-        <div className="modal-overlay" onClick={() => setShowPostModal(false)}>
-          <div className="post-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3 className="modal-title">{getPostTitle()}</h3>
-              <button className="modal-close" onClick={() => setShowPostModal(false)}>
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body">
-              <textarea
-                className="post-input"
-                placeholder={getPostPlaceholder()}
-                value={postText}
-                onChange={(e) => setPostText(e.target.value)}
-                rows={4}
-                autoFocus
-              />
-            </div>
-            <div className="modal-footer">
-              <button className="modal-cancel" onClick={() => setShowPostModal(false)}>
-                Cancel
-              </button>
-              <button
-                className="modal-submit"
-                onClick={handlePostSubmit}
-                disabled={!postText.trim()}
-              >
-                <Send size={16} />
-                <span>Post</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

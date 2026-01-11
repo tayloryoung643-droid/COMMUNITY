@@ -140,7 +140,7 @@ function App() {
   }
 
   if (currentScreen === 'home') {
-    return <Home buildingCode={buildingCode} onNavigate={handleNavigation} onLogout={handleLogout} onAddPost={handleAddPost} />
+    return <Home buildingCode={buildingCode} onNavigate={handleNavigation} onLogout={handleLogout} />
   }
 
   // Otherwise, show the Login screen
