@@ -35,6 +35,7 @@ import ManagerCommunity from './ManagerCommunity'
 import ManagerCalendar from './ManagerCalendar'
 import ManagerPackages from './ManagerPackages'
 import ManagerElevator from './ManagerElevator'
+import ManagerBulletin from './ManagerBulletin'
 
 function ManagerDashboard({ onLogout, buildingData }) {
   const [activeNav, setActiveNav] = useState('dashboard')
@@ -216,6 +217,10 @@ function ManagerDashboard({ onLogout, buildingData }) {
 
     if (activeNav === 'elevator') {
       return <ManagerElevator />
+    }
+
+    if (activeNav === 'bulletin') {
+      return <ManagerBulletin />
     }
 
     if (activeNav === 'dashboard') {
