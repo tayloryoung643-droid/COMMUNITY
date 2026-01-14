@@ -28,6 +28,7 @@ import {
   Wine
 } from 'lucide-react'
 import './ManagerDashboard.css'
+import ManagerMessages from './ManagerMessages'
 
 function ManagerDashboard({ onLogout, buildingData }) {
   const [activeNav, setActiveNav] = useState('dashboard')
@@ -183,6 +184,10 @@ function ManagerDashboard({ onLogout, buildingData }) {
 
   // Render content based on active nav
   const renderContent = () => {
+    if (activeNav === 'messages') {
+      return <ManagerMessages />
+    }
+
     if (activeNav === 'dashboard') {
       return (
         <div className="dashboard-home">
