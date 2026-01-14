@@ -30,6 +30,7 @@ import {
 import './ManagerDashboard.css'
 import ManagerMessages from './ManagerMessages'
 import ManagerResidents from './ManagerResidents'
+import ManagerAIAssistant from './ManagerAIAssistant'
 
 function ManagerDashboard({ onLogout, buildingData }) {
   const [activeNav, setActiveNav] = useState('dashboard')
@@ -191,6 +192,10 @@ function ManagerDashboard({ onLogout, buildingData }) {
 
     if (activeNav === 'residents') {
       return <ManagerResidents />
+    }
+
+    if (activeNav === 'ai-assistant') {
+      return <ManagerAIAssistant buildingData={building} />
     }
 
     if (activeNav === 'dashboard') {
