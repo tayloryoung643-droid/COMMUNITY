@@ -13,7 +13,13 @@ import {
   Calendar,
   Phone,
   Home,
-  Users
+  Users,
+  SlidersHorizontal,
+  ArrowUpAZ,
+  ArrowDownAZ,
+  Building,
+  ChevronDown,
+  Check
 } from 'lucide-react'
 import './ManagerResidents.css'
 
@@ -22,6 +28,9 @@ function ManagerResidents() {
   const [activeFilter, setActiveFilter] = useState('all')
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [openMenuId, setOpenMenuId] = useState(null)
+  const [sortBy, setSortBy] = useState('name-asc')
+  const [showSortMenu, setShowSortMenu] = useState(false)
+  const [floorFilter, setFloorFilter] = useState('all')
 
   // Invite form state
   const [inviteForm, setInviteForm] = useState({
@@ -152,6 +161,25 @@ function ManagerResidents() {
     return `${firstName[0]}${lastName[0]}`.toUpperCase()
   }
 
+  // Get floor from unit number
+  const getFloor = (unit) => {
+    if (unit.length <= 2) return 1
+    return parseInt(unit.slice(0, -2)) || 1
+  }
+
+  // Get unique floors from residents
+  const uniqueFloors = [...new Set(residents.map(r => getFloor(r.unit)))].sort((a, b) => a - b)
+
+  // Sort options
+  const sortOptions = [
+    { id: 'name-asc', label: 'Name (A-Z)', icon: ArrowUpAZ },
+    { id: 'name-desc', label: 'Name (Z-A)', icon: ArrowDownAZ },
+    { id: 'floor-asc', label: 'Floor (Low to High)', icon: Building },
+    { id: 'floor-desc', label: 'Floor (High to Low)', icon: Building },
+    { id: 'newest', label: 'Newest First', icon: Calendar },
+    { id: 'oldest', label: 'Oldest First', icon: Calendar }
+  ]
+
   // Format date
   const formatDate = (dateStr) => {
     if (!dateStr) return ''
@@ -174,21 +202,43 @@ function ManagerResidents() {
   }
 
   // Filter residents
-  const filteredResidents = residents.filter(resident => {
-    // Search filter
-    const searchLower = searchQuery.toLowerCase()
-    const fullName = `${resident.firstName} ${resident.lastName}`.toLowerCase()
-    const matchesSearch = searchQuery === '' ||
-      fullName.includes(searchLower) ||
-      resident.unit.includes(searchQuery) ||
-      resident.email.toLowerCase().includes(searchLower)
+  const filteredResidents = residents
+    .filter(resident => {
+      // Search filter
+      const searchLower = searchQuery.toLowerCase()
+      const fullName = `${resident.firstName} ${resident.lastName}`.toLowerCase()
+      const matchesSearch = searchQuery === '' ||
+        fullName.includes(searchLower) ||
+        resident.unit.includes(searchQuery) ||
+        resident.email.toLowerCase().includes(searchLower)
 
-    // Status filter
-    if (activeFilter === 'active') return matchesSearch && resident.status === 'active'
-    if (activeFilter === 'pending') return matchesSearch && resident.status === 'pending'
-    if (activeFilter === 'inactive') return matchesSearch && resident.status === 'inactive'
-    return matchesSearch
-  })
+      // Floor filter
+      const matchesFloor = floorFilter === 'all' || getFloor(resident.unit) === parseInt(floorFilter)
+
+      // Status filter
+      if (activeFilter === 'active') return matchesSearch && matchesFloor && resident.status === 'active'
+      if (activeFilter === 'pending') return matchesSearch && matchesFloor && resident.status === 'pending'
+      if (activeFilter === 'inactive') return matchesSearch && matchesFloor && resident.status === 'inactive'
+      return matchesSearch && matchesFloor
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'name-asc':
+          return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`)
+        case 'name-desc':
+          return `${b.firstName} ${b.lastName}`.localeCompare(`${a.firstName} ${a.lastName}`)
+        case 'floor-asc':
+          return getFloor(a.unit) - getFloor(b.unit) || a.unit.localeCompare(b.unit)
+        case 'floor-desc':
+          return getFloor(b.unit) - getFloor(a.unit) || b.unit.localeCompare(a.unit)
+        case 'newest':
+          return new Date(b.joinDate || b.inviteSent || 0) - new Date(a.joinDate || a.inviteSent || 0)
+        case 'oldest':
+          return new Date(a.joinDate || a.inviteSent || 0) - new Date(b.joinDate || b.inviteSent || 0)
+        default:
+          return 0
+      }
+    })
 
   // Stats
   const totalUnits = 50
@@ -258,6 +308,13 @@ function ManagerResidents() {
   // Close menu when clicking outside
   const handleClickOutside = () => {
     if (openMenuId) setOpenMenuId(null)
+    if (showSortMenu) setShowSortMenu(false)
+  }
+
+  // Get current sort label
+  const getCurrentSortLabel = () => {
+    const option = sortOptions.find(o => o.id === sortBy)
+    return option ? option.label : 'Sort'
   }
 
   return (
@@ -285,15 +342,65 @@ function ManagerResidents() {
 
       {/* Search and Filters */}
       <div className="residents-controls">
-        <div className="residents-search">
-          <Search size={18} />
-          <input
-            type="text"
-            placeholder="Search by name, unit, or email..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <div className="residents-search-row">
+          <div className="residents-search">
+            <Search size={18} />
+            <input
+              type="text"
+              placeholder="Search by name, unit, or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          {/* Floor Filter */}
+          <div className="floor-filter">
+            <Building size={16} />
+            <select
+              value={floorFilter}
+              onChange={(e) => setFloorFilter(e.target.value)}
+            >
+              <option value="all">All Floors</option>
+              {uniqueFloors.map(floor => (
+                <option key={floor} value={floor}>Floor {floor}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Sort Dropdown */}
+          <div className="sort-dropdown-wrapper">
+            <button
+              className="sort-dropdown-btn"
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowSortMenu(!showSortMenu)
+              }}
+            >
+              <SlidersHorizontal size={16} />
+              <span>{getCurrentSortLabel()}</span>
+              <ChevronDown size={16} className={showSortMenu ? 'rotated' : ''} />
+            </button>
+            {showSortMenu && (
+              <div className="sort-dropdown-menu" onClick={(e) => e.stopPropagation()}>
+                {sortOptions.map(option => (
+                  <button
+                    key={option.id}
+                    className={`sort-option ${sortBy === option.id ? 'active' : ''}`}
+                    onClick={() => {
+                      setSortBy(option.id)
+                      setShowSortMenu(false)
+                    }}
+                  >
+                    <option.icon size={16} />
+                    <span>{option.label}</span>
+                    {sortBy === option.id && <Check size={16} className="check-icon" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
+
         <div className="residents-filters">
           <button
             className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
