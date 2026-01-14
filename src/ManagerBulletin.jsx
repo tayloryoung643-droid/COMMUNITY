@@ -24,7 +24,9 @@ import {
   Phone,
   Mail,
   Image,
-  User
+  User,
+  Car,
+  Archive
 } from 'lucide-react'
 import './ManagerBulletin.css'
 
@@ -72,6 +74,8 @@ function ManagerBulletin() {
     { id: 'free', label: 'Free', icon: Gift, color: '#10b981' },
     { id: 'wanted', label: 'Wanted', icon: HelpCircle, color: '#8b5cf6' },
     { id: 'services', label: 'Services', icon: Briefcase, color: '#f59e0b' },
+    { id: 'parking', label: 'Parking', icon: Car, color: '#06b6d4' },
+    { id: 'storage', label: 'Storage', icon: Archive, color: '#84cc16' },
     { id: 'events', label: 'Events', icon: Calendar, color: '#ec4899' },
     { id: 'lost_found', label: 'Lost & Found', icon: MapPin, color: '#ef4444' }
   ]
@@ -108,7 +112,7 @@ function ManagerBulletin() {
       flagged: false,
       sold: false,
       hasImage: true,
-      imageColor: '#3b82f6'
+      imageUrl: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=300&fit=crop'
     },
     {
       id: 2,
@@ -125,7 +129,7 @@ function ManagerBulletin() {
       flagged: false,
       sold: false,
       hasImage: true,
-      imageColor: '#64748b'
+      imageUrl: 'https://images.unsplash.com/photo-1593062096033-9a26b09da705?w=400&h=300&fit=crop'
     },
     {
       id: 3,
@@ -142,10 +146,44 @@ function ManagerBulletin() {
       flagged: true,
       sold: false,
       hasImage: true,
-      imageColor: '#f59e0b'
+      imageUrl: 'https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=400&h=300&fit=crop'
     },
     {
       id: 4,
+      title: 'Mountain Bike - Trek',
+      category: 'for_sale',
+      price: 350,
+      description: 'Trek mountain bike, 21-speed, excellent condition. Includes helmet and lock. Perfect for trails!',
+      posterName: 'Robert Martinez',
+      posterUnit: '1012',
+      postedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+      contactMethod: 'message',
+      views: 52,
+      pinned: false,
+      flagged: false,
+      sold: false,
+      hasImage: true,
+      imageUrl: 'https://images.unsplash.com/photo-1576435728678-68d0fbf94e91?w=400&h=300&fit=crop'
+    },
+    {
+      id: 5,
+      title: '55" Samsung Smart TV',
+      category: 'for_sale',
+      price: 275,
+      description: '55 inch Samsung 4K Smart TV. 2022 model. Works great, upgrading to larger size. Wall mount included.',
+      posterName: 'Amanda White',
+      posterUnit: '305',
+      postedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      contactMethod: 'phone',
+      views: 68,
+      pinned: false,
+      flagged: false,
+      sold: false,
+      hasImage: true,
+      imageUrl: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400&h=300&fit=crop'
+    },
+    {
+      id: 6,
       title: 'Moving boxes - FREE!',
       category: 'free',
       price: null,
@@ -161,7 +199,7 @@ function ManagerBulletin() {
       hasImage: false
     },
     {
-      id: 5,
+      id: 7,
       title: 'Outdoor plant pots',
       category: 'free',
       price: null,
@@ -175,10 +213,111 @@ function ManagerBulletin() {
       flagged: false,
       sold: false,
       hasImage: true,
-      imageColor: '#10b981'
+      imageUrl: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400&h=300&fit=crop'
     },
     {
-      id: 6,
+      id: 8,
+      title: 'Parking Spot P1-23 for Rent',
+      category: 'parking',
+      price: 150,
+      description: 'Underground parking spot on P1 level, close to elevator. Available immediately. Monthly rental.',
+      posterName: 'Sarah Mitchell',
+      posterUnit: '1201',
+      postedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      contactMethod: 'message',
+      views: 34,
+      pinned: true,
+      flagged: false,
+      sold: false,
+      hasImage: true,
+      imageUrl: 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=400&h=300&fit=crop'
+    },
+    {
+      id: 9,
+      title: 'Covered Parking Spot - P2 Level',
+      category: 'parking',
+      price: 125,
+      description: 'Covered parking spot on P2. Great location near stairwell. Long-term rental preferred. $125/month.',
+      posterName: 'Mike Thompson',
+      posterUnit: '805',
+      postedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+      contactMethod: 'email',
+      views: 41,
+      pinned: false,
+      flagged: false,
+      sold: false,
+      hasImage: true,
+      imageUrl: 'https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?w=400&h=300&fit=crop'
+    },
+    {
+      id: 10,
+      title: 'Tandem Parking Spot Available',
+      category: 'parking',
+      price: 200,
+      description: 'Tandem parking spot fits 2 small/medium cars. P1 level. $200/month for both spots.',
+      posterName: 'David Park',
+      posterUnit: '1502',
+      postedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+      contactMethod: 'message',
+      views: 29,
+      pinned: false,
+      flagged: false,
+      sold: false,
+      hasImage: true,
+      imageUrl: 'https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=400&h=300&fit=crop'
+    },
+    {
+      id: 11,
+      title: 'Storage Unit 5x10 for Rent',
+      category: 'storage',
+      price: 75,
+      description: 'Climate-controlled storage unit, 5x10 ft. Located on basement level. Perfect for seasonal items.',
+      posterName: 'Emma Davis',
+      posterUnit: '1507',
+      postedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+      contactMethod: 'phone',
+      views: 23,
+      pinned: false,
+      flagged: false,
+      sold: false,
+      hasImage: true,
+      imageUrl: 'https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=400&h=300&fit=crop'
+    },
+    {
+      id: 12,
+      title: 'Large Storage Locker - 10x15',
+      category: 'storage',
+      price: 125,
+      description: 'Extra large storage locker, 10x15 ft. Ground floor access, easy loading. Available Feb 1st.',
+      posterName: 'James Lee',
+      posterUnit: '203',
+      postedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      contactMethod: 'message',
+      views: 38,
+      pinned: false,
+      flagged: false,
+      sold: false,
+      hasImage: true,
+      imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop'
+    },
+    {
+      id: 13,
+      title: 'Small Storage Unit - Great Price!',
+      category: 'storage',
+      price: 50,
+      description: 'Small 4x4 storage unit. Perfect for bikes, boxes, or seasonal decorations. $50/month.',
+      posterName: 'Lisa Chen',
+      posterUnit: '608',
+      postedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+      contactMethod: 'email',
+      views: 19,
+      pinned: false,
+      flagged: false,
+      sold: false,
+      hasImage: false
+    },
+    {
+      id: 14,
       title: 'Looking for babysitter',
       category: 'wanted',
       price: null,
@@ -194,7 +333,7 @@ function ManagerBulletin() {
       hasImage: false
     },
     {
-      id: 7,
+      id: 15,
       title: 'Dog walking available',
       category: 'services',
       price: 20,
@@ -208,10 +347,10 @@ function ManagerBulletin() {
       flagged: false,
       sold: false,
       hasImage: true,
-      imageColor: '#f59e0b'
+      imageUrl: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=300&fit=crop'
     },
     {
-      id: 8,
+      id: 16,
       title: 'Piano lessons for kids',
       category: 'services',
       price: 40,
@@ -225,10 +364,10 @@ function ManagerBulletin() {
       flagged: false,
       sold: false,
       hasImage: true,
-      imageColor: '#ec4899'
+      imageUrl: 'https://images.unsplash.com/photo-1552422535-c45813c61732?w=400&h=300&fit=crop'
     },
     {
-      id: 9,
+      id: 17,
       title: 'Building Yard Sale - Jan 25th',
       category: 'events',
       price: null,
@@ -244,7 +383,7 @@ function ManagerBulletin() {
       hasImage: false
     },
     {
-      id: 10,
+      id: 18,
       title: 'Lost: Silver bracelet',
       category: 'lost_found',
       price: null,
@@ -281,7 +420,8 @@ function ManagerBulletin() {
     { id: 'all', label: 'All Listings' },
     { id: 'for_sale', label: 'For Sale' },
     { id: 'free', label: 'Free' },
-    { id: 'wanted', label: 'Wanted' },
+    { id: 'parking', label: 'Parking' },
+    { id: 'storage', label: 'Storage' },
     { id: 'services', label: 'Services' },
     { id: 'events', label: 'Events' }
   ]
@@ -588,14 +728,13 @@ function ManagerBulletin() {
                 )}
 
                 {/* Image/Placeholder */}
-                <div
-                  className="listing-image"
-                  style={{ background: listing.hasImage ? listing.imageColor : 'rgba(0,0,0,0.3)' }}
-                >
-                  {listing.hasImage ? (
-                    <Image size={32} />
+                <div className="listing-image">
+                  {listing.hasImage && listing.imageUrl ? (
+                    <img src={listing.imageUrl} alt={listing.title} />
                   ) : (
-                    <IconComponent size={32} />
+                    <div className="listing-image-placeholder" style={{ background: category.color + '30' }}>
+                      <IconComponent size={32} style={{ color: category.color }} />
+                    </div>
                   )}
                 </div>
 
