@@ -29,6 +29,7 @@ import {
 } from 'lucide-react'
 import './ManagerDashboard.css'
 import ManagerMessages from './ManagerMessages'
+import ManagerResidents from './ManagerResidents'
 
 function ManagerDashboard({ onLogout, buildingData }) {
   const [activeNav, setActiveNav] = useState('dashboard')
@@ -186,6 +187,10 @@ function ManagerDashboard({ onLogout, buildingData }) {
   const renderContent = () => {
     if (activeNav === 'messages') {
       return <ManagerMessages />
+    }
+
+    if (activeNav === 'residents') {
+      return <ManagerResidents />
     }
 
     if (activeNav === 'dashboard') {
