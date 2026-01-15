@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import { useAuth } from './contexts/AuthContext'
 import Login from './Login'
 import Home from './Home'
 import Announcements from './Announcements'
@@ -20,8 +21,10 @@ import ManagerOnboardingStep4 from './ManagerOnboardingStep4'
 import ManagerDashboard from './ManagerDashboard'
 
 function App() {
+  const { user, userProfile, loading, isDemoMode, signIn, signOut, loginAsDemo } = useAuth()
   const [buildingCode, setBuildingCode] = useState('')
   const [currentScreen, setCurrentScreen] = useState('login')
+  const [authError, setAuthError] = useState('')
 
   // Community posts state - seed with some example posts
   const [posts, setPosts] = useState([
@@ -90,10 +93,16 @@ function App() {
     setCurrentScreen('home')
   }
 
-  const handleManagerLogin = (email, password) => {
-    // For now, just log and show alert - will implement actual auth later
-    console.log('Manager login:', email)
-    alert('Manager login coming soon! Use the register link to set up a new building.')
+  const handleManagerLogin = async (email, password) => {
+    setAuthError('')
+    const { data, error } = await signIn(email, password)
+    if (error) {
+      setAuthError(error.message)
+      return { error }
+    }
+    // Navigate to manager dashboard on successful login
+    setCurrentScreen('manager-dashboard')
+    return { data }
   }
 
   const handleRegisterClick = () => {
@@ -139,19 +148,26 @@ function App() {
     setCurrentScreen('manager-dashboard')
   }
 
-  const handleDemoLogin = () => {
-    // Set demo building data for testing
-    setOnboardingData({
-      building: {
-        name: 'The Paramount',
-        code: 'PARA123'
-      },
-      manager: {
-        name: 'Taylor Young',
-        email: 'taylor@paramount.com'
+  const handleDemoLogin = async (role = 'manager') => {
+    const { data, error } = await loginAsDemo(role)
+    if (!error) {
+      // Set demo building data for testing
+      setOnboardingData({
+        building: {
+          name: 'The Paramount',
+          code: 'PARA123'
+        },
+        manager: {
+          name: 'Taylor Young',
+          email: 'taylor@paramount.com'
+        }
+      })
+      if (role === 'manager') {
+        setCurrentScreen('manager-dashboard')
+      } else {
+        setCurrentScreen('home')
       }
-    })
-    setCurrentScreen('manager-dashboard')
+    }
   }
 
   const handleNavigation = (featureTitle) => {
@@ -186,10 +202,29 @@ function App() {
     setCurrentScreen('home')
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut()
     // Reset to login screen and clear building code
     setBuildingCode('')
+    setOnboardingData(null)
     setCurrentScreen('login')
+  }
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#0f172a',
+        color: 'white',
+        fontSize: '18px'
+      }}>
+        Loading...
+      </div>
+    )
   }
 
   // Show different screens based on currentScreen value
@@ -308,6 +343,7 @@ function App() {
       onManagerLogin={handleManagerLogin}
       onRegisterClick={handleRegisterClick}
       onDemoLogin={handleDemoLogin}
+      authError={authError}
     />
   )
 }

@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { Building2, User, Mail, Lock, ArrowRight, Package, Calendar, Users, Key, Sparkles } from 'lucide-react'
 import './Login.css'
 
-function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin }) {
+function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, authError }) {
   const [activeTab, setActiveTab] = useState('resident')
   const [buildingCode, setBuildingCode] = useState('')
   const [managerEmail, setManagerEmail] = useState('')
   const [managerPassword, setManagerPassword] = useState('')
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleResidentLogin = () => {
     if (buildingCode.trim()) {
@@ -17,7 +18,7 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin }
     }
   }
 
-  const handleManagerLogin = () => {
+  const handleManagerLogin = async () => {
     if (!managerEmail.trim()) {
       setError('Please enter your email')
       return
@@ -27,7 +28,12 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin }
       return
     }
     setError('')
-    onManagerLogin(managerEmail, managerPassword)
+    setIsLoading(true)
+    const result = await onManagerLogin(managerEmail, managerPassword)
+    setIsLoading(false)
+    if (result?.error) {
+      setError(result.error.message || 'Login failed. Please check your credentials.')
+    }
   }
 
   const clearError = () => {
@@ -88,9 +94,9 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin }
           </div>
 
           {/* Error Message */}
-          {error && (
+          {(error || authError) && (
             <div className="login-error">
-              {error}
+              {error || authError}
             </div>
           )}
 
@@ -119,6 +125,11 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin }
               <button className="login-btn-primary" onClick={handleResidentLogin}>
                 <span>Join Building</span>
                 <ArrowRight size={18} />
+              </button>
+
+              <button className="demo-login-link" onClick={() => onDemoLogin('resident')} disabled={isLoading}>
+                <Sparkles size={14} />
+                Demo login (skip to resident home)
               </button>
             </div>
           )}
@@ -161,9 +172,9 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin }
                 </div>
               </div>
 
-              <button className="login-btn-primary" onClick={handleManagerLogin}>
-                <span>Sign In</span>
-                <ArrowRight size={18} />
+              <button className="login-btn-primary" onClick={handleManagerLogin} disabled={isLoading}>
+                <span>{isLoading ? 'Signing in...' : 'Sign In'}</span>
+                {!isLoading && <ArrowRight size={18} />}
               </button>
 
               <div className="login-register-link">
@@ -174,7 +185,7 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin }
                 </button>
               </div>
 
-              <button className="demo-login-link" onClick={onDemoLogin}>
+              <button className="demo-login-link" onClick={() => onDemoLogin('manager')} disabled={isLoading}>
                 <Sparkles size={14} />
                 Demo login (skip to dashboard)
               </button>
