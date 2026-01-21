@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Package, Calendar, Users, ArrowUpDown, Settings, ChevronRight, Sparkles, MessageSquare, Hand, UserPlus, PartyPopper, Pin, Mail, X, Image, Send, Check } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Package, Calendar, Users, ArrowUpDown, Settings, ChevronRight, Sparkles, MessageSquare, Hand, UserPlus, PartyPopper, Pin, Mail, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake } from 'lucide-react'
 import './Home.css'
 
 function Home({ buildingCode, onNavigate }) {
@@ -23,6 +23,41 @@ function Home({ buildingCode, onNavigate }) {
     'Feedback',
     'Other'
   ]
+
+  // Weather data (simulated - would come from weather API)
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const weatherData = {
+    temp: 72,
+    condition: 'sunny',
+    high: 78,
+    low: 65
+  }
+
+  // Update time every minute
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const getWeatherIcon = (condition) => {
+    switch (condition) {
+      case 'sunny': return Sun
+      case 'cloudy': return Cloud
+      case 'rainy': return CloudRain
+      case 'snowy': return Snowflake
+      default: return Sun
+    }
+  }
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  }
+
+  const formatDay = (date) => {
+    return date.toLocaleDateString('en-US', { weekday: 'long' })
+  }
+
+  const WeatherIcon = getWeatherIcon(weatherData.condition)
 
   const handleContactSubmit = () => {
     if (contactForm.message.trim()) {
@@ -191,85 +226,98 @@ function Home({ buildingCode, onNavigate }) {
 
   return (
     <div className="home-container">
-      {/* Background gradient orbs */}
+      {/* Background gradient orbs - hidden in light theme */}
       <div className="bg-orb bg-orb-1"></div>
       <div className="bg-orb bg-orb-2"></div>
       <div className="bg-orb bg-orb-3"></div>
 
-      <header className="home-header">
-        <div className="header-content">
-          <div className="header-text">
-            <p className="welcome-label">{getGreeting()}</p>
-            <h1 className="building-name">{buildingName}</h1>
-            <p className="floor-info">Floor {floor} Resident</p>
+      {/* Hero Section with Building Image */}
+      <section className="hero-section">
+        <div className="hero-image-container">
+          {/* Placeholder gradient for building image */}
+          <div className="hero-image-placeholder"></div>
+          <div className="hero-gradient-overlay"></div>
+
+          {/* Weather Widget - Top Left */}
+          <div className="weather-widget">
+            <div className="weather-time">
+              <span className="weather-day">{formatDay(currentTime)}</span>
+              <span className="weather-clock">{formatTime(currentTime)}</span>
+            </div>
+            <div className="weather-info">
+              <WeatherIcon size={24} className="weather-icon" />
+              <span className="weather-temp">{weatherData.temp}°</span>
+            </div>
           </div>
-          <div className="header-actions">
-            <button className="contact-manager-btn" onClick={() => setShowContactModal(true)}>
-              <Mail size={18} />
-              <span>Contact Manager</span>
-            </button>
-            <button className="settings-button" onClick={() => handleFeatureClick('Settings')}>
+
+          {/* Settings Button - Top Right */}
+          <div className="hero-actions">
+            <button className="hero-settings-btn" onClick={() => handleFeatureClick('Settings')}>
               <Settings size={20} />
             </button>
           </div>
-        </div>
-      </header>
 
-      {/* Today in Your Building - Hero Banner */}
-      <section className="today-banner animate-in delay-1">
-        <div className="banner-content">
-          <div className="banner-header">
-            <Sparkles size={18} className="banner-icon" />
-            <span className="banner-title">Today in your building</span>
+          {/* Building Name - Bottom of Hero */}
+          <div className="hero-text-container">
+            <p className="hero-greeting">{getGreeting()}</p>
+            <h1 className="hero-building-name">{buildingName}</h1>
+            <p className="hero-unit-info">Unit {userUnit} · Floor {floor}</p>
           </div>
-          <div className="banner-items">
+        </div>
+      </section>
+
+      {/* Quick Actions Row */}
+      <section className="quick-actions-section animate-in delay-1">
+        <div className="quick-actions-row">
+          <button className="quick-action-btn" onClick={() => handleFeatureClick('Community')}>
+            <MessageSquare size={20} />
+            <span>Community</span>
+          </button>
+          <button className="quick-action-btn" onClick={() => handleFeatureClick('Calendar')}>
+            <Calendar size={20} />
+            <span>Calendar</span>
+          </button>
+          <button className="quick-action-btn" onClick={() => handleFeatureClick('Packages')}>
+            <Package size={20} />
+            {dynamicData.packagesWaiting > 0 && (
+              <span className="quick-action-badge">{dynamicData.packagesWaiting}</span>
+            )}
+            <span>Packages</span>
+          </button>
+          <button className="quick-action-btn" onClick={() => setShowContactModal(true)}>
+            <Mail size={20} />
+            <span>Contact</span>
+          </button>
+        </div>
+      </section>
+
+      {/* Today's Highlights Card */}
+      <section className="highlights-section animate-in delay-2">
+        <div className="highlights-card">
+          <div className="highlights-header">
+            <Sparkles size={18} className="highlights-icon" />
+            <span className="highlights-title">Today in your building</span>
+          </div>
+          <div className="highlights-items">
             {todayHighlights.map((item, index) => {
               const IconComponent = item.icon
               return (
                 <button
                   key={index}
-                  className="banner-item"
+                  className="highlight-item"
                   onClick={() => handleFeatureClick(item.type === 'packages' ? 'Packages' : 'Calendar')}
                 >
-                  <IconComponent size={16} />
-                  <span>{item.text}</span>
-                  <ChevronRight size={14} className="banner-arrow" />
+                  <div className="highlight-icon-wrapper">
+                    <IconComponent size={18} />
+                  </div>
+                  <span className="highlight-text">{item.text}</span>
+                  <ChevronRight size={16} className="highlight-arrow" />
                 </button>
               )
             })}
           </div>
         </div>
       </section>
-
-      <main className="features-section">
-        <div className="features-grid">
-          {features.map((feature, index) => {
-            const IconComponent = feature.icon
-            return (
-              <button
-                key={index}
-                className={`feature-card animate-in delay-${index + 2} ${feature.hasActivity ? 'has-activity' : ''}`}
-                onClick={() => handleFeatureClick(feature.title)}
-              >
-                <div className="card-accent"></div>
-                <div className="icon-wrapper" style={{ background: feature.gradient }}>
-                  <IconComponent size={26} strokeWidth={2} />
-                  {feature.badge && (
-                    <span className="badge">{feature.badge}</span>
-                  )}
-                </div>
-                <div className="card-content">
-                  <h2 className="feature-title">{feature.title}</h2>
-                  <p className="feature-description">{feature.description}</p>
-                </div>
-                <div className="card-arrow">
-                  <ChevronRight size={20} />
-                </div>
-              </button>
-            )
-          })}
-        </div>
-      </main>
 
       {/* Coming Up This Month */}
       <section className="upcoming-section animate-in delay-5">
