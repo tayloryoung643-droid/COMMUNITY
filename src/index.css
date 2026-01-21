@@ -91,6 +91,52 @@
   --blur-lg: 24px;
 }
 
+/* ============================================
+   RESIDENT LIGHT THEME (Oura-inspired premium)
+   ============================================ */
+.resident-theme {
+  /* Background colors */
+  --resident-bg-primary: #FFFFFF;
+  --resident-bg-secondary: #FAFAFA;
+  --resident-bg-tertiary: #F5F5F7;
+
+  /* Text colors */
+  --resident-text-primary: #1A1A1A;
+  --resident-text-secondary: #6B7280;
+  --resident-text-muted: #9CA3AF;
+  --resident-text-accent: #3b82f6;
+
+  /* Card styling */
+  --resident-card-bg: #FFFFFF;
+  --resident-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --resident-card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --resident-card-border: rgba(0, 0, 0, 0.04);
+  --resident-card-radius: 16px;
+
+  /* Accent colors (keep existing) */
+  --resident-accent-primary: #3b82f6;
+  --resident-accent-secondary: #06b6d4;
+  --resident-accent-success: #10b981;
+  --resident-accent-warning: #f59e0b;
+  --resident-accent-error: #ef4444;
+
+  /* Spacing (more generous) */
+  --resident-spacing-card: 24px;
+  --resident-spacing-section: 32px;
+
+  /* Typography */
+  --resident-font-weight-light: 300;
+  --resident-font-weight-regular: 400;
+  --resident-font-weight-medium: 500;
+  --resident-font-weight-semibold: 600;
+  --resident-line-height: 1.6;
+
+  /* Soft UI elements */
+  --resident-input-bg: #F5F5F7;
+  --resident-input-border: rgba(0, 0, 0, 0.08);
+  --resident-divider: rgba(0, 0, 0, 0.06);
+}
+
 html {
   scroll-behavior: smooth;
 }
