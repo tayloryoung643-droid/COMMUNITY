@@ -1,8 +1,60 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ArrowLeft, Plus, Check, Calendar, Clock, Home, ArrowUpDown } from 'lucide-react'
+import { useAuth } from './contexts/AuthContext'
+import { getBookings, createBooking } from './services/elevatorBookingService'
 import './ElevatorBooking.css'
 
+// Demo reservation data - used when in demo mode
+const DEMO_RESERVATIONS = [
+  {
+    id: 1,
+    date: "2026-01-15",
+    timeSlot: "Morning (8:00 AM - 12:00 PM)",
+    unit: "Unit 1504",
+    type: "Moving Out",
+    status: "Confirmed"
+  },
+  {
+    id: 2,
+    date: "2026-01-18",
+    timeSlot: "Afternoon (12:00 PM - 4:00 PM)",
+    unit: "Unit 802",
+    type: "Moving In",
+    status: "Confirmed"
+  },
+  {
+    id: 3,
+    date: "2026-01-20",
+    timeSlot: "Morning (8:00 AM - 12:00 PM)",
+    unit: "Unit 1107",
+    type: "Moving Out",
+    status: "Pending"
+  },
+  {
+    id: 4,
+    date: "2026-01-22",
+    timeSlot: "Evening (4:00 PM - 8:00 PM)",
+    unit: "Unit 605",
+    type: "Moving In",
+    status: "Confirmed"
+  },
+  {
+    id: 5,
+    date: "2026-01-25",
+    timeSlot: "Afternoon (12:00 PM - 4:00 PM)",
+    unit: "Unit 1203",
+    type: "Moving In",
+    status: "Pending"
+  }
+]
+
 function ElevatorBooking({ onBack }) {
+  const { userProfile, isDemoMode } = useAuth()
+  const isInDemoMode = isDemoMode || userProfile?.is_demo === true
+
+  const [reservations, setReservations] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [formData, setFormData] = useState({
@@ -11,49 +63,37 @@ function ElevatorBooking({ onBack }) {
     movingType: ''
   })
 
-  // Fake reservation data
-  const reservations = [
-    {
-      id: 1,
-      date: "2026-01-15",
-      timeSlot: "Morning (8:00 AM - 12:00 PM)",
-      unit: "Unit 1504",
-      type: "Moving Out",
-      status: "Confirmed"
-    },
-    {
-      id: 2,
-      date: "2026-01-18",
-      timeSlot: "Afternoon (12:00 PM - 4:00 PM)",
-      unit: "Unit 802",
-      type: "Moving In",
-      status: "Confirmed"
-    },
-    {
-      id: 3,
-      date: "2026-01-20",
-      timeSlot: "Morning (8:00 AM - 12:00 PM)",
-      unit: "Unit 1107",
-      type: "Moving Out",
-      status: "Pending"
-    },
-    {
-      id: 4,
-      date: "2026-01-22",
-      timeSlot: "Evening (4:00 PM - 8:00 PM)",
-      unit: "Unit 605",
-      type: "Moving In",
-      status: "Confirmed"
-    },
-    {
-      id: 5,
-      date: "2026-01-25",
-      timeSlot: "Afternoon (12:00 PM - 4:00 PM)",
-      unit: "Unit 1203",
-      type: "Moving In",
-      status: "Pending"
+  useEffect(() => {
+    console.log('[ElevatorBooking] Demo mode:', isInDemoMode)
+
+    async function loadBookings() {
+      if (isInDemoMode) {
+        console.log('Demo mode: using fake reservations')
+        setReservations(DEMO_RESERVATIONS)
+        setLoading(false)
+      } else {
+        console.log('Real mode: fetching bookings from Supabase')
+        try {
+          const data = await getBookings(userProfile?.building_id)
+          const transformedData = data.map(booking => ({
+            id: booking.id,
+            date: booking.booking_date,
+            timeSlot: booking.time_slot,
+            unit: `Unit ${booking.user?.unit_number || 'Unknown'}`,
+            type: booking.moving_type,
+            status: booking.status === 'confirmed' ? 'Confirmed' : 'Pending'
+          }))
+          setReservations(transformedData)
+        } catch (err) {
+          console.error('Error loading bookings:', err)
+          setError('Failed to load bookings. Please try again.')
+        } finally {
+          setLoading(false)
+        }
+      }
     }
-  ]
+    loadBookings()
+  }, [isInDemoMode, userProfile])
 
   // Format date nicely
   const formatDate = (dateString) => {
@@ -70,27 +110,104 @@ function ElevatorBooking({ onBack }) {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (formData.date && formData.timeSlot && formData.movingType) {
-      setShowForm(false)
-      setShowSuccess(true)
-      // Reset form
-      setFormData({
-        date: '',
-        timeSlot: '',
-        movingType: ''
-      })
-      // Hide success message after 3 seconds
-      setTimeout(() => {
-        setShowSuccess(false)
-      }, 3000)
+    if (!formData.date || !formData.timeSlot || !formData.movingType) return
+
+    if (isInDemoMode) {
+      // Demo mode: add to local state only
+      const newReservation = {
+        id: Date.now(),
+        date: formData.date,
+        timeSlot: formData.timeSlot,
+        unit: 'Unit 1201',
+        type: formData.movingType,
+        status: 'Pending'
+      }
+      setReservations([...reservations, newReservation])
+    } else {
+      // Real mode: save to Supabase
+      try {
+        await createBooking({
+          building_id: userProfile.building_id,
+          user_id: userProfile.id,
+          booking_date: formData.date,
+          time_slot: formData.timeSlot,
+          moving_type: formData.movingType,
+          status: 'pending'
+        })
+        // Reload bookings
+        const data = await getBookings(userProfile.building_id)
+        const transformedData = data.map(booking => ({
+          id: booking.id,
+          date: booking.booking_date,
+          timeSlot: booking.time_slot,
+          unit: `Unit ${booking.user?.unit_number || 'Unknown'}`,
+          type: booking.moving_type,
+          status: booking.status === 'confirmed' ? 'Confirmed' : 'Pending'
+        }))
+        setReservations(transformedData)
+      } catch (err) {
+        console.error('Error creating booking:', err)
+      }
     }
+
+    setShowForm(false)
+    setShowSuccess(true)
+    setFormData({
+      date: '',
+      timeSlot: '',
+      movingType: ''
+    })
+    // Hide success message after 3 seconds
+    setTimeout(() => {
+      setShowSuccess(false)
+    }, 3000)
   }
 
   const handleRequestBooking = () => {
     setShowForm(true)
     setShowSuccess(false)
+  }
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="elevator-booking-container">
+        <div className="bg-orb bg-orb-1"></div>
+        <div className="bg-orb bg-orb-2"></div>
+        <header className="elevator-booking-header">
+          <button className="back-button-glass" onClick={onBack}>
+            <ArrowLeft size={20} />
+            <span>Back</span>
+          </button>
+          <h1 className="page-title-light">Elevator Booking</h1>
+        </header>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: 'rgba(255,255,255,0.7)' }}>
+          Loading bookings...
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="elevator-booking-container">
+        <div className="bg-orb bg-orb-1"></div>
+        <div className="bg-orb bg-orb-2"></div>
+        <header className="elevator-booking-header">
+          <button className="back-button-glass" onClick={onBack}>
+            <ArrowLeft size={20} />
+            <span>Back</span>
+          </button>
+          <h1 className="page-title-light">Elevator Booking</h1>
+        </header>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: '#ef4444' }}>
+          {error}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -201,31 +318,37 @@ function ElevatorBooking({ onBack }) {
         <section className="reservations-section animate-in delay-2">
           <h2 className="section-title">Upcoming Reservations</h2>
           <div className="reservations-list">
-            {reservations.map((reservation, index) => (
-              <article key={reservation.id} className={`reservation-card animate-in delay-${(index % 4) + 3}`}>
-                <div className="card-accent"></div>
-                <div className="reservation-header">
-                  <div className="reservation-date">
-                    <span className="date-text">{formatDate(reservation.date)}</span>
-                    <span className="time-slot">{reservation.timeSlot}</span>
+            {reservations.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 20px', color: 'rgba(255,255,255,0.6)' }}>
+                No upcoming reservations
+              </div>
+            ) : (
+              reservations.map((reservation, index) => (
+                <article key={reservation.id} className={`reservation-card animate-in delay-${(index % 4) + 3}`}>
+                  <div className="card-accent"></div>
+                  <div className="reservation-header">
+                    <div className="reservation-date">
+                      <span className="date-text">{formatDate(reservation.date)}</span>
+                      <span className="time-slot">{reservation.timeSlot}</span>
+                    </div>
+                    <span className={`status-badge ${reservation.status.toLowerCase()}`}>
+                      {reservation.status === "Confirmed" && <Check size={12} />}
+                      {reservation.status}
+                    </span>
                   </div>
-                  <span className={`status-badge ${reservation.status.toLowerCase()}`}>
-                    {reservation.status === "Confirmed" && <Check size={12} />}
-                    {reservation.status}
-                  </span>
-                </div>
-                <div className="reservation-details">
-                  <div className="detail-item">
-                    <span className="detail-label">Unit</span>
-                    <span className="detail-value">{reservation.unit}</span>
+                  <div className="reservation-details">
+                    <div className="detail-item">
+                      <span className="detail-label">Unit</span>
+                      <span className="detail-value">{reservation.unit}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Type</span>
+                      <span className="detail-value">{reservation.type}</span>
+                    </div>
                   </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Type</span>
-                    <span className="detail-value">{reservation.type}</span>
-                  </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              ))
+            )}
           </div>
         </section>
       </main>

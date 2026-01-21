@@ -1,8 +1,154 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ArrowLeft, Pin, Car, Box, ShoppingBag, Briefcase, Search, Plus, X, Send, MessageCircle, Clock, ChevronRight } from 'lucide-react'
+import { useAuth } from './contexts/AuthContext'
+import { getListings, createListing } from './services/bulletinService'
 import './BulletinBoard.css'
 
+// Demo listings data - used when in demo mode
+const DEMO_LISTINGS = [
+  // Parking Spots
+  {
+    id: 1,
+    category: 'parking',
+    title: 'Parking Spot P2-15',
+    details: 'Level P2, near elevator',
+    price: '$150/month',
+    unit: 'Unit 1504',
+    timestamp: Date.now() - 86400000 * 2,
+    color: '#3b82f6'
+  },
+  {
+    id: 2,
+    category: 'parking',
+    title: 'Parking Spot P1-08',
+    details: 'Level P1, corner spot (extra wide)',
+    price: '$200/month',
+    unit: 'Unit 803',
+    timestamp: Date.now() - 86400000 * 5,
+    color: '#3b82f6'
+  },
+  // Storage Lockers
+  {
+    id: 3,
+    category: 'storage',
+    title: 'Storage Locker S-42',
+    details: '4x4 ft, climate controlled',
+    price: '$75/month',
+    unit: 'Unit 1201',
+    timestamp: Date.now() - 86400000 * 1,
+    color: '#8b5cf6'
+  },
+  {
+    id: 4,
+    category: 'storage',
+    title: 'Storage Locker S-18',
+    details: '6x8 ft, ground level',
+    price: '$120/month',
+    unit: 'Unit 605',
+    timestamp: Date.now() - 86400000 * 3,
+    color: '#8b5cf6'
+  },
+  // Items for Sale
+  {
+    id: 5,
+    category: 'items',
+    title: 'Herman Miller Office Chair',
+    details: 'Aeron, excellent condition, 2 years old',
+    price: '$450',
+    unit: 'Unit 1107',
+    timestamp: Date.now() - 3600000 * 5,
+    color: '#10b981'
+  },
+  {
+    id: 6,
+    category: 'items',
+    title: 'IKEA Kallax Shelf Unit',
+    details: '4x4, white, includes storage boxes',
+    price: '$80',
+    unit: 'Unit 902',
+    timestamp: Date.now() - 86400000 * 1,
+    color: '#10b981'
+  },
+  {
+    id: 7,
+    category: 'items',
+    title: 'Dyson V11 Vacuum',
+    details: 'Like new, all attachments included',
+    price: '$350',
+    unit: 'Unit 1504',
+    timestamp: Date.now() - 86400000 * 4,
+    color: '#10b981'
+  },
+  // Services
+  {
+    id: 8,
+    category: 'services',
+    title: 'Dog Walking',
+    details: 'Available weekdays 9am-5pm. $20 per 30-min walk.',
+    price: '$20/walk',
+    unit: 'Unit 405',
+    timestamp: Date.now() - 86400000 * 6,
+    color: '#f59e0b'
+  },
+  {
+    id: 9,
+    category: 'services',
+    title: 'Piano Lessons',
+    details: 'Experienced teacher, all ages welcome. In-building lessons available.',
+    price: '$50/hour',
+    unit: 'Unit 1802',
+    timestamp: Date.now() - 86400000 * 2,
+    color: '#f59e0b'
+  },
+  {
+    id: 10,
+    category: 'services',
+    title: 'Plant Watering Service',
+    details: 'Going on vacation? I\'ll take care of your plants!',
+    price: '$15/visit',
+    unit: 'Unit 701',
+    timestamp: Date.now() - 86400000 * 8,
+    color: '#f59e0b'
+  },
+  // ISO (In Search Of)
+  {
+    id: 11,
+    category: 'iso',
+    title: 'Looking for Parking Spot',
+    details: 'Preferably P1 or P2, need by Feb 1st',
+    price: 'Budget: $180/mo',
+    unit: 'Unit 1203',
+    timestamp: Date.now() - 3600000 * 8,
+    color: '#ec4899'
+  },
+  {
+    id: 12,
+    category: 'iso',
+    title: 'ISO: Used Bicycle',
+    details: 'Looking for a commuter bike, any brand',
+    price: 'Budget: $200',
+    unit: 'Unit 508',
+    timestamp: Date.now() - 86400000 * 1,
+    color: '#ec4899'
+  },
+]
+
+// Category color mapping
+const categoryColors = {
+  parking: '#3b82f6',
+  storage: '#8b5cf6',
+  items: '#10b981',
+  services: '#f59e0b',
+  iso: '#ec4899'
+}
+
 function BulletinBoard({ onBack }) {
+  const { userProfile, isDemoMode } = useAuth()
+  const isInDemoMode = isDemoMode || userProfile?.is_demo === true
+
+  const [listings, setListings] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [activeCategory, setActiveCategory] = useState('all')
   const [showPostModal, setShowPostModal] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
@@ -25,134 +171,39 @@ function BulletinBoard({ onBack }) {
     { id: 'iso', label: 'ISO', icon: Search },
   ]
 
-  // Sample listings data
-  const [listings] = useState([
-    // Parking Spots
-    {
-      id: 1,
-      category: 'parking',
-      title: 'Parking Spot P2-15',
-      details: 'Level P2, near elevator',
-      price: '$150/month',
-      unit: 'Unit 1504',
-      timestamp: Date.now() - 86400000 * 2, // 2 days ago
-      color: '#3b82f6'
-    },
-    {
-      id: 2,
-      category: 'parking',
-      title: 'Parking Spot P1-08',
-      details: 'Level P1, corner spot (extra wide)',
-      price: '$200/month',
-      unit: 'Unit 803',
-      timestamp: Date.now() - 86400000 * 5,
-      color: '#3b82f6'
-    },
-    // Storage Lockers
-    {
-      id: 3,
-      category: 'storage',
-      title: 'Storage Locker S-42',
-      details: '4x4 ft, climate controlled',
-      price: '$75/month',
-      unit: 'Unit 1201',
-      timestamp: Date.now() - 86400000 * 1,
-      color: '#8b5cf6'
-    },
-    {
-      id: 4,
-      category: 'storage',
-      title: 'Storage Locker S-18',
-      details: '6x8 ft, ground level',
-      price: '$120/month',
-      unit: 'Unit 605',
-      timestamp: Date.now() - 86400000 * 3,
-      color: '#8b5cf6'
-    },
-    // Items for Sale
-    {
-      id: 5,
-      category: 'items',
-      title: 'Herman Miller Office Chair',
-      details: 'Aeron, excellent condition, 2 years old',
-      price: '$450',
-      unit: 'Unit 1107',
-      timestamp: Date.now() - 3600000 * 5, // 5 hours ago
-      color: '#10b981'
-    },
-    {
-      id: 6,
-      category: 'items',
-      title: 'IKEA Kallax Shelf Unit',
-      details: '4x4, white, includes storage boxes',
-      price: '$80',
-      unit: 'Unit 902',
-      timestamp: Date.now() - 86400000 * 1,
-      color: '#10b981'
-    },
-    {
-      id: 7,
-      category: 'items',
-      title: 'Dyson V11 Vacuum',
-      details: 'Like new, all attachments included',
-      price: '$350',
-      unit: 'Unit 1504',
-      timestamp: Date.now() - 86400000 * 4,
-      color: '#10b981'
-    },
-    // Services
-    {
-      id: 8,
-      category: 'services',
-      title: 'Dog Walking',
-      details: 'Available weekdays 9am-5pm. $20 per 30-min walk.',
-      price: '$20/walk',
-      unit: 'Unit 405',
-      timestamp: Date.now() - 86400000 * 6,
-      color: '#f59e0b'
-    },
-    {
-      id: 9,
-      category: 'services',
-      title: 'Piano Lessons',
-      details: 'Experienced teacher, all ages welcome. In-building lessons available.',
-      price: '$50/hour',
-      unit: 'Unit 1802',
-      timestamp: Date.now() - 86400000 * 2,
-      color: '#f59e0b'
-    },
-    {
-      id: 10,
-      category: 'services',
-      title: 'Plant Watering Service',
-      details: 'Going on vacation? I\'ll take care of your plants!',
-      price: '$15/visit',
-      unit: 'Unit 701',
-      timestamp: Date.now() - 86400000 * 8,
-      color: '#f59e0b'
-    },
-    // ISO (In Search Of)
-    {
-      id: 11,
-      category: 'iso',
-      title: 'Looking for Parking Spot',
-      details: 'Preferably P1 or P2, need by Feb 1st',
-      price: 'Budget: $180/mo',
-      unit: 'Unit 1203',
-      timestamp: Date.now() - 3600000 * 8,
-      color: '#ec4899'
-    },
-    {
-      id: 12,
-      category: 'iso',
-      title: 'ISO: Used Bicycle',
-      details: 'Looking for a commuter bike, any brand',
-      price: 'Budget: $200',
-      unit: 'Unit 508',
-      timestamp: Date.now() - 86400000 * 1,
-      color: '#ec4899'
-    },
-  ])
+  useEffect(() => {
+    console.log('[BulletinBoard] Demo mode:', isInDemoMode)
+
+    async function loadListings() {
+      if (isInDemoMode) {
+        console.log('Demo mode: using fake listings')
+        setListings(DEMO_LISTINGS)
+        setLoading(false)
+      } else {
+        console.log('Real mode: fetching listings from Supabase')
+        try {
+          const data = await getListings(userProfile?.building_id)
+          const transformedData = data.map(listing => ({
+            id: listing.id,
+            category: listing.category,
+            title: listing.title,
+            details: listing.description,
+            price: listing.price,
+            unit: `Unit ${listing.author?.unit_number || 'Unknown'}`,
+            timestamp: new Date(listing.created_at).getTime(),
+            color: categoryColors[listing.category] || '#6b7280'
+          }))
+          setListings(transformedData)
+        } catch (err) {
+          console.error('Error loading listings:', err)
+          setError('Failed to load listings. Please try again.')
+        } finally {
+          setLoading(false)
+        }
+      }
+    }
+    loadListings()
+  }, [isInDemoMode, userProfile])
 
   const formatTimeAgo = (timestamp) => {
     const now = Date.now()
@@ -180,18 +231,99 @@ function BulletinBoard({ onBack }) {
     setShowContactModal(true)
   }
 
-  const handlePostSubmit = () => {
-    if (postForm.title.trim()) {
-      // In a real app, this would save to backend
-      setShowPostModal(false)
-      setPostForm({
-        category: 'parking',
-        title: '',
-        description: '',
-        price: '',
-        details: ''
-      })
+  const handlePostSubmit = async () => {
+    if (!postForm.title.trim()) return
+
+    if (isInDemoMode) {
+      // Demo mode: add to local state only
+      const newListing = {
+        id: Date.now(),
+        category: postForm.category,
+        title: postForm.title,
+        details: postForm.details,
+        price: postForm.price,
+        unit: 'Unit 1201',
+        timestamp: Date.now(),
+        color: categoryColors[postForm.category] || '#6b7280'
+      }
+      setListings([newListing, ...listings])
+    } else {
+      // Real mode: save to Supabase
+      try {
+        await createListing({
+          building_id: userProfile.building_id,
+          user_id: userProfile.id,
+          category: postForm.category,
+          title: postForm.title,
+          description: postForm.details,
+          price: postForm.price
+        })
+        // Reload listings
+        const data = await getListings(userProfile.building_id)
+        const transformedData = data.map(listing => ({
+          id: listing.id,
+          category: listing.category,
+          title: listing.title,
+          details: listing.description,
+          price: listing.price,
+          unit: `Unit ${listing.author?.unit_number || 'Unknown'}`,
+          timestamp: new Date(listing.created_at).getTime(),
+          color: categoryColors[listing.category] || '#6b7280'
+        }))
+        setListings(transformedData)
+      } catch (err) {
+        console.error('Error creating listing:', err)
+      }
     }
+
+    setShowPostModal(false)
+    setPostForm({
+      category: 'parking',
+      title: '',
+      description: '',
+      price: '',
+      details: ''
+    })
+  }
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="bulletin-board-container">
+        <div className="bg-orb bg-orb-1"></div>
+        <div className="bg-orb bg-orb-2"></div>
+        <header className="bulletin-board-header">
+          <button className="back-button-glass" onClick={onBack}>
+            <ArrowLeft size={20} />
+            <span>Back</span>
+          </button>
+          <h1 className="page-title-light">Bulletin Board</h1>
+        </header>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: 'rgba(255,255,255,0.7)' }}>
+          Loading listings...
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="bulletin-board-container">
+        <div className="bg-orb bg-orb-1"></div>
+        <div className="bg-orb bg-orb-2"></div>
+        <header className="bulletin-board-header">
+          <button className="back-button-glass" onClick={onBack}>
+            <ArrowLeft size={20} />
+            <span>Back</span>
+          </button>
+          <h1 className="page-title-light">Bulletin Board</h1>
+        </header>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: '#ef4444' }}>
+          {error}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -409,7 +541,6 @@ function BulletinBoard({ onBack }) {
                 className="view-neighbor-btn"
                 onClick={() => {
                   setShowContactModal(false)
-                  // In a real app, this would navigate to the neighbor's profile
                 }}
               >
                 <span>View in Neighbors</span>
