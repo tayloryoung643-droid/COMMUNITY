@@ -97,7 +97,7 @@ function Home({ buildingCode, onNavigate }) {
               {formatDay(currentTime)} | {formatTime(currentTime)}
             </div>
             <div className="weather-temp-row">
-              <WeatherIcon size={28} className="weather-icon" />
+              <WeatherIcon size={22} className="weather-icon" />
               <span className="weather-temp">{weatherData.temp}°</span>
             </div>
             <div className="weather-condition">{weatherData.conditionText}</div>
@@ -105,8 +105,7 @@ function Home({ buildingCode, onNavigate }) {
 
           {/* Building Name - Centered in Hero */}
           <div className="hero-text-container">
-            <span className="hero-the">The</span>
-            <h1 className="hero-building-name">Paramount</h1>
+            <h1 className="hero-building-name">The Paramount</h1>
           </div>
         </div>
       </section>
@@ -140,9 +139,9 @@ function Home({ buildingCode, onNavigate }) {
           </button>
         </section>
 
-        {/* Coming Up */}
+        {/* Coming Up - quieter, secondary */}
         <section className="coming-up-section">
-          <h2 className="section-title">Coming Up</h2>
+          <h2 className="section-title-secondary">Coming Up</h2>
 
           <button className="event-card" onClick={() => handleFeatureClick('Calendar')}>
             <div className="event-card-icon wine-icon">
