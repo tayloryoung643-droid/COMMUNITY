@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Building2, User, Mail, Lock, ArrowRight, Package, Calendar, Users, Key, Sparkles } from 'lucide-react'
+import { validateBuildingCode } from './services/buildingService'
 import './Login.css'
 
 function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, authError }) {
@@ -10,11 +11,30 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleResidentLogin = () => {
-    if (buildingCode.trim()) {
-      onResidentLogin(buildingCode)
-    } else {
+  const handleResidentLogin = async () => {
+    if (!buildingCode.trim()) {
       setError('Please enter a building code')
+      return
+    }
+
+    setError('')
+    setIsLoading(true)
+
+    try {
+      const { valid, building } = await validateBuildingCode(buildingCode)
+
+      if (valid && building) {
+        // Building code is valid - proceed with login
+        onResidentLogin(buildingCode, building)
+      } else {
+        // Invalid building code
+        setError('Invalid building code. Use the Demo login button to explore the app.')
+      }
+    } catch (err) {
+      console.error('Error validating building code:', err)
+      setError('Unable to verify building code. Please try again or use Demo login.')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -122,9 +142,9 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
                 <span className="input-helper">Get this code from your property manager</span>
               </div>
 
-              <button className="login-btn-primary" onClick={handleResidentLogin}>
-                <span>Join Building</span>
-                <ArrowRight size={18} />
+              <button className="login-btn-primary" onClick={handleResidentLogin} disabled={isLoading}>
+                <span>{isLoading ? 'Verifying...' : 'Join Building'}</span>
+                {!isLoading && <ArrowRight size={18} />}
               </button>
 
               <button className="demo-login-link" onClick={() => onDemoLogin('resident')} disabled={isLoading}>
