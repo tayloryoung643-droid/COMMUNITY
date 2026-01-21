@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Package, Calendar, Users, ArrowUpDown, Settings, ChevronRight, Sparkles, MessageSquare, Hand, UserPlus, PartyPopper, Pin, Mail, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake } from 'lucide-react'
+import { Package, Calendar, Users, ArrowUpDown, Settings, ChevronRight, Sparkles, MessageSquare, Hand, UserPlus, PartyPopper, Pin, Mail, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Home as HomeIcon, Building2 } from 'lucide-react'
 import './Home.css'
 
 function Home({ buildingCode, onNavigate }) {
@@ -234,68 +234,46 @@ function Home({ buildingCode, onNavigate }) {
       {/* Hero Section with Building Image */}
       <section className="hero-section">
         <div className="hero-image-container">
-          {/* Placeholder gradient for building image */}
-          <div className="hero-image-placeholder"></div>
+          {/* Actual building image */}
+          <img
+            src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+            alt="The Paramount Building"
+            className="hero-image"
+          />
           <div className="hero-gradient-overlay"></div>
 
-          {/* Weather Widget - Top Left */}
+          {/* Weather Widget - Top Left (Compact) */}
           <div className="weather-widget">
-            <div className="weather-time">
+            <div className="weather-row">
               <span className="weather-day">{formatDay(currentTime)}</span>
+              <span className="weather-divider">·</span>
               <span className="weather-clock">{formatTime(currentTime)}</span>
             </div>
-            <div className="weather-info">
-              <WeatherIcon size={24} className="weather-icon" />
-              <span className="weather-temp">{weatherData.temp}°</span>
+            <div className="weather-row">
+              <WeatherIcon size={16} className="weather-icon" />
+              <span className="weather-temp">{weatherData.temp}°F</span>
             </div>
           </div>
 
           {/* Settings Button - Top Right */}
           <div className="hero-actions">
             <button className="hero-settings-btn" onClick={() => handleFeatureClick('Settings')}>
-              <Settings size={20} />
+              <Settings size={18} />
             </button>
           </div>
 
-          {/* Building Name - Bottom of Hero */}
+          {/* Building Name - Centered in Hero */}
           <div className="hero-text-container">
-            <p className="hero-greeting">{getGreeting()}</p>
             <h1 className="hero-building-name">{buildingName}</h1>
             <p className="hero-unit-info">Unit {userUnit} · Floor {floor}</p>
           </div>
         </div>
       </section>
 
-      {/* Quick Actions Row */}
-      <section className="quick-actions-section animate-in delay-1">
-        <div className="quick-actions-row">
-          <button className="quick-action-btn" onClick={() => handleFeatureClick('Community')}>
-            <MessageSquare size={20} />
-            <span>Community</span>
-          </button>
-          <button className="quick-action-btn" onClick={() => handleFeatureClick('Calendar')}>
-            <Calendar size={20} />
-            <span>Calendar</span>
-          </button>
-          <button className="quick-action-btn" onClick={() => handleFeatureClick('Packages')}>
-            <Package size={20} />
-            {dynamicData.packagesWaiting > 0 && (
-              <span className="quick-action-badge">{dynamicData.packagesWaiting}</span>
-            )}
-            <span>Packages</span>
-          </button>
-          <button className="quick-action-btn" onClick={() => setShowContactModal(true)}>
-            <Mail size={20} />
-            <span>Contact</span>
-          </button>
-        </div>
-      </section>
-
       {/* Today's Highlights Card */}
-      <section className="highlights-section animate-in delay-2">
+      <section className="highlights-section animate-in delay-1">
         <div className="highlights-card">
           <div className="highlights-header">
-            <Sparkles size={18} className="highlights-icon" />
             <span className="highlights-title">Today in your building</span>
           </div>
           <div className="highlights-items">
@@ -307,9 +285,7 @@ function Home({ buildingCode, onNavigate }) {
                   className="highlight-item"
                   onClick={() => handleFeatureClick(item.type === 'packages' ? 'Packages' : 'Calendar')}
                 >
-                  <div className="highlight-icon-wrapper">
-                    <IconComponent size={18} />
-                  </div>
+                  <IconComponent size={18} className="highlight-icon" />
                   <span className="highlight-text">{item.text}</span>
                   <ChevronRight size={16} className="highlight-arrow" />
                 </button>
@@ -320,14 +296,13 @@ function Home({ buildingCode, onNavigate }) {
       </section>
 
       {/* Coming Up This Month */}
-      <section className="upcoming-section animate-in delay-5">
+      <section className="upcoming-section animate-in delay-2">
         <div className="upcoming-content">
           <h3 className="upcoming-title">
-            <Calendar size={16} />
-            <span>Coming up this month</span>
+            <span>Coming up</span>
           </h3>
           <div className="upcoming-list">
-            {upcomingItems.map((item, index) => (
+            {upcomingItems.slice(0, 4).map((item, index) => (
               <div
                 key={index}
                 className="upcoming-card"
@@ -339,10 +314,7 @@ function Home({ buildingCode, onNavigate }) {
                 </div>
                 <div className="upcoming-info">
                   <span className="upcoming-event-title">{item.title}</span>
-                  <span
-                    className="upcoming-category-tag"
-                    style={{ background: `${item.color}20`, color: item.color }}
-                  >
+                  <span className="upcoming-category-tag">
                     {item.categoryLabel}
                   </span>
                 </div>
@@ -353,31 +325,25 @@ function Home({ buildingCode, onNavigate }) {
         </div>
       </section>
 
-      {/* Recent Activity Feed */}
-      <section className="activity-section animate-in delay-6">
-        <div className="activity-content">
-          <h3 className="activity-title">
-            <Users size={16} />
-            <span>Recent activity</span>
-          </h3>
-          <div className="activity-feed">
-            {recentActivity.map((item, index) => {
-              const IconComponent = item.icon
-              return (
-                <div key={index} className="activity-item">
-                  <div className="activity-icon" style={{ background: item.color }}>
-                    <IconComponent size={14} />
-                  </div>
-                  <div className="activity-text">
-                    <span className="activity-message">{item.text}</span>
-                    <span className="activity-time">{item.time}</span>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
+      {/* Bottom Navigation */}
+      <nav className="bottom-nav">
+        <button className="nav-item active" onClick={() => handleFeatureClick('Home')}>
+          <HomeIcon size={22} />
+          <span>Home</span>
+        </button>
+        <button className="nav-item" onClick={() => handleFeatureClick('Calendar')}>
+          <Calendar size={22} />
+          <span>Events</span>
+        </button>
+        <button className="nav-item" onClick={() => handleFeatureClick('Community')}>
+          <Users size={22} />
+          <span>Community</span>
+        </button>
+        <button className="nav-item" onClick={() => handleFeatureClick('Building')}>
+          <Building2 size={22} />
+          <span>Building</span>
+        </button>
+      </nav>
 
       {/* Contact Manager Modal */}
       {showContactModal && (
