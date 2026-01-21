@@ -86,7 +86,7 @@ function Home({ buildingCode, onNavigate }) {
           <div className="hero-image-container">
             {/* Warm luxury building image */}
             <img
-              src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800"
+              src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80"
               alt="The Paramount Building"
               className="hero-image"
             />

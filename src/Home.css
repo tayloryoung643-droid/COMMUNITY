@@ -5,12 +5,12 @@
    CRITICAL: All content in ONE centered container
    ============================================ */
 
-/* Color palette - warm neutral whites */
+/* Color palette - warm cream whites */
 :root {
   --bg-page: #E8E4DC;
-  --bg-app: #F6F3EE;
+  --bg-app: #FAF9F7;
   --bg-card: #FFFFFF;
-  --bg-card-secondary: #F9F7F4;
+  --bg-card-secondary: #F7F5F2;
   --text-primary: #1A1A1A;
   --text-secondary: #4A4A4A;
   --text-muted: #9CA3AF;
@@ -39,6 +39,8 @@
   min-height: 100vh;
   position: relative;
   padding-bottom: 80px; /* Space for fixed nav */
+  box-sizing: border-box;
+  overflow-x: hidden; /* Prevent horizontal overflow */
 }
 
 /* Desktop shadow effect */
@@ -53,6 +55,7 @@
    ============================================ */
 .hero-section {
   width: 100%;
+  box-sizing: border-box;
 }
 
 .hero-image-container {
@@ -62,6 +65,7 @@
   max-height: 420px;
   width: 100%;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .hero-image {
@@ -73,32 +77,31 @@
   object-position: center;
 }
 
-/* Warm amber overlay - shifts cold images to warm tones */
+/* Warm amber overlay - golden hour tones */
 .hero-warm-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    180deg,
-    rgba(255, 180, 100, 0.25) 0%,
-    rgba(255, 160, 80, 0.2) 40%,
-    rgba(255, 140, 60, 0.15) 70%,
-    transparent 100%
+    to bottom,
+    rgba(255, 170, 80, 0.15) 0%,
+    rgba(255, 170, 80, 0.05) 100%
   );
   pointer-events: none;
 }
 
-/* Smooth fade to background */
+/* Smooth fade to cream background - 200px gradient zone */
 .hero-gradient-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
     transparent 0%,
-    transparent 50%,
-    rgba(246, 243, 238, 0.2) 65%,
-    rgba(246, 243, 238, 0.5) 78%,
-    rgba(246, 243, 238, 0.85) 90%,
-    #F6F3EE 100%
+    transparent 55%,
+    rgba(250, 249, 247, 0.15) 65%,
+    rgba(250, 249, 247, 0.4) 75%,
+    rgba(250, 249, 247, 0.7) 85%,
+    rgba(250, 249, 247, 0.9) 93%,
+    #FAF9F7 100%
   );
   pointer-events: none;
 }
@@ -167,14 +170,13 @@
 }
 
 .hero-building-name {
-  font-size: 40px;
+  font-size: 42px;
   font-weight: 400;
   color: white;
-  letter-spacing: 3px;
+  letter-spacing: 2px;
   margin: 0;
   text-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
   font-family: 'Georgia', 'Times New Roman', serif;
-  text-transform: uppercase;
 }
 
 /* ============================================
@@ -183,6 +185,7 @@
 .main-content {
   padding: 24px 20px 32px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 /* Section Titles - calm and understated */
