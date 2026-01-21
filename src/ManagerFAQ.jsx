@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   HelpCircle,
   Plus,
@@ -23,9 +23,174 @@ import {
   ExternalLink,
   Clock
 } from 'lucide-react'
+import { useAuth } from './contexts/AuthContext'
+import { getFAQs, createFAQ, updateFAQ, deleteFAQ } from './services/faqService'
 import './ManagerFAQ.css'
 
+// Demo FAQs data - used when in demo mode
+const DEMO_FAQS = [
+  {
+    id: 1,
+    category: 'general',
+    question: 'What are the building\'s quiet hours?',
+    answer: 'Quiet hours are 10:00 PM to 8:00 AM on weekdays, and 11:00 PM to 9:00 AM on weekends. Please be considerate of your neighbors during these times.',
+    views: 156,
+    updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    visible: true
+  },
+  {
+    id: 2,
+    category: 'general',
+    question: 'Where can I find my building access code?',
+    answer: 'Your building access code was sent to your email when you moved in. You can also contact the property manager to receive it again. For security reasons, we cannot share access codes over the phone.',
+    views: 89,
+    updatedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
+    visible: true
+  },
+  {
+    id: 3,
+    category: 'general',
+    question: 'Is there guest parking available?',
+    answer: 'Yes, we have 5 guest parking spots available on a first-come, first-served basis in the P1 level. Guest parking is limited to 48 hours. Please register your guest\'s vehicle with the property manager.',
+    views: 124,
+    updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+    visible: true
+  },
+  {
+    id: 4,
+    category: 'amenities',
+    question: 'What are the gym hours?',
+    answer: 'The fitness center is open 24/7 for residents. Use your key fob to access the gym at any time. Please wipe down equipment after use and re-rack weights.',
+    views: 203,
+    updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+    visible: true
+  },
+  {
+    id: 5,
+    category: 'amenities',
+    question: 'Can I reserve the rooftop lounge for private events?',
+    answer: 'Yes! Contact the property manager at least 2 weeks in advance to reserve the rooftop lounge. There\'s a $100 refundable cleaning deposit required. Maximum capacity is 30 guests. Events must end by 10 PM.',
+    views: 67,
+    updatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+    visible: true
+  },
+  {
+    id: 6,
+    category: 'amenities',
+    question: 'Is the pool heated?',
+    answer: 'Yes, the rooftop pool is heated year-round and maintained at 82°F. Pool hours are 6 AM to 10 PM daily. The pool is closed during thunderstorms and for weekly maintenance on Mondays from 8-10 AM.',
+    views: 145,
+    updatedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+    visible: true
+  },
+  {
+    id: 7,
+    category: 'parking',
+    question: 'How do I get a parking permit?',
+    answer: 'Contact the property manager with your vehicle make, model, color, and license plate number. Monthly parking permits are $150/month. Limited spots available - first come, first served with a waitlist.',
+    views: 178,
+    updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    visible: true
+  },
+  {
+    id: 8,
+    category: 'parking',
+    question: 'Is there bike storage?',
+    answer: 'Yes, secure bike storage is available in the basement. Access it with your key fob through the main garage entrance. Each unit is allowed up to 2 bikes. Bike cages are available for $25/month.',
+    views: 92,
+    updatedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
+    visible: true
+  },
+  {
+    id: 9,
+    category: 'maintenance',
+    question: 'How do I submit a maintenance request?',
+    answer: 'Use the Community app to submit maintenance requests through the Messages section, or email maintenance@theparamount.com. For emergencies, call (555) 123-4567. Include photos if possible to help us diagnose the issue.',
+    views: 234,
+    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+    visible: true
+  },
+  {
+    id: 10,
+    category: 'maintenance',
+    question: 'What is considered an emergency maintenance issue?',
+    answer: 'Emergencies include: no heat when outside temp is below 55°F, no A/C when inside temp exceeds 85°F, major water leaks or flooding, gas leaks (evacuate and call 911), electrical hazards, lockouts, and broken windows or doors that affect security.',
+    views: 87,
+    updatedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+    visible: true
+  },
+  {
+    id: 11,
+    category: 'packages',
+    question: 'Where do I pick up packages?',
+    answer: 'All packages are held in the package room located on the ground floor next to the mail room. Use your key fob to access. You\'ll receive a notification in the Community app when packages arrive.',
+    views: 312,
+    updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+    visible: true
+  },
+  {
+    id: 12,
+    category: 'packages',
+    question: 'How long will packages be held?',
+    answer: 'Packages are held for 5 business days. After that, they may be returned to sender or relocated to overflow storage. You\'ll receive reminder notifications at 3 days and 5 days. Contact us if you need extended hold time for vacation.',
+    views: 156,
+    updatedAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000),
+    visible: true
+  },
+  {
+    id: 13,
+    category: 'policies',
+    question: 'Are pets allowed?',
+    answer: 'Yes! We allow up to 2 pets per unit. Dogs must be under 50 lbs. Restricted breeds include Pit Bulls, Rottweilers, and Dobermans. There\'s a $500 refundable pet deposit and $50/month pet rent per pet. All pets must be registered.',
+    views: 267,
+    updatedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+    visible: true
+  },
+  {
+    id: 14,
+    category: 'policies',
+    question: 'Can I smoke in my unit?',
+    answer: 'The Paramount is a 100% smoke-free building. Smoking (including vaping and marijuana) is prohibited in all units, common areas, and balconies. Smoking is only permitted in the designated outdoor smoking area near the west entrance.',
+    views: 134,
+    updatedAt: new Date(Date.now() - 11 * 24 * 60 * 60 * 1000),
+    visible: true
+  },
+  {
+    id: 15,
+    category: 'policies',
+    question: 'What\'s the policy on subleasing?',
+    answer: 'Subleasing requires written property manager approval. Submit a request at least 30 days in advance with the potential tenant\'s full name, contact info, employment verification, and background check consent. Minimum sublease term is 3 months.',
+    views: 78,
+    updatedAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
+    visible: true
+  },
+  {
+    id: 16,
+    category: 'contact',
+    question: 'How do I contact the property manager?',
+    answer: 'You can reach the property manager through: the Community app (Messages), email at manager@theparamount.com, phone at (555) 123-4560 (Mon-Fri 9AM-5PM), or visit the management office on the ground floor.',
+    views: 198,
+    updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    visible: true
+  },
+  {
+    id: 17,
+    category: 'contact',
+    question: 'What should I do in an emergency?',
+    answer: 'For life-threatening emergencies, call 911 immediately. For building emergencies (fire, gas leak, flood), activate the nearest fire alarm and evacuate. After-hours maintenance emergencies: call (555) 123-4567. The building\'s address is 1234 Main Street for emergency services.',
+    views: 145,
+    updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+    visible: true
+  }
+]
+
 function ManagerFAQ() {
+  const { userProfile, isDemoMode } = useAuth()
+  const isInDemoMode = isDemoMode || userProfile?.is_demo === true
+
+  const [faqs, setFaqs] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [activeCategory, setActiveCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [showPreview, setShowPreview] = useState(false)
@@ -58,162 +223,39 @@ function ManagerFAQ() {
     { id: 'contact', label: 'Contact & Emergency', icon: Phone, color: '#ef4444' }
   ]
 
-  // FAQs data
-  const [faqs, setFaqs] = useState([
-    {
-      id: 1,
-      category: 'general',
-      question: 'What are the building\'s quiet hours?',
-      answer: 'Quiet hours are 10:00 PM to 8:00 AM on weekdays, and 11:00 PM to 9:00 AM on weekends. Please be considerate of your neighbors during these times.',
-      views: 156,
-      updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-      visible: true
-    },
-    {
-      id: 2,
-      category: 'general',
-      question: 'Where can I find my building access code?',
-      answer: 'Your building access code was sent to your email when you moved in. You can also contact the property manager to receive it again. For security reasons, we cannot share access codes over the phone.',
-      views: 89,
-      updatedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
-      visible: true
-    },
-    {
-      id: 3,
-      category: 'general',
-      question: 'Is there guest parking available?',
-      answer: 'Yes, we have 5 guest parking spots available on a first-come, first-served basis in the P1 level. Guest parking is limited to 48 hours. Please register your guest\'s vehicle with the property manager.',
-      views: 124,
-      updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-      visible: true
-    },
-    {
-      id: 4,
-      category: 'amenities',
-      question: 'What are the gym hours?',
-      answer: 'The fitness center is open 24/7 for residents. Use your key fob to access the gym at any time. Please wipe down equipment after use and re-rack weights.',
-      views: 203,
-      updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-      visible: true
-    },
-    {
-      id: 5,
-      category: 'amenities',
-      question: 'Can I reserve the rooftop lounge for private events?',
-      answer: 'Yes! Contact the property manager at least 2 weeks in advance to reserve the rooftop lounge. There\'s a $100 refundable cleaning deposit required. Maximum capacity is 30 guests. Events must end by 10 PM.',
-      views: 67,
-      updatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-      visible: true
-    },
-    {
-      id: 6,
-      category: 'amenities',
-      question: 'Is the pool heated?',
-      answer: 'Yes, the rooftop pool is heated year-round and maintained at 82°F. Pool hours are 6 AM to 10 PM daily. The pool is closed during thunderstorms and for weekly maintenance on Mondays from 8-10 AM.',
-      views: 145,
-      updatedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
-      visible: true
-    },
-    {
-      id: 7,
-      category: 'parking',
-      question: 'How do I get a parking permit?',
-      answer: 'Contact the property manager with your vehicle make, model, color, and license plate number. Monthly parking permits are $150/month. Limited spots available - first come, first served with a waitlist.',
-      views: 178,
-      updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      visible: true
-    },
-    {
-      id: 8,
-      category: 'parking',
-      question: 'Is there bike storage?',
-      answer: 'Yes, secure bike storage is available in the basement. Access it with your key fob through the main garage entrance. Each unit is allowed up to 2 bikes. Bike cages are available for $25/month.',
-      views: 92,
-      updatedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
-      visible: true
-    },
-    {
-      id: 9,
-      category: 'maintenance',
-      question: 'How do I submit a maintenance request?',
-      answer: 'Use the Community app to submit maintenance requests through the Messages section, or email maintenance@theparamount.com. For emergencies, call (555) 123-4567. Include photos if possible to help us diagnose the issue.',
-      views: 234,
-      updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-      visible: true
-    },
-    {
-      id: 10,
-      category: 'maintenance',
-      question: 'What is considered an emergency maintenance issue?',
-      answer: 'Emergencies include: no heat when outside temp is below 55°F, no A/C when inside temp exceeds 85°F, major water leaks or flooding, gas leaks (evacuate and call 911), electrical hazards, lockouts, and broken windows or doors that affect security.',
-      views: 87,
-      updatedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
-      visible: true
-    },
-    {
-      id: 11,
-      category: 'packages',
-      question: 'Where do I pick up packages?',
-      answer: 'All packages are held in the package room located on the ground floor next to the mail room. Use your key fob to access. You\'ll receive a notification in the Community app when packages arrive.',
-      views: 312,
-      updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-      visible: true
-    },
-    {
-      id: 12,
-      category: 'packages',
-      question: 'How long will packages be held?',
-      answer: 'Packages are held for 5 business days. After that, they may be returned to sender or relocated to overflow storage. You\'ll receive reminder notifications at 3 days and 5 days. Contact us if you need extended hold time for vacation.',
-      views: 156,
-      updatedAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000),
-      visible: true
-    },
-    {
-      id: 13,
-      category: 'policies',
-      question: 'Are pets allowed?',
-      answer: 'Yes! We allow up to 2 pets per unit. Dogs must be under 50 lbs. Restricted breeds include Pit Bulls, Rottweilers, and Dobermans. There\'s a $500 refundable pet deposit and $50/month pet rent per pet. All pets must be registered.',
-      views: 267,
-      updatedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
-      visible: true
-    },
-    {
-      id: 14,
-      category: 'policies',
-      question: 'Can I smoke in my unit?',
-      answer: 'The Paramount is a 100% smoke-free building. Smoking (including vaping and marijuana) is prohibited in all units, common areas, and balconies. Smoking is only permitted in the designated outdoor smoking area near the west entrance.',
-      views: 134,
-      updatedAt: new Date(Date.now() - 11 * 24 * 60 * 60 * 1000),
-      visible: true
-    },
-    {
-      id: 15,
-      category: 'policies',
-      question: 'What\'s the policy on subleasing?',
-      answer: 'Subleasing requires written property manager approval. Submit a request at least 30 days in advance with the potential tenant\'s full name, contact info, employment verification, and background check consent. Minimum sublease term is 3 months.',
-      views: 78,
-      updatedAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
-      visible: true
-    },
-    {
-      id: 16,
-      category: 'contact',
-      question: 'How do I contact the property manager?',
-      answer: 'You can reach the property manager through: the Community app (Messages), email at manager@theparamount.com, phone at (555) 123-4560 (Mon-Fri 9AM-5PM), or visit the management office on the ground floor.',
-      views: 198,
-      updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      visible: true
-    },
-    {
-      id: 17,
-      category: 'contact',
-      question: 'What should I do in an emergency?',
-      answer: 'For life-threatening emergencies, call 911 immediately. For building emergencies (fire, gas leak, flood), activate the nearest fire alarm and evacuate. After-hours maintenance emergencies: call (555) 123-4567. The building\'s address is 1234 Main Street for emergency services.',
-      views: 145,
-      updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-      visible: true
+  useEffect(() => {
+    console.log('[ManagerFAQ] Demo mode:', isInDemoMode)
+
+    async function loadFAQs() {
+      if (isInDemoMode) {
+        console.log('Demo mode: using fake FAQs')
+        setFaqs(DEMO_FAQS)
+        setLoading(false)
+      } else {
+        console.log('Real mode: fetching FAQs from Supabase')
+        try {
+          const data = await getFAQs(userProfile?.building_id)
+          const transformedData = data.map(faq => ({
+            id: faq.id,
+            category: faq.category,
+            question: faq.question,
+            answer: faq.answer,
+            link: faq.link || '',
+            views: faq.view_count || 0,
+            updatedAt: new Date(faq.updated_at || faq.created_at),
+            visible: faq.visible !== false
+          }))
+          setFaqs(transformedData)
+        } catch (err) {
+          console.error('Error loading FAQs:', err)
+          setError('Failed to load FAQs. Please try again.')
+        } finally {
+          setLoading(false)
+        }
+      }
     }
-  ])
+    loadFAQs()
+  }, [isInDemoMode, userProfile])
 
   // Get category info
   const getCategory = (categoryId) => {
@@ -296,7 +338,7 @@ function ManagerFAQ() {
   }
 
   // Handle add FAQ
-  const handleAddFAQ = () => {
+  const handleAddFAQ = async () => {
     const newFAQ = {
       id: Date.now(),
       category: faqForm.category,
@@ -308,28 +350,89 @@ function ManagerFAQ() {
       visible: faqForm.visible
     }
 
-    setFaqs(prev => [newFAQ, ...prev])
+    if (isInDemoMode) {
+      // Demo mode: add to local state only
+      setFaqs(prev => [newFAQ, ...prev])
+    } else {
+      // Real mode: save to Supabase
+      try {
+        await createFAQ({
+          building_id: userProfile.building_id,
+          category: faqForm.category,
+          question: faqForm.question,
+          answer: faqForm.answer,
+          link: faqForm.link || null,
+          visible: faqForm.visible
+        })
+        // Reload FAQs
+        const data = await getFAQs(userProfile.building_id)
+        const transformedData = data.map(faq => ({
+          id: faq.id,
+          category: faq.category,
+          question: faq.question,
+          answer: faq.answer,
+          link: faq.link || '',
+          views: faq.view_count || 0,
+          updatedAt: new Date(faq.updated_at || faq.created_at),
+          visible: faq.visible !== false
+        }))
+        setFaqs(transformedData)
+      } catch (err) {
+        console.error('Error creating FAQ:', err)
+      }
+    }
+
     setShowAddModal(false)
     resetForm()
     showToastMessage('FAQ added successfully!')
   }
 
   // Handle edit FAQ
-  const handleEditFAQ = () => {
-    setFaqs(prev => prev.map(faq => {
-      if (faq.id === selectedFAQ.id) {
-        return {
-          ...faq,
+  const handleEditFAQ = async () => {
+    if (isInDemoMode) {
+      // Demo mode: update local state only
+      setFaqs(prev => prev.map(faq => {
+        if (faq.id === selectedFAQ.id) {
+          return {
+            ...faq,
+            category: faqForm.category,
+            question: faqForm.question,
+            answer: faqForm.answer,
+            link: faqForm.link,
+            visible: faqForm.visible,
+            updatedAt: new Date()
+          }
+        }
+        return faq
+      }))
+    } else {
+      // Real mode: update in Supabase
+      try {
+        await updateFAQ(selectedFAQ.id, {
           category: faqForm.category,
           question: faqForm.question,
           answer: faqForm.answer,
-          link: faqForm.link,
-          visible: faqForm.visible,
-          updatedAt: new Date()
-        }
+          link: faqForm.link || null,
+          visible: faqForm.visible
+        })
+        // Reload FAQs
+        const data = await getFAQs(userProfile.building_id)
+        const transformedData = data.map(faq => ({
+          id: faq.id,
+          category: faq.category,
+          question: faq.question,
+          answer: faq.answer,
+          link: faq.link || '',
+          views: faq.view_count || 0,
+          updatedAt: new Date(faq.updated_at || faq.created_at),
+          visible: faq.visible !== false
+        }))
+        setFaqs(transformedData)
+      } catch (err) {
+        console.error('Error updating FAQ:', err)
       }
-      return faq
-    }))
+    }
+
     setShowEditModal(false)
     setSelectedFAQ(null)
     resetForm()
@@ -337,8 +440,20 @@ function ManagerFAQ() {
   }
 
   // Handle delete FAQ
-  const handleDeleteFAQ = () => {
-    setFaqs(prev => prev.filter(faq => faq.id !== selectedFAQ.id))
+  const handleDeleteFAQ = async () => {
+    if (isInDemoMode) {
+      // Demo mode: remove from local state only
+      setFaqs(prev => prev.filter(faq => faq.id !== selectedFAQ.id))
+    } else {
+      // Real mode: delete from Supabase
+      try {
+        await deleteFAQ(selectedFAQ.id)
+        setFaqs(prev => prev.filter(faq => faq.id !== selectedFAQ.id))
+      } catch (err) {
+        console.error('Error deleting FAQ:', err)
+      }
+    }
+
     setShowDeleteModal(false)
     setSelectedFAQ(null)
     showToastMessage('FAQ deleted')
@@ -380,6 +495,28 @@ function ManagerFAQ() {
   const filteredFAQs = getFilteredFAQs()
   const groupedFAQs = getGroupedFAQs()
   const totalViews = faqs.reduce((sum, faq) => sum + faq.views, 0)
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="manager-faq">
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: 'rgba(255,255,255,0.7)' }}>
+          Loading FAQs...
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="manager-faq">
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: '#ef4444' }}>
+          {error}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="manager-faq">

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Search,
   Send,
@@ -9,180 +9,243 @@ import {
   Mail,
   MoreVertical
 } from 'lucide-react'
+import { useAuth } from './contexts/AuthContext'
+import { getMessages, sendMessage } from './services/messageService'
 import './ManagerMessages.css'
 
+// Demo messages data - used when in demo mode
+const DEMO_MESSAGES = [
+  {
+    id: 1,
+    resident: {
+      name: 'Sarah Mitchell',
+      unit: '1201',
+      email: 'sarah.m@email.com',
+      phone: '(555) 123-4567'
+    },
+    unread: true,
+    archived: false,
+    thread: [
+      {
+        id: 1,
+        sender: 'resident',
+        text: "Hi! I'm having trouble with my key fob. It stopped working this morning and I can't get into the building. Can someone help?",
+        timestamp: Date.now() - 3600000
+      }
+    ]
+  },
+  {
+    id: 2,
+    resident: {
+      name: 'Mike Thompson',
+      unit: '805',
+      email: 'mike.t@email.com',
+      phone: '(555) 234-5678'
+    },
+    unread: true,
+    archived: false,
+    thread: [
+      {
+        id: 1,
+        sender: 'resident',
+        text: "When will the gym reopen? It's been closed for 3 days now and I haven't seen any updates.",
+        timestamp: Date.now() - 7200000
+      },
+      {
+        id: 2,
+        sender: 'manager',
+        text: "Hi Mike, thanks for reaching out. The gym is undergoing equipment maintenance. We expect it to reopen tomorrow morning.",
+        timestamp: Date.now() - 5400000
+      },
+      {
+        id: 3,
+        sender: 'resident',
+        text: "Great, thanks for the update! Will there be any new equipment?",
+        timestamp: Date.now() - 3600000
+      }
+    ]
+  },
+  {
+    id: 3,
+    resident: {
+      name: 'Jessica Kim',
+      unit: '402',
+      email: 'jessica.k@email.com',
+      phone: '(555) 345-6789'
+    },
+    unread: false,
+    archived: false,
+    thread: [
+      {
+        id: 1,
+        sender: 'resident',
+        text: "There's a package for me that's been sitting in the mail room for over a week. It's a large box from Amazon. Can you help me locate it?",
+        timestamp: Date.now() - 86400000
+      },
+      {
+        id: 2,
+        sender: 'manager',
+        text: "Hi Jessica, I found your package! It was placed in the overflow storage area due to its size. You can pick it up from the concierge desk.",
+        timestamp: Date.now() - 82800000
+      },
+      {
+        id: 3,
+        sender: 'resident',
+        text: "Thank you so much! I'll grab it after work today.",
+        timestamp: Date.now() - 79200000
+      }
+    ]
+  },
+  {
+    id: 4,
+    resident: {
+      name: 'Alex Rivera',
+      unit: '1104',
+      email: 'alex.r@email.com',
+      phone: '(555) 456-7890'
+    },
+    unread: false,
+    archived: false,
+    thread: [
+      {
+        id: 1,
+        sender: 'resident',
+        text: "Can we get recycling bins added to the 11th floor? Currently we have to go down to the 1st floor to recycle, which is inconvenient.",
+        timestamp: Date.now() - 172800000
+      },
+      {
+        id: 2,
+        sender: 'manager',
+        text: "That's a great suggestion, Alex! I'll bring this up at the next building committee meeting and see what we can do.",
+        timestamp: Date.now() - 158400000
+      }
+    ]
+  },
+  {
+    id: 5,
+    resident: {
+      name: 'Chris Walker',
+      unit: '309',
+      email: 'chris.w@email.com',
+      phone: '(555) 567-8901'
+    },
+    unread: false,
+    archived: false,
+    thread: [
+      {
+        id: 1,
+        sender: 'resident',
+        text: "Thank you for fixing the elevator so quickly! I know it was an emergency repair and the team did a great job getting it done over the weekend.",
+        timestamp: Date.now() - 259200000
+      },
+      {
+        id: 2,
+        sender: 'manager',
+        text: "Thank you for the kind words, Chris! I'll pass along your appreciation to the maintenance team. We're glad we could get it fixed quickly.",
+        timestamp: Date.now() - 252000000
+      }
+    ]
+  },
+  {
+    id: 6,
+    resident: {
+      name: 'Emily Chen',
+      unit: '1507',
+      email: 'emily.c@email.com',
+      phone: '(555) 678-9012'
+    },
+    unread: false,
+    archived: true,
+    thread: [
+      {
+        id: 1,
+        sender: 'resident',
+        text: "Is there a way to reserve the rooftop lounge for a private party?",
+        timestamp: Date.now() - 604800000
+      },
+      {
+        id: 2,
+        sender: 'manager',
+        text: "Yes! You can reserve the rooftop lounge through the building app. Go to Calendar > Book Space and select the date you'd like.",
+        timestamp: Date.now() - 601200000
+      },
+      {
+        id: 3,
+        sender: 'resident',
+        text: "Perfect, I found it. Thanks!",
+        timestamp: Date.now() - 597600000
+      }
+    ]
+  }
+]
+
 function ManagerMessages() {
+  const { userProfile, isDemoMode } = useAuth()
+  const isInDemoMode = isDemoMode || userProfile?.is_demo === true
+
+  const [messages, setMessages] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState('all')
   const [selectedMessage, setSelectedMessage] = useState(null)
   const [replyText, setReplyText] = useState('')
   const [showMobileDetail, setShowMobileDetail] = useState(false)
 
-  // Sample messages data
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      resident: {
-        name: 'Sarah Mitchell',
-        unit: '1201',
-        email: 'sarah.m@email.com',
-        phone: '(555) 123-4567'
-      },
-      unread: true,
-      archived: false,
-      thread: [
-        {
-          id: 1,
-          sender: 'resident',
-          text: "Hi! I'm having trouble with my key fob. It stopped working this morning and I can't get into the building. Can someone help?",
-          timestamp: Date.now() - 3600000 // 1 hour ago
+  useEffect(() => {
+    console.log('[ManagerMessages] Demo mode:', isInDemoMode)
+
+    async function loadMessages() {
+      if (isInDemoMode) {
+        console.log('Demo mode: using fake messages')
+        setMessages(DEMO_MESSAGES)
+        setLoading(false)
+      } else {
+        console.log('Real mode: fetching messages from Supabase')
+        try {
+          const data = await getMessages(userProfile?.building_id)
+          // Transform data to match component structure
+          // Group messages by conversation/resident
+          const conversationMap = new Map()
+          data.forEach(msg => {
+            const residentId = msg.sender_id === userProfile?.id ? msg.recipient_id : msg.sender_id
+            const resident = msg.sender_id === userProfile?.id ? msg.recipient : msg.sender
+            if (!conversationMap.has(residentId)) {
+              conversationMap.set(residentId, {
+                id: residentId,
+                resident: {
+                  name: resident?.full_name || 'Unknown',
+                  unit: resident?.unit_number || 'N/A',
+                  email: resident?.email || '',
+                  phone: resident?.phone || ''
+                },
+                unread: false,
+                archived: false,
+                thread: []
+              })
+            }
+            const conv = conversationMap.get(residentId)
+            conv.thread.push({
+              id: msg.id,
+              sender: msg.sender_id === userProfile?.id ? 'manager' : 'resident',
+              text: msg.content,
+              timestamp: new Date(msg.created_at).getTime()
+            })
+            if (!msg.read && msg.recipient_id === userProfile?.id) {
+              conv.unread = true
+            }
+          })
+          setMessages(Array.from(conversationMap.values()))
+        } catch (err) {
+          console.error('Error loading messages:', err)
+          setError('Failed to load messages. Please try again.')
+        } finally {
+          setLoading(false)
         }
-      ]
-    },
-    {
-      id: 2,
-      resident: {
-        name: 'Mike Thompson',
-        unit: '805',
-        email: 'mike.t@email.com',
-        phone: '(555) 234-5678'
-      },
-      unread: true,
-      archived: false,
-      thread: [
-        {
-          id: 1,
-          sender: 'resident',
-          text: "When will the gym reopen? It's been closed for 3 days now and I haven't seen any updates.",
-          timestamp: Date.now() - 7200000 // 2 hours ago
-        },
-        {
-          id: 2,
-          sender: 'manager',
-          text: "Hi Mike, thanks for reaching out. The gym is undergoing equipment maintenance. We expect it to reopen tomorrow morning.",
-          timestamp: Date.now() - 5400000 // 1.5 hours ago
-        },
-        {
-          id: 3,
-          sender: 'resident',
-          text: "Great, thanks for the update! Will there be any new equipment?",
-          timestamp: Date.now() - 3600000 // 1 hour ago
-        }
-      ]
-    },
-    {
-      id: 3,
-      resident: {
-        name: 'Jessica Kim',
-        unit: '402',
-        email: 'jessica.k@email.com',
-        phone: '(555) 345-6789'
-      },
-      unread: false,
-      archived: false,
-      thread: [
-        {
-          id: 1,
-          sender: 'resident',
-          text: "There's a package for me that's been sitting in the mail room for over a week. It's a large box from Amazon. Can you help me locate it?",
-          timestamp: Date.now() - 86400000 // 1 day ago
-        },
-        {
-          id: 2,
-          sender: 'manager',
-          text: "Hi Jessica, I found your package! It was placed in the overflow storage area due to its size. You can pick it up from the concierge desk.",
-          timestamp: Date.now() - 82800000 // 23 hours ago
-        },
-        {
-          id: 3,
-          sender: 'resident',
-          text: "Thank you so much! I'll grab it after work today.",
-          timestamp: Date.now() - 79200000 // 22 hours ago
-        }
-      ]
-    },
-    {
-      id: 4,
-      resident: {
-        name: 'Alex Rivera',
-        unit: '1104',
-        email: 'alex.r@email.com',
-        phone: '(555) 456-7890'
-      },
-      unread: false,
-      archived: false,
-      thread: [
-        {
-          id: 1,
-          sender: 'resident',
-          text: "Can we get recycling bins added to the 11th floor? Currently we have to go down to the 1st floor to recycle, which is inconvenient.",
-          timestamp: Date.now() - 172800000 // 2 days ago
-        },
-        {
-          id: 2,
-          sender: 'manager',
-          text: "That's a great suggestion, Alex! I'll bring this up at the next building committee meeting and see what we can do.",
-          timestamp: Date.now() - 158400000 // 44 hours ago
-        }
-      ]
-    },
-    {
-      id: 5,
-      resident: {
-        name: 'Chris Walker',
-        unit: '309',
-        email: 'chris.w@email.com',
-        phone: '(555) 567-8901'
-      },
-      unread: false,
-      archived: false,
-      thread: [
-        {
-          id: 1,
-          sender: 'resident',
-          text: "Thank you for fixing the elevator so quickly! I know it was an emergency repair and the team did a great job getting it done over the weekend.",
-          timestamp: Date.now() - 259200000 // 3 days ago
-        },
-        {
-          id: 2,
-          sender: 'manager',
-          text: "Thank you for the kind words, Chris! I'll pass along your appreciation to the maintenance team. We're glad we could get it fixed quickly.",
-          timestamp: Date.now() - 252000000 // 70 hours ago
-        }
-      ]
-    },
-    {
-      id: 6,
-      resident: {
-        name: 'Emily Chen',
-        unit: '1507',
-        email: 'emily.c@email.com',
-        phone: '(555) 678-9012'
-      },
-      unread: false,
-      archived: true,
-      thread: [
-        {
-          id: 1,
-          sender: 'resident',
-          text: "Is there a way to reserve the rooftop lounge for a private party?",
-          timestamp: Date.now() - 604800000 // 1 week ago
-        },
-        {
-          id: 2,
-          sender: 'manager',
-          text: "Yes! You can reserve the rooftop lounge through the building app. Go to Calendar > Book Space and select the date you'd like.",
-          timestamp: Date.now() - 601200000
-        },
-        {
-          id: 3,
-          sender: 'resident',
-          text: "Perfect, I found it. Thanks!",
-          timestamp: Date.now() - 597600000
-        }
-      ]
+      }
     }
-  ])
+    loadMessages()
+  }, [isInDemoMode, userProfile])
 
   // Format timestamp to relative time
   const formatTime = (timestamp) => {
@@ -259,7 +322,7 @@ function ManagerMessages() {
   }
 
   // Handle sending a reply
-  const handleSendReply = () => {
+  const handleSendReply = async () => {
     if (!replyText.trim() || !selectedMessage) return
 
     const newMessage = {
@@ -269,17 +332,42 @@ function ManagerMessages() {
       timestamp: Date.now()
     }
 
-    setMessages(prev => prev.map(msg =>
-      msg.id === selectedMessage.id
-        ? { ...msg, thread: [...msg.thread, newMessage] }
-        : msg
-    ))
+    if (isInDemoMode) {
+      // Demo mode: update local state only
+      setMessages(prev => prev.map(msg =>
+        msg.id === selectedMessage.id
+          ? { ...msg, thread: [...msg.thread, newMessage] }
+          : msg
+      ))
 
-    // Update selected message to show new reply
-    setSelectedMessage(prev => ({
-      ...prev,
-      thread: [...prev.thread, newMessage]
-    }))
+      setSelectedMessage(prev => ({
+        ...prev,
+        thread: [...prev.thread, newMessage]
+      }))
+    } else {
+      // Real mode: send to Supabase
+      try {
+        await sendMessage({
+          building_id: userProfile.building_id,
+          sender_id: userProfile.id,
+          recipient_id: selectedMessage.id,
+          content: replyText.trim()
+        })
+
+        setMessages(prev => prev.map(msg =>
+          msg.id === selectedMessage.id
+            ? { ...msg, thread: [...msg.thread, newMessage] }
+            : msg
+        ))
+
+        setSelectedMessage(prev => ({
+          ...prev,
+          thread: [...prev.thread, newMessage]
+        }))
+      } catch (err) {
+        console.error('Error sending message:', err)
+      }
+    }
 
     setReplyText('')
   }
@@ -321,6 +409,28 @@ function ManagerMessages() {
   // Get last message time
   const getLastTime = (thread) => {
     return thread[thread.length - 1].timestamp
+  }
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="manager-messages">
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: 'rgba(255,255,255,0.7)' }}>
+          Loading messages...
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="manager-messages">
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: '#ef4444' }}>
+          {error}
+        </div>
+      </div>
+    )
   }
 
   return (

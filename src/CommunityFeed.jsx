@@ -1,8 +1,87 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ArrowLeft, MessageSquare, HelpCircle, Flag, Heart, MessageCircle, Share2, MoreHorizontal, Send, X, Sparkles, Users, Hand, ChevronDown, ChevronUp, Search } from 'lucide-react'
+import { useAuth } from './contexts/AuthContext'
+import { getPosts, createPost, likePost, unlikePost } from './services/communityPostService'
 import './CommunityFeed.css'
 
-function CommunityFeed({ onBack, posts, onAddPost }) {
+// Demo posts data - used when in demo mode
+const DEMO_POSTS = [
+  {
+    id: 1,
+    type: 'share',
+    text: "Just moved into unit 1205! Excited to meet everyone. Anyone have recommendations for good restaurants nearby?",
+    author: 'Emily Chen',
+    unit: 'Unit 1205',
+    timestamp: Date.now() - 3600000,
+    likes: 12,
+    comments: 5
+  },
+  {
+    id: 2,
+    type: 'ask',
+    text: "Does anyone know if there's a package room or do we pick up from the front desk?",
+    author: 'Marcus Johnson',
+    unit: 'Unit 804',
+    timestamp: Date.now() - 7200000,
+    likes: 3,
+    comments: 8
+  },
+  {
+    id: 3,
+    type: 'report',
+    text: "The elevator on the east side has been making a strange noise. Just wanted to give everyone a heads up and let management know.",
+    author: 'Sarah Mitchell',
+    unit: 'Unit 1201',
+    timestamp: Date.now() - 14400000,
+    likes: 18,
+    comments: 4
+  },
+  {
+    id: 4,
+    type: 'share',
+    text: "Beautiful sunset from the rooftop tonight! Love living here.",
+    author: 'David Kim',
+    unit: 'Unit 1507',
+    timestamp: Date.now() - 28800000,
+    likes: 45,
+    comments: 12
+  },
+  {
+    id: 5,
+    type: 'ask',
+    text: "Is the gym open 24/7 or are there specific hours? Just moved in last week.",
+    author: 'Jessica Patel',
+    unit: 'Unit 402',
+    timestamp: Date.now() - 43200000,
+    likes: 7,
+    comments: 6
+  }
+]
+
+// Demo neighbors data
+const DEMO_NEIGHBORS = [
+  { id: 1, name: "Sarah Chen", unit: "1201", floor: 12, color: "blue", waved: false },
+  { id: 2, name: "Michael Torres", unit: "1203", floor: 12, color: "purple", waved: false },
+  { id: 3, name: "Emily Rodriguez", unit: "1205", floor: 12, color: "cyan", waved: false },
+  { id: 4, name: "David Kim", unit: "1207", floor: 12, color: "green", waved: false },
+  { id: 5, name: "Jessica Patel", unit: "1102", floor: 11, color: "pink", waved: false },
+  { id: 6, name: "James Wilson", unit: "1104", floor: 11, color: "orange", waved: false },
+  { id: 7, name: "Maria Garcia", unit: "1106", floor: 11, color: "blue", waved: false },
+  { id: 8, name: "Robert Lee", unit: "1301", floor: 13, color: "purple", waved: false },
+  { id: 9, name: "Amanda Brown", unit: "1303", floor: 13, color: "cyan", waved: false },
+  { id: 10, name: "Chris Johnson", unit: "1305", floor: 13, color: "green", waved: false },
+  { id: 11, name: "Lisa Anderson", unit: "1307", floor: 13, color: "pink", waved: false },
+  { id: 12, name: "Daniel Martinez", unit: "1002", floor: 10, color: "orange", waved: false },
+  { id: 13, name: "Sophie Taylor", unit: "1004", floor: 10, color: "blue", waved: false }
+]
+
+function CommunityFeed({ onBack }) {
+  const { userProfile, isDemoMode } = useAuth()
+  const isInDemoMode = isDemoMode || userProfile?.is_demo === true
+
+  const [posts, setPosts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [showPostModal, setShowPostModal] = useState(false)
   const [postType, setPostType] = useState('share')
   const [postText, setPostText] = useState('')
@@ -14,25 +93,45 @@ function CommunityFeed({ onBack, posts, onAddPost }) {
   // Neighbors data and state
   const currentUserFloor = 12
   const [expandedFloors, setExpandedFloors] = useState([currentUserFloor])
-  const [neighbors, setNeighbors] = useState([
-    // Floor 12 (Current user's floor)
-    { id: 1, name: "Sarah Chen", unit: "1201", floor: 12, color: "blue", waved: false },
-    { id: 2, name: "Michael Torres", unit: "1203", floor: 12, color: "purple", waved: false },
-    { id: 3, name: "Emily Rodriguez", unit: "1205", floor: 12, color: "cyan", waved: false },
-    { id: 4, name: "David Kim", unit: "1207", floor: 12, color: "green", waved: false },
-    // Floor 11
-    { id: 5, name: "Jessica Patel", unit: "1102", floor: 11, color: "pink", waved: false },
-    { id: 6, name: "James Wilson", unit: "1104", floor: 11, color: "orange", waved: false },
-    { id: 7, name: "Maria Garcia", unit: "1106", floor: 11, color: "blue", waved: false },
-    // Floor 13
-    { id: 8, name: "Robert Lee", unit: "1301", floor: 13, color: "purple", waved: false },
-    { id: 9, name: "Amanda Brown", unit: "1303", floor: 13, color: "cyan", waved: false },
-    { id: 10, name: "Chris Johnson", unit: "1305", floor: 13, color: "green", waved: false },
-    { id: 11, name: "Lisa Anderson", unit: "1307", floor: 13, color: "pink", waved: false },
-    // Floor 10
-    { id: 12, name: "Daniel Martinez", unit: "1002", floor: 10, color: "orange", waved: false },
-    { id: 13, name: "Sophie Taylor", unit: "1004", floor: 10, color: "blue", waved: false }
-  ])
+  const [neighbors, setNeighbors] = useState(DEMO_NEIGHBORS)
+
+  useEffect(() => {
+    console.log('[CommunityFeed] Demo mode:', isInDemoMode)
+
+    async function loadPosts() {
+      if (isInDemoMode) {
+        console.log('Demo mode: using fake posts')
+        setPosts(DEMO_POSTS)
+        setLoading(false)
+      } else {
+        console.log('Real mode: fetching posts from Supabase')
+        try {
+          const data = await getPosts(userProfile?.building_id)
+          const transformedData = data.map(post => ({
+            id: post.id,
+            type: post.type || 'share',
+            text: post.content,
+            author: post.author?.full_name || 'Anonymous',
+            unit: `Unit ${post.author?.unit_number || 'N/A'}`,
+            timestamp: new Date(post.created_at).getTime(),
+            likes: post.like_count || 0,
+            comments: post.comment_count || 0,
+            userLiked: post.user_liked || false
+          }))
+          setPosts(transformedData)
+          // Set liked posts from user's likes
+          const userLikedPosts = new Set(transformedData.filter(p => p.userLiked).map(p => p.id))
+          setLikedPosts(userLikedPosts)
+        } catch (err) {
+          console.error('Error loading posts:', err)
+          setError('Failed to load posts. Please try again.')
+        } finally {
+          setLoading(false)
+        }
+      }
+    }
+    loadPosts()
+  }, [isInDemoMode, userProfile])
 
   // Toggle floor expansion
   const toggleFloor = (floor) => {
@@ -126,18 +225,57 @@ function CommunityFeed({ onBack, posts, onAddPost }) {
     }
   }
 
-  const handlePostSubmit = () => {
-    if (postText.trim() && onAddPost) {
-      onAddPost({
+  const handlePostSubmit = async () => {
+    if (!postText.trim()) return
+
+    if (isInDemoMode) {
+      // Demo mode: add to local state only
+      const newPost = {
+        id: Date.now(),
         type: postType,
         text: postText.trim(),
-      })
-      setShowPostModal(false)
-      setPostText('')
+        author: 'You',
+        unit: 'Unit 1201',
+        timestamp: Date.now(),
+        likes: 0,
+        comments: 0
+      }
+      setPosts([newPost, ...posts])
+    } else {
+      // Real mode: save to Supabase
+      try {
+        await createPost({
+          building_id: userProfile.building_id,
+          user_id: userProfile.id,
+          type: postType,
+          content: postText.trim()
+        })
+        // Reload posts
+        const data = await getPosts(userProfile.building_id)
+        const transformedData = data.map(post => ({
+          id: post.id,
+          type: post.type || 'share',
+          text: post.content,
+          author: post.author?.full_name || 'Anonymous',
+          unit: `Unit ${post.author?.unit_number || 'N/A'}`,
+          timestamp: new Date(post.created_at).getTime(),
+          likes: post.like_count || 0,
+          comments: post.comment_count || 0
+        }))
+        setPosts(transformedData)
+      } catch (err) {
+        console.error('Error creating post:', err)
+      }
     }
+
+    setShowPostModal(false)
+    setPostText('')
   }
 
-  const handleLike = (postId) => {
+  const handleLike = async (postId) => {
+    const isCurrentlyLiked = likedPosts.has(postId)
+
+    // Optimistic update
     setLikedPosts(prev => {
       const newSet = new Set(prev)
       if (newSet.has(postId)) {
@@ -147,6 +285,29 @@ function CommunityFeed({ onBack, posts, onAddPost }) {
       }
       return newSet
     })
+
+    if (!isInDemoMode) {
+      // Real mode: update in Supabase
+      try {
+        if (isCurrentlyLiked) {
+          await unlikePost(postId, userProfile.id)
+        } else {
+          await likePost(postId, userProfile.id)
+        }
+      } catch (err) {
+        console.error('Error updating like:', err)
+        // Revert optimistic update on error
+        setLikedPosts(prev => {
+          const newSet = new Set(prev)
+          if (isCurrentlyLiked) {
+            newSet.add(postId)
+          } else {
+            newSet.delete(postId)
+          }
+          return newSet
+        })
+      }
+    }
   }
 
   const formatTimeAgo = (timestamp) => {
@@ -160,6 +321,46 @@ function CommunityFeed({ onBack, posts, onAddPost }) {
     if (minutes < 60) return `${minutes}m ago`
     if (hours < 24) return `${hours}h ago`
     return `${days}d ago`
+  }
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="community-feed-container">
+        <div className="bg-orb bg-orb-1"></div>
+        <div className="bg-orb bg-orb-2"></div>
+        <header className="community-feed-header">
+          <button className="back-button-glass" onClick={onBack}>
+            <ArrowLeft size={20} />
+            <span>Back</span>
+          </button>
+          <h1 className="page-title-light">Community</h1>
+        </header>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: 'rgba(255,255,255,0.7)' }}>
+          Loading posts...
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="community-feed-container">
+        <div className="bg-orb bg-orb-1"></div>
+        <div className="bg-orb bg-orb-2"></div>
+        <header className="community-feed-header">
+          <button className="back-button-glass" onClick={onBack}>
+            <ArrowLeft size={20} />
+            <span>Back</span>
+          </button>
+          <h1 className="page-title-light">Community</h1>
+        </header>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: '#ef4444' }}>
+          {error}
+        </div>
+      </div>
+    )
   }
 
   return (
