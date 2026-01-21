@@ -29,6 +29,7 @@ function Home({ buildingCode, onNavigate }) {
   const weatherData = {
     temp: 72,
     condition: 'sunny',
+    conditionText: 'Mostly Clear',
     high: 78,
     low: 65
   }
@@ -234,9 +235,9 @@ function Home({ buildingCode, onNavigate }) {
       {/* Hero Section with Building Image */}
       <section className="hero-section">
         <div className="hero-image-container">
-          {/* Actual building image */}
+          {/* Premium glass high-rise image */}
           <img
-            src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
+            src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200"
             alt="The Paramount Building"
             className="hero-image"
           />
@@ -250,15 +251,16 @@ function Home({ buildingCode, onNavigate }) {
               <span className="weather-clock">{formatTime(currentTime)}</span>
             </div>
             <div className="weather-row">
-              <WeatherIcon size={16} className="weather-icon" />
-              <span className="weather-temp">{weatherData.temp}°F</span>
+              <WeatherIcon size={14} className="weather-icon" />
+              <span className="weather-temp">{weatherData.temp}°</span>
+              <span className="weather-condition">{weatherData.conditionText}</span>
             </div>
           </div>
 
           {/* Settings Button - Top Right */}
           <div className="hero-actions">
             <button className="hero-settings-btn" onClick={() => handleFeatureClick('Settings')}>
-              <Settings size={18} />
+              <Settings size={20} />
             </button>
           </div>
 
@@ -302,7 +304,7 @@ function Home({ buildingCode, onNavigate }) {
             <span>Coming up</span>
           </h3>
           <div className="upcoming-list">
-            {upcomingItems.slice(0, 4).map((item, index) => (
+            {upcomingItems.slice(0, 3).map((item, index) => (
               <div
                 key={index}
                 className="upcoming-card"
@@ -322,6 +324,32 @@ function Home({ buildingCode, onNavigate }) {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Quick Action Cards */}
+      <section className="quick-cards-section animate-in delay-3">
+        <div className="quick-cards-content">
+          <button className="quick-card" onClick={() => handleFeatureClick('Packages')}>
+            <div className="quick-card-icon">
+              <Package size={22} />
+            </div>
+            <div className="quick-card-text">
+              <span className="quick-card-title">Manage Deliveries</span>
+              <span className="quick-card-subtitle">Track and arrange pickups</span>
+            </div>
+            <ChevronRight size={18} className="quick-card-arrow" />
+          </button>
+          <button className="quick-card" onClick={() => handleFeatureClick('Community')}>
+            <div className="quick-card-icon">
+              <MessageSquare size={22} />
+            </div>
+            <div className="quick-card-text">
+              <span className="quick-card-title">Connect with Neighbors</span>
+              <span className="quick-card-subtitle">Chat, buy & sell, share updates</span>
+            </div>
+            <ChevronRight size={18} className="quick-card-arrow" />
+          </button>
         </div>
       </section>
 
