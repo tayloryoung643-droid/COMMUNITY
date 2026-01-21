@@ -16,9 +16,19 @@
 
 .home-container {
   min-height: 100vh;
-  background: var(--warm-bg);
+  background: #E8E6E3;
   padding-bottom: 90px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+/* Mobile-first centered app container */
+.home-app-frame {
+  max-width: 500px;
+  margin: 0 auto;
+  background: var(--warm-bg);
+  min-height: 100vh;
+  position: relative;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.1);
 }
 
 /* ============================================
@@ -27,6 +37,8 @@
 .hero-section {
   position: relative;
   width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .hero-image-container {
@@ -36,6 +48,7 @@
   max-height: 400px;
   width: 100%;
   overflow: hidden;
+  border-radius: 0 0 24px 24px;
 }
 
 .hero-image {
@@ -140,6 +153,9 @@
   margin-top: -20px;
   position: relative;
   z-index: 1;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Section Titles */
@@ -364,8 +380,10 @@
 .bottom-nav {
   position: fixed;
   bottom: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 500px;
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -374,6 +392,8 @@
   border-top: 1px solid var(--warm-border);
   padding-bottom: env(safe-area-inset-bottom, 8px);
   z-index: 1000;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .nav-tab {
@@ -641,16 +661,10 @@
   }
 }
 
+/* Mobile-first: Keep narrow layout on all screen sizes */
 @media (min-width: 768px) {
-  .main-content {
-    max-width: 600px;
-    margin: 0 auto;
-  }
-
-  .bottom-nav {
-    max-width: 600px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-radius: 20px 20px 0 0;
+  .home-container {
+    /* Subtle darker background to frame the app */
+    background: linear-gradient(180deg, #D8D6D3 0%, #E8E6E3 100%);
   }
 }
