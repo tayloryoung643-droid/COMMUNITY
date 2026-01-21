@@ -5,13 +5,13 @@
 /* Warm cream color palette */
 :root {
   --warm-bg: #FAF9F7;
-  --warm-card: #FFFFFF;
-  --warm-card-alt: #F7F6F4;
+  --warm-card: #FDFCFA;
+  --warm-card-alt: #F5F4F2;
   --warm-text-primary: #1A1A1A;
-  --warm-text-secondary: #6B6B6B;
-  --warm-text-muted: #9A9A9A;
+  --warm-text-secondary: #4A4A4A;
+  --warm-text-muted: #8A8A8A;
   --warm-accent: #C9A86C;
-  --warm-border: rgba(0, 0, 0, 0.06);
+  --warm-border: rgba(0, 0, 0, 0.05);
 }
 
 .home-container {
@@ -52,9 +52,12 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.15) 0%,
-    rgba(0, 0, 0, 0.1) 50%,
-    rgba(0, 0, 0, 0.4) 100%
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0.05) 40%,
+    rgba(0, 0, 0, 0.15) 70%,
+    rgba(250, 249, 247, 0.4) 85%,
+    rgba(250, 249, 247, 0.85) 95%,
+    #FAF9F7 100%
   );
   pointer-events: none;
 }
@@ -103,7 +106,7 @@
 /* Building Name */
 .hero-text-container {
   position: absolute;
-  bottom: 40px;
+  bottom: 80px;
   left: 0;
   right: 0;
   text-align: center;
@@ -133,15 +136,18 @@
    MAIN CONTENT
    ============================================ */
 .main-content {
-  padding: 24px 16px;
+  padding: 16px 16px 24px;
+  margin-top: -20px;
+  position: relative;
+  z-index: 1;
 }
 
 /* Section Titles */
 .section-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   color: var(--warm-text-primary);
-  margin: 0 0 16px 0;
+  margin: 0 0 14px 0;
   letter-spacing: -0.02em;
 }
 
@@ -164,7 +170,7 @@
   margin-bottom: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.03);
   text-align: left;
 }
 
