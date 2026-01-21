@@ -1,11 +1,14 @@
 /* ============================================
    RESIDENT HOME - Oura-Inspired Premium Theme
    "This is my building" - calm, premium, modern
+
+   CRITICAL: All content in ONE centered container
    ============================================ */
 
 /* Color palette - warm neutral whites */
 :root {
-  --bg-primary: #F6F3EE;
+  --bg-page: #E8E4DC;
+  --bg-app: #F6F3EE;
   --bg-card: #FFFFFF;
   --bg-card-secondary: #F9F7F4;
   --text-primary: #1A1A1A;
@@ -16,31 +19,40 @@
   --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
 }
 
-.home-container {
+/* Page background - visible when zoomed out */
+.home-page {
   min-height: 100vh;
-  background: var(--bg-primary);
-  padding-bottom: 90px;
+  background: var(--bg-page);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Mobile-first centered layout */
-.home-app-frame {
-  max-width: 500px;
-  margin: 0 auto;
-  background: var(--bg-primary);
-  min-height: 100vh;
-  position: relative;
-}
-
 /* ============================================
-   HERO SECTION - 40-45% of screen
+   SINGLE CENTERED APP CONTAINER
+   This is the key to perfect alignment!
    ============================================ */
-.hero-section {
-  position: relative;
+.app-container {
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
+  background: var(--bg-app);
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 80px; /* Space for fixed nav */
+}
+
+/* Desktop shadow effect */
+@media (min-width: 520px) {
+  .app-container {
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* ============================================
+   HERO SECTION - Full width of container
+   ============================================ */
+.hero-section {
+  width: 100%;
 }
 
 .hero-image-container {
@@ -61,14 +73,15 @@
   object-position: center;
 }
 
-/* Subtle warm tint for golden hour feel */
+/* Warm amber overlay - shifts cold images to warm tones */
 .hero-warm-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(255, 200, 150, 0.08) 0%,
-    rgba(255, 180, 120, 0.1) 50%,
+    rgba(255, 180, 100, 0.25) 0%,
+    rgba(255, 160, 80, 0.2) 40%,
+    rgba(255, 140, 60, 0.15) 70%,
     transparent 100%
   );
   pointer-events: none;
@@ -84,13 +97,13 @@
     transparent 50%,
     rgba(246, 243, 238, 0.2) 65%,
     rgba(246, 243, 238, 0.5) 78%,
-    rgba(246, 243, 238, 0.8) 88%,
+    rgba(246, 243, 238, 0.85) 90%,
     #F6F3EE 100%
   );
   pointer-events: none;
 }
 
-/* Weather Widget - very light, unobtrusive (Oura-style) */
+/* Weather Widget - Oura-style, unobtrusive */
 .weather-widget {
   position: absolute;
   top: 16px;
@@ -100,17 +113,17 @@
 }
 
 .weather-datetime {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
   color: rgba(255, 255, 255, 0.85);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   letter-spacing: 0.02em;
 }
 
 .weather-temp-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   margin-bottom: 2px;
 }
 
@@ -120,51 +133,56 @@
 }
 
 .weather-temp {
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 300;
   color: white;
   line-height: 1;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.15);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.2);
 }
 
 .weather-condition {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
   color: rgba(255, 255, 255, 0.8);
 }
 
-/* Building Name - centered, elegant serif */
+/* Building Name - "The" smaller italic, "Paramount" large serif */
 .hero-text-container {
   position: absolute;
-  bottom: 60px;
+  bottom: 50px;
   left: 0;
   right: 0;
   text-align: center;
 }
 
 .hero-the {
-  display: none; /* Hide "The" - show full name only */
+  display: block;
+  font-size: 16px;
+  font-weight: 300;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 2px;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.2);
 }
 
 .hero-building-name {
-  font-size: 38px;
-  font-weight: 300;
+  font-size: 40px;
+  font-weight: 400;
   color: white;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   margin: 0;
-  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.25);
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
   font-family: 'Georgia', 'Times New Roman', serif;
+  text-transform: uppercase;
 }
 
 /* ============================================
-   MAIN CONTENT
+   MAIN CONTENT - Full width of container
    ============================================ */
 .main-content {
   padding: 24px 20px 32px;
-  position: relative;
-  z-index: 1;
-  max-width: 500px;
-  margin: 0 auto;
+  width: 100%;
 }
 
 /* Section Titles - calm and understated */
@@ -176,7 +194,7 @@
   letter-spacing: -0.01em;
 }
 
-/* Secondary section titles */
+/* Secondary section titles - quieter */
 .section-title-secondary {
   font-size: 15px;
   font-weight: 500;
@@ -404,7 +422,7 @@
 }
 
 /* ============================================
-   BOTTOM NAVIGATION - Subtle, white
+   BOTTOM NAVIGATION - Fixed within container
    ============================================ */
 .bottom-nav {
   position: fixed;
@@ -456,7 +474,7 @@
 }
 
 /* ============================================
-   MODALS
+   MODALS - Outside the app container
    ============================================ */
 .modal-overlay {
   position: fixed;
@@ -682,21 +700,10 @@
   }
 
   .weather-temp {
-    font-size: 30px;
+    font-size: 28px;
   }
 
   .today-card-time {
     display: none;
-  }
-}
-
-/* Desktop: warm background behind centered app */
-@media (min-width: 768px) {
-  .home-container {
-    background: linear-gradient(180deg, #E8E4DC 0%, #F2EEE6 100%);
-  }
-
-  .home-app-frame {
-    box-shadow: 0 0 80px rgba(0, 0, 0, 0.08);
   }
 }

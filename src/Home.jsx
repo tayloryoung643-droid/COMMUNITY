@@ -78,40 +78,43 @@ function Home({ buildingCode, onNavigate }) {
   }
 
   return (
-    <div className="home-container">
-      {/* Hero Section with Building Image */}
-      <section className="hero-section">
-        <div className="hero-image-container">
-          {/* Warm luxury building entrance image */}
-          <img
-            src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200"
-            alt="The Paramount Building"
-            className="hero-image"
-          />
-          <div className="hero-warm-overlay"></div>
-          <div className="hero-gradient-overlay"></div>
+    <div className="home-page">
+      {/* Single centered app container for perfect alignment */}
+      <div className="app-container">
+        {/* Hero Section with Building Image */}
+        <section className="hero-section">
+          <div className="hero-image-container">
+            {/* Warm luxury building image */}
+            <img
+              src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800"
+              alt="The Paramount Building"
+              className="hero-image"
+            />
+            <div className="hero-warm-overlay"></div>
+            <div className="hero-gradient-overlay"></div>
 
-          {/* Weather Widget - Top Left */}
-          <div className="weather-widget">
-            <div className="weather-datetime">
-              {formatDay(currentTime)} | {formatTime(currentTime)}
+            {/* Weather Widget - Top Left */}
+            <div className="weather-widget">
+              <div className="weather-datetime">
+                {formatDay(currentTime)} | {formatTime(currentTime)}
+              </div>
+              <div className="weather-temp-row">
+                <WeatherIcon size={20} className="weather-icon" />
+                <span className="weather-temp">{weatherData.temp}°</span>
+              </div>
+              <div className="weather-condition">{weatherData.conditionText}</div>
             </div>
-            <div className="weather-temp-row">
-              <WeatherIcon size={22} className="weather-icon" />
-              <span className="weather-temp">{weatherData.temp}°</span>
+
+            {/* Building Name - Centered in Hero */}
+            <div className="hero-text-container">
+              <span className="hero-the">The</span>
+              <h1 className="hero-building-name">Paramount</h1>
             </div>
-            <div className="weather-condition">{weatherData.conditionText}</div>
           </div>
+        </section>
 
-          {/* Building Name - Centered in Hero */}
-          <div className="hero-text-container">
-            <h1 className="hero-building-name">The Paramount</h1>
-          </div>
-        </div>
-      </section>
-
-      {/* Main Content */}
-      <main className="main-content">
+        {/* Main Content */}
+        <main className="main-content">
         {/* Today at The Paramount */}
         <section className="today-section">
           <h2 className="section-title">Today at The Paramount</h2>
@@ -179,27 +182,28 @@ function Home({ buildingCode, onNavigate }) {
             <ChevronRight size={20} className="action-card-arrow" />
           </button>
         </section>
-      </main>
+        </main>
 
-      {/* Bottom Navigation - Fixed */}
-      <nav className="bottom-nav">
-        <button className="nav-tab active" onClick={() => handleFeatureClick('Home')}>
-          <HomeIcon size={24} />
-          <span>Home</span>
-        </button>
-        <button className="nav-tab" onClick={() => handleFeatureClick('Calendar')}>
-          <Calendar size={24} />
-          <span>Events</span>
-        </button>
-        <button className="nav-tab" onClick={() => handleFeatureClick('Community')}>
-          <MessageSquare size={24} />
-          <span>Community</span>
-        </button>
-        <button className="nav-tab" onClick={() => handleFeatureClick('Building')}>
-          <Building2 size={24} />
-          <span>Building</span>
-        </button>
-      </nav>
+        {/* Bottom Navigation - Inside app container for alignment */}
+        <nav className="bottom-nav">
+          <button className="nav-tab active" onClick={() => handleFeatureClick('Home')}>
+            <HomeIcon size={22} />
+            <span>Home</span>
+          </button>
+          <button className="nav-tab" onClick={() => handleFeatureClick('Calendar')}>
+            <Calendar size={22} />
+            <span>Events</span>
+          </button>
+          <button className="nav-tab" onClick={() => handleFeatureClick('Community')}>
+            <MessageSquare size={22} />
+            <span>Community</span>
+          </button>
+          <button className="nav-tab" onClick={() => handleFeatureClick('Building')}>
+            <Building2 size={22} />
+            <span>Building</span>
+          </button>
+        </nav>
+      </div>
 
       {/* Contact Manager Modal */}
       {showContactModal && (
