@@ -5,6 +5,11 @@
    CRITICAL: All content in ONE centered container
    ============================================ */
 
+/* Universal box-sizing - CRITICAL for alignment */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 /* Color palette - warm cream whites */
 :root {
   --bg-page: #E8E4DC;
@@ -35,10 +40,11 @@
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
+  padding: 0;
+  padding-bottom: 80px; /* Space for fixed nav */
   background: var(--bg-app);
   min-height: 100vh;
   position: relative;
-  padding-bottom: 80px; /* Space for fixed nav */
   box-sizing: border-box;
   overflow-x: hidden; /* Prevent horizontal overflow */
 }
@@ -55,6 +61,10 @@
    ============================================ */
 .hero-section {
   width: 100%;
+  padding: 0 !important;
+  margin: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
   box-sizing: border-box;
 }
 
@@ -81,11 +91,7 @@
 .hero-warm-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 170, 80, 0.15) 0%,
-    rgba(255, 170, 80, 0.05) 100%
-  );
+  background: linear-gradient(rgba(255, 170, 80, 0.2), rgba(255, 170, 80, 0.1));
   pointer-events: none;
 }
 
@@ -182,9 +188,19 @@
 /* ============================================
    MAIN CONTENT - Full width of container
    ============================================ */
+/* Reset any browser defaults on main element */
+main {
+  display: block;
+  margin: 0 !important;
+  padding: 0;
+}
+
 .main-content {
-  padding: 24px 20px 32px;
   width: 100%;
+  padding: 24px 16px 32px;
+  margin: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
   box-sizing: border-box;
 }
 
@@ -209,7 +225,10 @@
    TODAY SECTION - Primary cards
    ============================================ */
 .today-section {
+  width: 100%;
+  margin: 0;
   margin-bottom: 32px;
+  box-sizing: border-box;
 }
 
 .today-card {
@@ -290,7 +309,10 @@
    COMING UP SECTION - Quieter, secondary
    ============================================ */
 .coming-up-section {
+  width: 100%;
+  margin: 0;
   margin-bottom: 24px;
+  box-sizing: border-box;
 }
 
 .event-card {
@@ -363,9 +385,12 @@
    QUICK ACTIONS - Optional, quieter
    ============================================ */
 .quick-actions-section {
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 .action-card {
