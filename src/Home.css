@@ -16,7 +16,7 @@
 
 .home-container {
   min-height: 100vh;
-  background: #E8E6E3;
+  background: var(--warm-bg);
   padding-bottom: 90px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
 }
@@ -60,16 +60,34 @@
   object-position: center;
 }
 
+/* Warm amber tint overlay - makes cold images feel warmer */
+.hero-warm-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 180, 100, 0.15) 0%,
+    rgba(255, 160, 80, 0.2) 30%,
+    rgba(255, 140, 60, 0.15) 60%,
+    transparent 100%
+  );
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* Fade to background gradient - smooth 200px transition */
 .hero-gradient-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.1) 0%,
-    rgba(0, 0, 0, 0.05) 40%,
-    rgba(0, 0, 0, 0.15) 70%,
-    rgba(250, 249, 247, 0.4) 85%,
-    rgba(250, 249, 247, 0.85) 95%,
+    transparent 0%,
+    transparent 40%,
+    rgba(250, 249, 247, 0.1) 55%,
+    rgba(250, 249, 247, 0.3) 65%,
+    rgba(250, 249, 247, 0.5) 75%,
+    rgba(250, 249, 247, 0.75) 85%,
+    rgba(250, 249, 247, 0.92) 93%,
     #FAF9F7 100%
   );
   pointer-events: none;
@@ -158,11 +176,11 @@
   margin-right: auto;
 }
 
-/* Section Titles */
+/* Section Titles - dark gray for strong contrast */
 .section-title {
   font-size: 20px;
   font-weight: 600;
-  color: var(--warm-text-primary);
+  color: #1F2937;
   margin: 0 0 14px 0;
   letter-spacing: -0.02em;
 }
@@ -664,7 +682,7 @@
 /* Mobile-first: Keep narrow layout on all screen sizes */
 @media (min-width: 768px) {
   .home-container {
-    /* Subtle darker background to frame the app */
-    background: linear-gradient(180deg, #D8D6D3 0%, #E8E6E3 100%);
+    /* Warm taupe background to frame the centered app */
+    background: linear-gradient(180deg, #E8E4DC 0%, #F0EBE4 100%);
   }
 }

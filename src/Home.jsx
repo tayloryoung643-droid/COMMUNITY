@@ -88,6 +88,7 @@ function Home({ buildingCode, onNavigate }) {
             alt="The Paramount Building"
             className="hero-image"
           />
+          <div className="hero-warm-overlay"></div>
           <div className="hero-gradient-overlay"></div>
 
           {/* Weather Widget - Top Left */}
