@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Package, Calendar, Users, ChevronRight, MessageSquare, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon, Home as HomeIcon, Wine } from 'lucide-react'
+import { Package, Calendar, Users, ChevronRight, MessageSquare, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon, Home as HomeIcon, Wine, Building2 } from 'lucide-react'
 import './Home.css'
 
 function Home({ buildingCode, onNavigate }) {
@@ -194,6 +194,10 @@ function Home({ buildingCode, onNavigate }) {
         <button className="nav-tab" onClick={() => handleFeatureClick('Community')}>
           <MessageSquare size={24} />
           <span>Community</span>
+        </button>
+        <button className="nav-tab" onClick={() => handleFeatureClick('Building')}>
+          <Building2 size={24} />
+          <span>Building</span>
         </button>
       </nav>
 
