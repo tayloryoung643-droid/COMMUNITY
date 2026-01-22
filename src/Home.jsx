@@ -193,26 +193,27 @@ function Home({ buildingCode, onNavigate }) {
         </section>
         </main>
 
-        {/* Bottom Navigation - Inside app container for alignment */}
-        <nav className="bottom-nav">
-          <button className="nav-tab active" onClick={() => handleFeatureClick('Home')}>
-            <HomeIcon size={22} />
-            <span>Home</span>
-          </button>
-          <button className="nav-tab" onClick={() => handleFeatureClick('Calendar')}>
-            <Calendar size={22} />
-            <span>Events</span>
-          </button>
-          <button className="nav-tab" onClick={() => handleFeatureClick('Community')}>
-            <MessageSquare size={22} />
-            <span>Community</span>
-          </button>
-          <button className="nav-tab" onClick={() => handleFeatureClick('Building')}>
-            <Building2 size={22} />
-            <span>Building</span>
-          </button>
-        </nav>
-      </div>
+        </div>
+
+      {/* Bottom Navigation - Outside app container to avoid clipping */}
+      <nav className="bottom-nav">
+        <button className="nav-tab active" onClick={() => handleFeatureClick('Home')}>
+          <HomeIcon size={22} />
+          <span>Home</span>
+        </button>
+        <button className="nav-tab" onClick={() => handleFeatureClick('Calendar')}>
+          <Calendar size={22} />
+          <span>Events</span>
+        </button>
+        <button className="nav-tab" onClick={() => handleFeatureClick('Community')}>
+          <MessageSquare size={22} />
+          <span>Community</span>
+        </button>
+        <button className="nav-tab" onClick={() => handleFeatureClick('Building')}>
+          <Building2 size={22} />
+          <span>Building</span>
+        </button>
+      </nav>
 
       {/* Contact Manager Modal */}
       {showContactModal && (
