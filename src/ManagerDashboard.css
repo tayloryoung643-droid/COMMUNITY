@@ -28,10 +28,16 @@
   --md-card-shadow-hover: 0 4px 24px rgba(0, 0, 0, 0.08);
 
   /* Primary accent - Teal (matches Resident UI) */
+  /* Strong accent - reserved for primary actions only */
   --md-accent: #5B9A9A;
   --md-accent-light: #6BAAAA;
-  --md-accent-glow: rgba(91, 154, 154, 0.25);
-  --md-accent-subtle: rgba(91, 154, 154, 0.15);
+  --md-accent-glow: rgba(91, 154, 154, 0.18);
+  --md-accent-subtle: rgba(91, 154, 154, 0.1);
+
+  /* Soft accent - default for most UI elements */
+  --md-accent-soft: rgba(130, 170, 170, 0.7);
+  --md-accent-muted: rgba(130, 170, 170, 0.5);
+  --md-accent-whisper: rgba(130, 170, 170, 0.35);
 
   /* Secondary accent - Purple (calendar/events only) */
   --md-purple: #A78BFA;
@@ -176,7 +182,7 @@
   height: 40px;
   background: rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-lg);
-  color: var(--md-accent-light);
+  color: var(--md-accent-soft);
   flex-shrink: 0;
 }
 
@@ -229,12 +235,12 @@
 }
 
 .nav-item.active {
-  color: var(--md-accent-light);
+  color: var(--md-accent-soft);
   background: transparent;
 }
 
 .nav-item.active svg {
-  color: var(--md-accent-light);
+  color: var(--md-accent-soft);
 }
 
 .nav-item svg {
@@ -253,8 +259,8 @@
   padding: 2px 8px;
   font-size: 11px;
   font-weight: 500;
-  color: var(--md-accent-light);
-  background: rgba(91, 154, 154, 0.2);
+  color: var(--md-accent-muted);
+  background: rgba(130, 170, 170, 0.12);
   border-radius: var(--radius-full);
 }
 
@@ -282,9 +288,9 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, var(--md-accent) 0%, #4A7A7A 100%);
+  background: rgba(130, 170, 170, 0.25);
   border-radius: var(--radius-full);
-  color: white;
+  color: var(--md-text-primary);
   font-size: var(--font-size-sm);
   font-weight: 600;
   flex-shrink: 0;
@@ -427,7 +433,7 @@
   font-size: 10px;
   font-weight: 600;
   color: white;
-  background: var(--md-accent);
+  background: rgba(91, 154, 154, 0.8);
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
@@ -495,8 +501,8 @@
 }
 
 .stat-cyan .stat-icon {
-  background: var(--md-accent-subtle);
-  color: var(--md-accent-light);
+  background: rgba(130, 170, 170, 0.12);
+  color: var(--md-accent-soft);
 }
 
 .stat-content {
@@ -562,7 +568,7 @@
 .view-all-btn {
   font-size: var(--font-size-sm);
   font-weight: 500;
-  color: var(--md-accent);
+  color: var(--md-accent-muted);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -570,7 +576,7 @@
 }
 
 .view-all-btn:hover {
-  color: var(--md-accent-light);
+  color: var(--md-accent-soft);
 }
 
 /* Activity Card */
@@ -684,12 +690,12 @@
 }
 
 .quick-action-btn svg {
-  color: var(--md-accent);
+  color: var(--md-accent-muted);
   transition: all var(--transition-base);
 }
 
 .quick-action-btn:hover svg {
-  color: var(--md-accent-light);
+  color: var(--md-accent-soft);
 }
 
 .quick-action-btn span {
@@ -815,7 +821,7 @@
 .stat-card.clickable:hover .stat-arrow {
   opacity: 1;
   right: var(--spacing-sm);
-  color: var(--md-accent);
+  color: var(--md-accent-muted);
 }
 
 .activity-item.clickable {
@@ -835,12 +841,12 @@
 
 .activity-item.clickable:hover .activity-arrow {
   opacity: 1;
-  color: var(--md-accent);
+  color: var(--md-accent-muted);
 }
 
 .activity-detail {
   font-size: var(--font-size-xs);
-  color: var(--md-accent);
+  color: var(--md-accent-muted);
   margin-top: 2px;
 }
 
@@ -859,10 +865,10 @@
   color: #FBBF24;
 }
 
-/* Activity Cyan - Use teal accent */
+/* Activity Cyan - Use soft teal */
 .activity-cyan {
-  background: var(--md-accent-subtle);
-  color: var(--md-accent-light);
+  background: rgba(130, 170, 170, 0.12);
+  color: var(--md-accent-soft);
 }
 
 /* Notification Wrapper */
@@ -871,9 +877,9 @@
 }
 
 .notification-btn.active {
-  background: var(--md-accent-subtle);
-  border-color: var(--md-accent);
-  color: var(--md-accent);
+  background: rgba(130, 170, 170, 0.08);
+  border-color: var(--md-accent-muted);
+  color: var(--md-accent-soft);
 }
 
 .notification-backdrop {
@@ -928,7 +934,7 @@
 
 .mark-read-btn {
   font-size: var(--font-size-xs);
-  color: var(--md-accent);
+  color: var(--md-accent-muted);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -936,7 +942,7 @@
 }
 
 .mark-read-btn:hover {
-  color: var(--md-accent-light);
+  color: var(--md-accent-soft);
 }
 
 .notifications-dropdown .notifications-list {
@@ -959,11 +965,11 @@
 }
 
 .notification-item.unread {
-  background: var(--md-accent-subtle);
+  background: rgba(130, 170, 170, 0.06);
 }
 
 .notification-item.unread:hover {
-  background: rgba(91, 138, 138, 0.15);
+  background: rgba(130, 170, 170, 0.1);
 }
 
 .notification-icon {
@@ -974,7 +980,7 @@
   height: 36px;
   background: rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-md);
-  color: var(--md-accent);
+  color: var(--md-accent-muted);
   flex-shrink: 0;
 }
 
@@ -1006,7 +1012,7 @@
 .unread-dot {
   width: 8px;
   height: 8px;
-  background: var(--md-accent);
+  background: var(--md-accent-soft);
   border-radius: 50%;
   flex-shrink: 0;
   margin-top: 6px;
@@ -1022,7 +1028,7 @@
   padding: var(--spacing-sm);
   font-size: var(--font-size-sm);
   font-weight: 500;
-  color: var(--md-accent);
+  color: var(--md-accent-muted);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -1030,7 +1036,7 @@
 }
 
 .view-all-notifications:hover {
-  color: var(--md-accent-light);
+  color: var(--md-accent-soft);
 }
 
 /* Modal Styles - Frosted glass overlay */
@@ -1167,9 +1173,9 @@
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: var(--md-accent);
+  border-color: var(--md-accent-soft);
   background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 0 0 3px var(--md-accent-glow);
+  box-shadow: 0 0 0 3px rgba(130, 170, 170, 0.12);
 }
 
 .form-group input::placeholder,
@@ -1245,8 +1251,8 @@
 
 .invite-preview {
   padding: var(--spacing-md);
-  background: var(--md-accent-subtle);
-  border: 1px solid var(--md-accent-glow);
+  background: rgba(130, 170, 170, 0.06);
+  border: 1px solid rgba(130, 170, 170, 0.12);
   border-radius: var(--radius-md);
   margin-top: var(--spacing-md);
 }
@@ -1257,13 +1263,13 @@
   margin: 0;
 }
 
-/* Buttons - Teal accent primary */
+/* Buttons - Primary action (reserved for key actions) */
 .btn-primary {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-lg);
-  background: linear-gradient(135deg, var(--md-accent) 0%, #4A7A7A 100%);
+  background: var(--md-accent);
   border: none;
   border-radius: var(--radius-md);
   color: white;
@@ -1274,8 +1280,9 @@
 }
 
 .btn-primary:hover:not(:disabled) {
+  background: var(--md-accent-light);
   transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(91, 138, 138, 0.4);
+  box-shadow: 0 4px 12px rgba(91, 154, 154, 0.25);
 }
 
 .btn-primary:disabled {
@@ -1380,16 +1387,17 @@
   padding: var(--spacing-sm) var(--spacing-lg);
   font-size: var(--font-size-sm);
   font-weight: 500;
-  color: var(--md-accent);
+  color: var(--md-accent-soft);
   background: transparent;
-  border: 1px solid var(--md-accent);
+  border: 1px solid var(--md-accent-whisper);
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all var(--transition-base);
 }
 
 .back-to-dashboard:hover {
-  background: var(--md-accent-subtle);
+  background: rgba(130, 170, 170, 0.08);
+  border-color: var(--md-accent-muted);
 }
 
 /* Mobile Responsive */
