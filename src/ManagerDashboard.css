@@ -70,7 +70,7 @@
   overflow: hidden;
 }
 
-/* Ambient background - Warm atmospheric glow (matches Home golden hour) */
+/* Ambient background - Directional sunlight from top-right (matches Home) */
 .manager-dashboard::before {
   content: '';
   position: fixed;
@@ -79,14 +79,21 @@
   right: 0;
   bottom: 0;
   background:
-    /* Warm golden glow top - matches Home's golden hour warmth */
-    radial-gradient(ellipse 80% 60% at 70% 5%, rgba(255, 190, 130, 0.12) 0%, transparent 50%),
-    /* Soft warm glow center-left */
-    radial-gradient(ellipse 50% 45% at 25% 35%, rgba(255, 200, 160, 0.08) 0%, transparent 50%),
-    /* Subtle cream warmth bottom */
-    radial-gradient(ellipse 70% 50% at 55% 95%, rgba(246, 243, 238, 0.06) 0%, transparent 50%),
-    /* Gentle teal accent - brand continuity */
-    radial-gradient(ellipse 40% 35% at 80% 50%, rgba(130, 170, 170, 0.06) 0%, transparent 50%);
+    /* PRIMARY LIGHT SOURCE - Top-right corner sunlight */
+    /* Main warm glow - large diffused spread */
+    radial-gradient(ellipse 120% 100% at 100% -10%, rgba(255, 210, 160, 0.18) 0%, rgba(255, 200, 150, 0.08) 30%, transparent 60%),
+    /* Secondary light spread - extends the warmth diagonally */
+    radial-gradient(ellipse 90% 80% at 95% 5%, rgba(255, 195, 140, 0.12) 0%, transparent 50%),
+    /* Light falloff across viewport - subtle directional tint */
+    linear-gradient(135deg, rgba(255, 220, 180, 0.06) 0%, transparent 50%, rgba(40, 50, 60, 0.03) 100%),
+
+    /* AMBIENT FILL - Supporting warmth */
+    /* Soft bounce light center-left (reflected light) */
+    radial-gradient(ellipse 50% 45% at 20% 40%, rgba(255, 210, 175, 0.05) 0%, transparent 50%),
+    /* Subtle cream warmth bottom (floor bounce) */
+    radial-gradient(ellipse 80% 40% at 50% 100%, rgba(255, 240, 225, 0.04) 0%, transparent 50%),
+    /* Gentle teal accent - brand continuity, shadow side */
+    radial-gradient(ellipse 35% 30% at 10% 70%, rgba(130, 170, 170, 0.04) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
 }
@@ -478,16 +485,22 @@
   gap: var(--spacing-md);
 }
 
-/* Stat Cards - Frosted glass with strong number hierarchy */
+/* Stat Cards - Frosted glass with directional light */
 .stat-card {
   display: flex;
   align-items: flex-start;
   gap: var(--spacing-md);
   padding: var(--spacing-lg);
-  background: var(--md-card-bg);
+  background:
+    /* Subtle directional light highlight from top-right */
+    linear-gradient(135deg, rgba(255, 245, 235, 0.03) 0%, transparent 50%),
+    var(--md-card-bg);
   backdrop-filter: blur(var(--md-card-blur));
   -webkit-backdrop-filter: blur(var(--md-card-blur));
   border: 1px solid var(--md-card-border);
+  /* Slightly brighter border on light-facing edges */
+  border-top-color: rgba(255, 255, 255, 0.08);
+  border-right-color: rgba(255, 255, 255, 0.07);
   border-radius: var(--radius-xl);
   box-shadow: var(--md-card-shadow);
   transition: all var(--transition-base);
@@ -563,12 +576,18 @@
   gap: var(--spacing-lg);
 }
 
-/* Dashboard Cards - Frosted glass panels */
+/* Dashboard Cards - Frosted glass panels with directional light */
 .dashboard-card {
-  background: var(--md-card-bg);
+  background:
+    /* Subtle directional light highlight from top-right */
+    linear-gradient(135deg, rgba(255, 245, 235, 0.03) 0%, transparent 50%),
+    var(--md-card-bg);
   backdrop-filter: blur(var(--md-card-blur));
   -webkit-backdrop-filter: blur(var(--md-card-blur));
   border: 1px solid var(--md-card-border);
+  /* Slightly brighter border on light-facing edges */
+  border-top-color: rgba(255, 255, 255, 0.08);
+  border-right-color: rgba(255, 255, 255, 0.07);
   border-radius: var(--radius-xl);
   padding: var(--spacing-lg);
   box-shadow: var(--md-card-shadow);
@@ -695,10 +714,14 @@
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-lg);
-  background: rgba(255, 255, 255, 0.03);
+  background:
+    linear-gradient(135deg, rgba(255, 248, 240, 0.025) 0%, transparent 50%),
+    rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.05);
+  border-top-color: rgba(255, 255, 255, 0.07);
+  border-right-color: rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-lg);
   color: var(--md-text-secondary);
   cursor: pointer;
@@ -744,11 +767,15 @@
   align-items: center;
   gap: var(--spacing-md);
   padding: var(--spacing-md);
-  background: rgba(255, 255, 255, 0.02);
+  background:
+    linear-gradient(135deg, rgba(255, 248, 240, 0.02) 0%, transparent 50%),
+    rgba(255, 255, 255, 0.02);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border-radius: var(--radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.03);
+  border-top-color: rgba(255, 255, 255, 0.05);
+  border-right-color: rgba(255, 255, 255, 0.04);
   cursor: pointer;
   transition: all var(--transition-base);
 }
