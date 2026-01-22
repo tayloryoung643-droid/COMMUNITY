@@ -214,7 +214,6 @@
   position: relative;
   z-index: 1;
   box-sizing: border-box;
-  overflow-x: hidden; /* Prevent horizontal overflow */
 }
 
 /* Desktop shadow effect */
