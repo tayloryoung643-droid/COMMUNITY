@@ -19,13 +19,13 @@
   --md-sidebar-bg: rgba(35, 50, 65, 0.85);
   --md-sidebar-blur: 20px;
 
-  /* Cards - Softer glass effect, less contrast with background */
-  --md-card-bg: rgba(255, 255, 255, 0.08);
-  --md-card-blur: 16px;
-  --md-card-border: rgba(255, 255, 255, 0.12);
-  --md-card-border-hover: rgba(255, 255, 255, 0.2);
-  --md-card-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
-  --md-card-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.15);
+  /* Cards - Ultra-light floating glass panels */
+  --md-card-bg: rgba(255, 255, 255, 0.04);
+  --md-card-blur: 24px;
+  --md-card-border: rgba(255, 255, 255, 0.06);
+  --md-card-border-hover: rgba(255, 255, 255, 0.12);
+  --md-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  --md-card-shadow-hover: 0 4px 24px rgba(0, 0, 0, 0.08);
 
   /* Primary accent - Teal (matches Resident UI) */
   --md-accent: #5B9A9A;
@@ -43,10 +43,10 @@
   --md-text-muted: rgba(255, 255, 255, 0.5);
   --md-text-heading: #ffffff;
 
-  /* Borders */
-  --md-border: rgba(255, 255, 255, 0.1);
-  --md-border-subtle: rgba(255, 255, 255, 0.06);
-  --md-border-hover: rgba(255, 255, 255, 0.18);
+  /* Borders - Very subtle */
+  --md-border: rgba(255, 255, 255, 0.06);
+  --md-border-subtle: rgba(255, 255, 255, 0.03);
+  --md-border-hover: rgba(255, 255, 255, 0.12);
 
   /* Status colors - Brighter for lighter bg */
   --md-green: #34D399;
@@ -381,10 +381,10 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: var(--md-card-bg);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--md-border);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-md);
   color: var(--md-text-secondary);
   cursor: pointer;
@@ -392,8 +392,8 @@
 }
 
 .notification-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: var(--md-border-hover);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
   color: var(--md-text-primary);
 }
 
@@ -636,7 +636,7 @@
   color: var(--md-text-muted);
 }
 
-/* Quick Actions Card - Clearly actionable buttons */
+/* Quick Actions Card - Light floating glass buttons */
 .quick-actions {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -649,8 +649,10 @@
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-lg);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--md-border);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: var(--radius-lg);
   color: var(--md-text-secondary);
   cursor: pointer;
@@ -658,11 +660,11 @@
 }
 
 .quick-action-btn:hover {
-  background: var(--md-accent-subtle);
-  border-color: var(--md-card-border-hover);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
   color: var(--md-text-primary);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
 .quick-action-btn svg {
@@ -696,14 +698,18 @@
   align-items: center;
   gap: var(--spacing-md);
   padding: var(--spacing-md);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.03);
   cursor: pointer;
   transition: all var(--transition-base);
 }
 
 .event-item:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
 .event-item.maintenance {
