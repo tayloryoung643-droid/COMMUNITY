@@ -43,30 +43,31 @@
   position: absolute;
   inset: 0;
   background:
-    /* Bottom fade to cream */
+    /* Bottom fade to warm cream */
     linear-gradient(
       to bottom,
       transparent 0%,
-      transparent 40%,
-      rgba(246, 243, 238, 0.4) 60%,
-      rgba(246, 243, 238, 0.7) 80%,
-      rgba(246, 243, 238, 0.95) 100%
+      transparent 35%,
+      rgba(250, 245, 235, 0.4) 55%,
+      rgba(250, 245, 235, 0.7) 75%,
+      rgba(248, 244, 236, 0.95) 100%
     ),
-    /* Side vignette */
-    radial-gradient(
-      ellipse 90% 80% at 50% 40%,
-      transparent 0%,
-      transparent 50%,
-      rgba(246, 243, 238, 0.5) 80%,
-      rgba(246, 243, 238, 0.9) 100%
+    /* Side warmth - fills left and right edges */
+    linear-gradient(
+      90deg,
+      rgba(255, 200, 150, 0.35) 0%,
+      transparent 30%,
+      transparent 70%,
+      rgba(255, 200, 150, 0.35) 100%
     ),
-    /* Warm golden tones */
+    /* Overall warm golden wash */
     linear-gradient(
       180deg,
-      rgba(255, 180, 120, 0.25) 0%,
-      rgba(255, 170, 100, 0.2) 30%,
-      rgba(255, 160, 90, 0.15) 60%,
-      transparent 100%
+      rgba(255, 190, 130, 0.3) 0%,
+      rgba(255, 180, 120, 0.25) 25%,
+      rgba(255, 175, 110, 0.2) 50%,
+      rgba(255, 170, 100, 0.15) 75%,
+      rgba(250, 245, 235, 0.3) 100%
     );
 }
 
@@ -292,27 +293,19 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 72px;
-  height: 72px;
-  background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);
-  border-radius: 18px;
-  color: white;
+  width: 64px;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  color: #4A5568;
   margin-bottom: 20px;
-  box-shadow:
-    0 8px 24px rgba(6, 182, 212, 0.35),
-    0 0 0 4px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   animation: logoFloat 4s ease-in-out infinite;
 }
 
 .logo-glow {
-  position: absolute;
-  inset: -6px;
-  background: linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6);
-  border-radius: 22px;
-  filter: blur(16px);
-  opacity: 0.4;
-  z-index: -1;
-  animation: glowPulse 3s ease-in-out infinite;
+  display: none;
 }
 
 @keyframes logoFloat {
@@ -405,8 +398,8 @@
 
 .login-tab.active {
   color: white;
-  background: linear-gradient(135deg, rgba(99, 102, 140, 0.9), rgba(120, 100, 140, 0.85));
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #5B8A8A 0%, #4A7C7C 100%);
+  box-shadow: 0 2px 8px rgba(74, 124, 124, 0.25);
 }
 
 .login-tab svg {
@@ -531,7 +524,7 @@
   font-size: 16px;
   font-weight: 600;
   color: white;
-  background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, #5B9A9A 0%, #4A8585 100%);
   border: none;
   border-radius: 12px;
   cursor: pointer;
@@ -545,7 +538,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #0891b2 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #4A8585 0%, #3D7070 100%);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -563,8 +556,8 @@
 .login-btn-primary:hover {
   transform: translateY(-2px);
   box-shadow:
-    0 8px 20px rgba(6, 182, 212, 0.35),
-    0 4px 12px rgba(59, 130, 246, 0.25);
+    0 8px 20px rgba(74, 133, 133, 0.35),
+    0 4px 12px rgba(91, 154, 154, 0.25);
 }
 
 .login-btn-primary:hover svg {
@@ -609,7 +602,7 @@
   gap: 6px;
   font-size: 14px;
   font-weight: 500;
-  color: #06b6d4;
+  color: #5B8A8A;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -617,7 +610,7 @@
 }
 
 .register-link:hover {
-  color: #0891b2;
+  color: #4A7575;
 }
 
 .register-link:hover svg {
