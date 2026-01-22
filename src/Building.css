@@ -1,0 +1,248 @@
+/* ============================================
+   BUILDING - Oura-Inspired Premium Light Theme
+   Utility hub for residents
+   ============================================ */
+
+.building-container {
+  min-height: 100vh;
+  background: #FAF9F7;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: 80px;
+}
+
+/* Header */
+.building-header {
+  padding: 24px 16px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.building-container .back-button-glass {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #FFFFFF;
+  border: none;
+  border-radius: 12px;
+  color: #4A4A4A;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.building-container .back-button-glass:hover {
+  transform: translateX(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.building-container .page-title-light {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+/* Content */
+.building-content {
+  padding: 0 16px;
+}
+
+/* Sections */
+.building-section {
+  margin-bottom: 28px;
+}
+
+.building-section .section-title {
+  font-size: 17px;
+  font-weight: 500;
+  color: #1A1A1A;
+  margin: 0 0 14px 0;
+  letter-spacing: -0.01em;
+}
+
+/* Quick Actions Grid */
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.quick-action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 16px;
+  background: #FFFFFF;
+  border: none;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02);
+}
+
+.quick-action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.quick-action-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+}
+
+/* Teal accent for Book Elevator */
+.quick-action-card.teal .quick-action-icon {
+  background: #E6F4F1;
+  color: #0D9488;
+}
+
+/* Orange accent for Maintenance */
+.quick-action-card.orange .quick-action-icon {
+  background: #FEF3E2;
+  color: #EA580C;
+}
+
+.quick-action-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1A1A1A;
+}
+
+/* List Cards */
+.list-card {
+  background: #FFFFFF;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02);
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.list-item:last-child {
+  border-bottom: none;
+}
+
+.list-item:hover {
+  background: #FAFAFA;
+}
+
+.list-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #F5F0E8;
+  border-radius: 10px;
+  color: #8B7355;
+  flex-shrink: 0;
+}
+
+.list-item-label {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1A1A1A;
+}
+
+.list-item-arrow {
+  color: #9CA3AF;
+  flex-shrink: 0;
+}
+
+/* Bottom Navigation */
+.building-container .bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 12px 16px 24px;
+  background: #FFFFFF;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  z-index: 100;
+}
+
+.building-container .nav-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #9CA3AF;
+}
+
+.building-container .nav-tab span {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.building-container .nav-tab.active {
+  color: #1A1A1A;
+}
+
+.building-container .nav-tab:hover:not(.active) {
+  color: #4A4A4A;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .building-header {
+    padding: 20px 16px 12px;
+  }
+
+  .quick-action-card {
+    padding: 20px 12px;
+  }
+
+  .quick-action-icon {
+    width: 46px;
+    height: 46px;
+  }
+
+  .quick-action-label {
+    font-size: 13px;
+  }
+
+  .list-item {
+    padding: 14px 16px;
+  }
+
+  .list-item-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .list-item-label {
+    font-size: 14px;
+  }
+}

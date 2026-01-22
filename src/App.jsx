@@ -14,6 +14,7 @@ import BulletinBoard from './BulletinBoard'
 import Settings from './Settings'
 import CalendarView from './CalendarView'
 import BuildingInfo from './BuildingInfo'
+import Building from './Building'
 import ManagerOnboardingStep1 from './ManagerOnboardingStep1'
 import ManagerOnboardingStep2 from './ManagerOnboardingStep2'
 import ManagerOnboardingStep3 from './ManagerOnboardingStep3'
@@ -194,6 +195,10 @@ function App() {
       setCurrentScreen('calendar')
     } else if (featureTitle === 'BuildingInfo') {
       setCurrentScreen('building-info')
+    } else if (featureTitle === 'Building') {
+      setCurrentScreen('building')
+    } else if (featureTitle === 'Home') {
+      setCurrentScreen('home')
     }
   }
 
@@ -269,7 +274,11 @@ function App() {
   }
 
   if (currentScreen === 'calendar') {
-    return <CalendarView onBack={handleBack} />
+    return <CalendarView onBack={handleBack} onNavigate={handleNavigation} />
+  }
+
+  if (currentScreen === 'building') {
+    return <Building onBack={handleBack} onNavigate={handleNavigation} />
   }
 
   if (currentScreen === 'manager-onboarding-step1') {
