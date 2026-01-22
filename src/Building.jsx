@@ -1,4 +1,4 @@
-import { ArrowLeft, Calendar, Wrench, ClipboardList, HelpCircle, FileText, User, Users, Settings, Phone, ChevronRight, Home as HomeIcon, MessageSquare, Building2 } from 'lucide-react'
+import { ArrowLeft, Calendar, Wrench, ClipboardList, HelpCircle, FileText, User, Settings, Phone, ChevronRight, Home as HomeIcon, MessageSquare, Building2 } from 'lucide-react'
 import './Building.css'
 
 function Building({ onBack, onNavigate }) {
@@ -102,12 +102,12 @@ function Building({ onBack, onNavigate }) {
           <HomeIcon size={22} />
           <span>Home</span>
         </button>
-        <button className="nav-tab" onClick={() => handleFeatureClick('Messages')}>
-          <MessageSquare size={22} />
-          <span>Messages</span>
+        <button className="nav-tab" onClick={() => handleFeatureClick('Calendar')}>
+          <Calendar size={22} />
+          <span>Events</span>
         </button>
         <button className="nav-tab" onClick={() => handleFeatureClick('Community')}>
-          <Users size={22} />
+          <MessageSquare size={22} />
           <span>Community</span>
         </button>
         <button className="nav-tab active" onClick={() => handleFeatureClick('Building')}>

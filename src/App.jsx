@@ -199,8 +199,6 @@ function App() {
       setCurrentScreen('building')
     } else if (featureTitle === 'Home') {
       setCurrentScreen('home')
-    } else if (featureTitle === 'Messages') {
-      setCurrentScreen('community')
     }
   }
 
