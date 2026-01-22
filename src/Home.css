@@ -640,7 +640,7 @@
 }
 
 /* ============================================
-   BOTTOM NAVIGATION - Fixed within container
+   BOTTOM NAVIGATION - Fixed, always shows all 4 tabs
    ============================================ */
 .bottom-nav {
   position: fixed;
@@ -649,26 +649,26 @@
   right: 0;
   width: 100%;
   display: flex;
-  justify-content: space-around;
   align-items: center;
   height: 64px;
   background: white;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
-  padding: 0 16px;
+  padding: 0;
   padding-bottom: env(safe-area-inset-bottom, 0);
   z-index: 1000;
   box-sizing: border-box;
 }
 
 .nav-tab {
-  display: flex !important;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  flex: 1;
+  gap: 2px;
+  flex: 1 1 0%;
   min-width: 0;
-  padding: 8px 0;
+  max-width: 25%;
+  padding: 8px 4px;
   background: transparent;
   border: none;
   color: var(--text-muted);
@@ -676,9 +676,15 @@
   font-weight: 500;
   cursor: pointer;
   transition: color 0.15s ease;
-  letter-spacing: 0.02em;
-  visibility: visible !important;
-  opacity: 1 !important;
+  letter-spacing: 0.01em;
+  overflow: hidden;
+}
+
+.nav-tab span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .nav-tab:hover {
@@ -693,6 +699,21 @@
   width: 22px;
   height: 22px;
   stroke-width: 1.5;
+  flex-shrink: 0;
+}
+
+/* Scale down nav on very narrow screens */
+@media (max-width: 320px) {
+  .nav-tab {
+    font-size: 9px;
+    gap: 1px;
+    padding: 6px 2px;
+  }
+
+  .nav-tab svg {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 /* ============================================

@@ -173,37 +173,55 @@
   flex-shrink: 0;
 }
 
-/* Bottom Navigation */
+/* Bottom Navigation - Always shows all 4 tabs */
 .building-container .bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
+  width: 100%;
   display: flex;
-  justify-content: space-around;
   align-items: center;
-  padding: 12px 16px 24px;
+  height: 64px;
+  padding: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0);
   background: #FFFFFF;
   border-top: 1px solid rgba(0, 0, 0, 0.04);
   z-index: 100;
+  box-sizing: border-box;
 }
 
 .building-container .nav-tab {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 8px 16px;
+  justify-content: center;
+  gap: 2px;
+  flex: 1 1 0%;
+  min-width: 0;
+  max-width: 25%;
+  padding: 8px 4px;
   background: transparent;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
   color: #9CA3AF;
+  overflow: hidden;
 }
 
 .building-container .nav-tab span {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.building-container .nav-tab svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
 }
 
 .building-container .nav-tab.active {
@@ -212,6 +230,20 @@
 
 .building-container .nav-tab:hover:not(.active) {
   color: #4A4A4A;
+}
+
+/* Scale down nav on very narrow screens */
+@media (max-width: 320px) {
+  .building-container .nav-tab {
+    font-size: 9px;
+    gap: 1px;
+    padding: 6px 2px;
+  }
+
+  .building-container .nav-tab svg {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 /* Responsive Design */
