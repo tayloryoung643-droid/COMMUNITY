@@ -90,7 +90,8 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
               <div className="logo-glow"></div>
             </div>
             <h1 className="login-title">
-              <span className="title-gradient">COMMUNITY</span>
+              <span className="title-the">The</span>
+              <span className="title-main">Community</span>
             </h1>
             <p className="login-tagline">Know your neighbors, finally.</p>
           </div>

@@ -336,17 +336,30 @@
 }
 
 .login-title {
-  font-size: 38px;
-  font-weight: 700;
   margin: 0 0 8px 0;
-  letter-spacing: 4px;
+  text-align: center;
 }
 
-.title-gradient {
-  background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 40%, #a855f7 70%, #ec4899 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* "The" - small italic above */
+.title-the {
+  display: block;
+  font-size: 16px;
+  font-weight: 300;
+  font-style: italic;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  color: #4A5568;
+  letter-spacing: 0.1em;
+  margin-bottom: 2px;
+}
+
+/* "Community" - elegant serif */
+.title-main {
+  display: block;
+  font-size: 44px;
+  font-weight: 400;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  color: #2D3748;
+  letter-spacing: 0.12em;
 }
 
 .login-tagline {
@@ -721,9 +734,13 @@
     border-radius: 14px;
   }
 
-  .login-title {
-    font-size: 28px;
-    letter-spacing: 3px;
+  .title-the {
+    font-size: 14px;
+  }
+
+  .title-main {
+    font-size: 34px;
+    letter-spacing: 0.1em;
   }
 
   .login-tagline {
