@@ -77,16 +77,25 @@ function Home({ buildingCode, onNavigate }) {
     }
   }
 
+  // Hero image URL - used in BOTH the hero card AND the ambient background
+  const heroImageUrl = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80"
+
   return (
-    <div className="home-page">
+    <div
+      className="home-page"
+      style={{ '--hero-image': `url(${heroImageUrl})` }}
+    >
+      {/* Ambient background - real DOM element, same image as hero */}
+      <div className="ambient-bg" aria-hidden="true" />
+
       {/* Single centered app container for perfect alignment */}
       <div className="app-container">
         {/* Hero Section with Building Image */}
         <section className="hero-section">
           <div className="hero-image-container">
-            {/* Warm luxury building image */}
+            {/* THE SAME building image - sharp in the hero card */}
             <img
-              src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80"
+              src={heroImageUrl}
               alt="The Paramount Building"
               className="hero-image"
             />

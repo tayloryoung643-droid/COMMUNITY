@@ -27,9 +27,176 @@
 /* Page background - visible when zoomed out */
 .home-page {
   min-height: 100vh;
-  background: var(--bg-page);
+  width: 100%;
+  background: #F6F3EE;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   -webkit-font-smoothing: antialiased;
+  position: relative;
+  /* --hero-image is set inline via React for the ambient background */
+}
+
+/* Desktop: flex wrapper to center content column with proper padding */
+@media (min-width: 1024px) {
+  .home-page {
+    display: flex;
+    justify-content: center;
+    padding: 32px 24px 120px;
+    box-sizing: border-box;
+    background: #F6F3EE; /* Warm beige base - ambient-bg sits on top */
+  }
+}
+
+/* ============================================
+   AMBIENT BACKGROUND - Desktop only (1024px+)
+   Real DOM element using the SAME hero image
+   ============================================ */
+
+/* Real ambient background layer */
+.ambient-bg {
+  display: none; /* Hidden by default (mobile) */
+}
+
+/* Show on desktop only */
+@media (min-width: 1024px) {
+  /* BUILDING IMAGE - crystal clear, recognizable */
+  .ambient-bg {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+
+    /* Building image - zoomed OUT, positioned at TOP */
+    background-image: url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80');
+    background-size: 120%;
+    background-position: center 40%;
+    background-repeat: no-repeat;
+
+    /* NO BLUR - crystal clear building */
+    filter: blur(0);
+    opacity: 1;
+  }
+
+  /* FADE OVERLAY - clear at top, fades to cream at bottom and sides */
+  .ambient-bg::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    /* Multi-layer fade: bottom fade + side vignette + warmth */
+    background:
+      /* Bottom fade to cream - starts lower to keep top clear */
+      linear-gradient(
+        to bottom,
+        transparent 0%,
+        transparent 45%,
+        rgba(246, 243, 238, 0.3) 55%,
+        rgba(246, 243, 238, 0.6) 70%,
+        rgba(246, 243, 238, 0.9) 85%,
+        #F6F3EE 100%
+      ),
+      /* Side vignette - soft feathered edges */
+      radial-gradient(
+        ellipse 85% 80% at 50% 25%,
+        transparent 0%,
+        transparent 55%,
+        rgba(246, 243, 238, 0.3) 70%,
+        rgba(246, 243, 238, 0.7) 85%,
+        #F6F3EE 100%
+      ),
+      /* Warmth overlay - matches mobile golden hour tones */
+      linear-gradient(
+        180deg,
+        rgba(255, 170, 80, 0.2) 0%,
+        rgba(255, 170, 80, 0.15) 30%,
+        rgba(255, 170, 80, 0.1) 60%,
+        transparent 80%
+      );
+  }
+
+  /* HIDE the sharp hero image card entirely on desktop */
+  .hero-image-container .hero-image,
+  .hero-image-container .hero-warm-overlay,
+  .hero-image-container .hero-gradient-overlay {
+    display: none;
+  }
+
+  /* Hero section becomes transparent - text floats on background */
+  .hero-section {
+    background: transparent !important;
+  }
+
+  .hero-image-container {
+    background: transparent;
+    height: auto;
+    min-height: 180px;
+    max-height: none;
+  }
+
+  /* NO glass panel - just text on background */
+  .hero-image-container::before {
+    display: none;
+  }
+
+  /* Weather widget - white text for visibility on building image */
+  .weather-widget {
+    position: relative;
+    top: auto;
+    left: auto;
+    padding: 20px;
+    color: white;
+  }
+
+  .weather-datetime {
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  .weather-temp {
+    color: white;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  .weather-condition {
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  .weather-icon {
+    color: white;
+    opacity: 0.9;
+  }
+
+  /* Building name - white text with shadow */
+  .hero-text-container {
+    position: relative;
+    bottom: auto;
+    padding: 30px 20px 40px;
+  }
+
+  .hero-the {
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  .hero-building-name {
+    color: white;
+    text-shadow: 0 3px 12px rgba(0,0,0,0.4);
+  }
+}
+
+/* Content above background (desktop only) */
+@media (min-width: 1024px) {
+  .home-page > *:not(.ambient-bg) {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 /* ============================================
@@ -38,13 +205,14 @@
    ============================================ */
 .app-container {
   width: 100%;
-  max-width: 500px;
+  max-width: 480px; /* Readable size 420-520px */
   margin: 0 auto;
   padding: 0;
   padding-bottom: 80px; /* Space for fixed nav */
   background: var(--bg-app);
   min-height: 100vh;
   position: relative;
+  z-index: 1;
   box-sizing: border-box;
   overflow-x: hidden; /* Prevent horizontal overflow */
 }
@@ -54,6 +222,28 @@
   .app-container {
     box-shadow: 0 0 60px rgba(0, 0, 0, 0.1);
   }
+}
+
+/* On desktop, make content column transparent - NO vertical panel */
+@media (min-width: 1024px) {
+  /* Remove any panel/rectangle behind the column */
+  .app-container {
+    background: transparent !important;
+    box-shadow: none;
+    margin: 0; /* Remove auto margin, flex handles centering */
+  }
+
+  /* Ensure all content wrappers are transparent */
+  .main-content,
+  .hero-section,
+  .today-section,
+  .coming-up-section,
+  .quick-actions-section {
+    background: transparent !important;
+  }
+
+  /* Only cards should have surfaces (white with shadows) */
+  /* Cards already have their own backgrounds - no changes needed */
 }
 
 /* ============================================
@@ -458,7 +648,7 @@ main {
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
-  max-width: 500px;
+  max-width: 480px; /* Match content column */
   display: flex;
   justify-content: space-around;
   align-items: center;
