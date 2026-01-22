@@ -234,7 +234,7 @@
   }
 
   /* Ensure all content wrappers are transparent */
-  .main-content,
+  .home-page .main-content,
   .hero-section,
   .today-section,
   .coming-up-section,
@@ -378,19 +378,19 @@
 /* ============================================
    MAIN CONTENT - Full width of container
    ============================================ */
-/* Reset any browser defaults on main element */
-main {
+/* Reset any browser defaults on main element within home page */
+.home-page main {
   display: block;
-  margin: 0 !important;
+  margin: 0;
   padding: 0;
 }
 
-.main-content {
+.home-page .main-content {
   width: 100%;
   padding: 24px 16px 32px;
-  margin: 0 !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
+  margin: 0;
+  margin-left: 0;
+  margin-right: 0;
   box-sizing: border-box;
 }
 
