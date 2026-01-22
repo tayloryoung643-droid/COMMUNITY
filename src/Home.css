@@ -36,7 +36,7 @@
 }
 
 /* Desktop: flex wrapper to center content column with proper padding */
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .home-page {
     display: flex;
     justify-content: center;
@@ -57,7 +57,7 @@
 }
 
 /* Show on desktop only */
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   /* BUILDING IMAGE - crystal clear, recognizable */
   .ambient-bg {
     display: block;
@@ -192,7 +192,7 @@
 }
 
 /* Content above background (desktop only) */
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .home-page > *:not(.ambient-bg) {
     position: relative;
     z-index: 1;
@@ -225,7 +225,7 @@
 }
 
 /* On desktop, make content column transparent - NO vertical panel */
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   /* Remove any panel/rectangle behind the column */
   .app-container {
     background: transparent !important;
@@ -649,6 +649,7 @@
   right: 0;
   width: 100%;
   display: flex;
+  overflow: visible;
   align-items: center;
   height: 64px;
   background: white;
@@ -665,10 +666,9 @@
   align-items: center;
   justify-content: center;
   gap: 2px;
-  flex: 1 1 0%;
+  flex: 1 1 0;
   min-width: 0;
-  max-width: 25%;
-  padding: 8px 4px;
+  padding: 8px 2px;
   background: transparent;
   border: none;
   color: var(--text-muted);
@@ -677,14 +677,12 @@
   cursor: pointer;
   transition: color 0.15s ease;
   letter-spacing: 0.01em;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .nav-tab span {
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
+  font-size: 10px;
 }
 
 .nav-tab:hover {
@@ -696,24 +694,10 @@
 }
 
 .nav-tab svg {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   stroke-width: 1.5;
   flex-shrink: 0;
-}
-
-/* Scale down nav on very narrow screens */
-@media (max-width: 320px) {
-  .nav-tab {
-    font-size: 9px;
-    gap: 1px;
-    padding: 6px 2px;
-  }
-
-  .nav-tab svg {
-    width: 18px;
-    height: 18px;
-  }
 }
 
 /* ============================================
