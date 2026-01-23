@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Package, Calendar, Users, ChevronRight, MessageSquare, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon, Home as HomeIcon, Wine, Building2 } from 'lucide-react'
+import { Package, Calendar, Users, ChevronRight, MessageSquare, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon, Home as HomeIcon, Wine, Building2, Wrench, Film, ShoppingBag, Music, Coffee, Dumbbell, TreeDeciduous, PartyPopper, Bell, Sparkles, Heart, Palette, BookOpen, Mic } from 'lucide-react'
 import './Home.css'
 
 function Home({ buildingCode, onNavigate }) {
@@ -80,6 +80,48 @@ function Home({ buildingCode, onNavigate }) {
   // Hero image URL - used in BOTH the hero card AND the ambient background
   const heroImageUrl = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80"
 
+  // Upcoming events for the next 12 months
+  const upcomingEvents = [
+    { id: 1, title: 'Wine & Cheese Social', subtitle: 'Jan 25 · 7:00 PM · Rooftop Lounge', icon: Wine, iconClass: 'wine-icon' },
+    { id: 2, title: 'Fire Alarm Testing', subtitle: 'Jan 28 · 10:00 AM - 2:00 PM', icon: Bell, iconClass: 'maintenance-icon' },
+    { id: 3, title: 'Farmers Market Saturday', subtitle: 'Feb 1 · 9:00 AM · Front Plaza', icon: ShoppingBag, iconClass: 'market-icon' },
+    { id: 4, title: 'Movie in the Park', subtitle: 'Feb 8 · 7:30 PM · Courtyard', icon: Film, iconClass: 'movie-icon' },
+    { id: 5, title: 'Building Town Hall', subtitle: 'Feb 12 · 6:00 PM · Community Room', icon: Users, iconClass: 'community-icon' },
+    { id: 6, title: 'Valentine\'s Day Mixer', subtitle: 'Feb 14 · 7:00 PM · Rooftop Lounge', icon: Heart, iconClass: 'social-icon' },
+    { id: 7, title: 'Yoga in the Garden', subtitle: 'Feb 22 · 8:00 AM · Rooftop Garden', icon: Dumbbell, iconClass: 'fitness-icon' },
+    { id: 8, title: 'Water Shut-off Notice', subtitle: 'Mar 1 · 9:00 AM - 12:00 PM · Floors 5-10', icon: Wrench, iconClass: 'maintenance-icon' },
+    { id: 9, title: 'Spring Cleaning Drive', subtitle: 'Mar 8 · 10:00 AM · Lobby', icon: Sparkles, iconClass: 'community-icon' },
+    { id: 10, title: 'St. Patrick\'s Day Party', subtitle: 'Mar 17 · 6:00 PM · Rooftop Lounge', icon: PartyPopper, iconClass: 'social-icon' },
+    { id: 11, title: 'Coffee & Conversation', subtitle: 'Mar 22 · 9:00 AM · Café Lounge', icon: Coffee, iconClass: 'social-icon' },
+    { id: 12, title: 'Art Show & Gallery Night', subtitle: 'Apr 5 · 6:00 PM · Community Room', icon: Palette, iconClass: 'culture-icon' },
+    { id: 13, title: 'Easter Egg Hunt', subtitle: 'Apr 12 · 11:00 AM · Courtyard', icon: PartyPopper, iconClass: 'social-icon' },
+    { id: 14, title: 'Elevator Maintenance', subtitle: 'Apr 18 · 8:00 AM - 5:00 PM', icon: Wrench, iconClass: 'maintenance-icon' },
+    { id: 15, title: 'Earth Day Tree Planting', subtitle: 'Apr 22 · 10:00 AM · Rooftop Garden', icon: TreeDeciduous, iconClass: 'outdoor-icon' },
+    { id: 16, title: 'Live Jazz Night', subtitle: 'May 3 · 7:00 PM · Rooftop Lounge', icon: Music, iconClass: 'music-icon' },
+    { id: 17, title: 'Cinco de Mayo Fiesta', subtitle: 'May 5 · 6:00 PM · Courtyard', icon: PartyPopper, iconClass: 'social-icon' },
+    { id: 18, title: 'Mother\'s Day Brunch', subtitle: 'May 11 · 11:00 AM · Community Room', icon: Heart, iconClass: 'social-icon' },
+    { id: 19, title: 'Fire Safety Training', subtitle: 'May 20 · 6:00 PM · Lobby', icon: Bell, iconClass: 'maintenance-icon' },
+    { id: 20, title: 'Memorial Day BBQ', subtitle: 'May 26 · 12:00 PM · Rooftop', icon: Wine, iconClass: 'social-icon' },
+    { id: 21, title: 'Summer Kickoff Pool Party', subtitle: 'Jun 7 · 2:00 PM · Pool Deck', icon: Sun, iconClass: 'outdoor-icon' },
+    { id: 22, title: 'Father\'s Day Poker Night', subtitle: 'Jun 15 · 7:00 PM · Game Room', icon: Users, iconClass: 'social-icon' },
+    { id: 23, title: 'Book Club Meeting', subtitle: 'Jun 21 · 7:00 PM · Library', icon: BookOpen, iconClass: 'culture-icon' },
+    { id: 24, title: 'Independence Day Fireworks Watch', subtitle: 'Jul 4 · 8:00 PM · Rooftop', icon: PartyPopper, iconClass: 'social-icon' },
+    { id: 25, title: 'Summer Concert Series', subtitle: 'Jul 12 · 6:00 PM · Courtyard', icon: Music, iconClass: 'music-icon' },
+    { id: 26, title: 'Ice Cream Social', subtitle: 'Jul 19 · 3:00 PM · Lobby', icon: Coffee, iconClass: 'social-icon' },
+    { id: 27, title: 'HVAC Maintenance', subtitle: 'Aug 2 · All Day', icon: Wrench, iconClass: 'maintenance-icon' },
+    { id: 28, title: 'Back to School Drive', subtitle: 'Aug 15 · 10:00 AM · Lobby', icon: BookOpen, iconClass: 'community-icon' },
+    { id: 29, title: 'End of Summer Luau', subtitle: 'Aug 30 · 5:00 PM · Pool Deck', icon: PartyPopper, iconClass: 'social-icon' },
+    { id: 30, title: 'Labor Day Cookout', subtitle: 'Sep 1 · 12:00 PM · Rooftop', icon: Wine, iconClass: 'social-icon' },
+    { id: 31, title: 'Fall Festival', subtitle: 'Sep 20 · 2:00 PM · Courtyard', icon: TreeDeciduous, iconClass: 'outdoor-icon' },
+    { id: 32, title: 'Karaoke Night', subtitle: 'Oct 4 · 8:00 PM · Rooftop Lounge', icon: Mic, iconClass: 'music-icon' },
+    { id: 33, title: 'Halloween Costume Party', subtitle: 'Oct 31 · 7:00 PM · Community Room', icon: PartyPopper, iconClass: 'social-icon' },
+    { id: 34, title: 'Heating System Check', subtitle: 'Nov 8 · 9:00 AM - 3:00 PM', icon: Wrench, iconClass: 'maintenance-icon' },
+    { id: 35, title: 'Thanksgiving Potluck', subtitle: 'Nov 27 · 4:00 PM · Community Room', icon: Coffee, iconClass: 'social-icon' },
+    { id: 36, title: 'Holiday Tree Lighting', subtitle: 'Dec 6 · 6:00 PM · Lobby', icon: Sparkles, iconClass: 'social-icon' },
+    { id: 37, title: 'Holiday Movie Marathon', subtitle: 'Dec 13 · 2:00 PM · Theater Room', icon: Film, iconClass: 'movie-icon' },
+    { id: 38, title: 'New Year\'s Eve Gala', subtitle: 'Dec 31 · 9:00 PM · Rooftop Lounge', icon: PartyPopper, iconClass: 'social-icon' },
+  ]
+
   return (
     <div
       className="home-page"
@@ -151,47 +193,30 @@ function Home({ buildingCode, onNavigate }) {
           </button>
         </section>
 
-        {/* Coming Up - quieter, secondary */}
+        {/* Coming Up - scrollable list of all upcoming events */}
         <section className="coming-up-section">
           <h2 className="section-title-secondary">Coming Up</h2>
 
-          <button className="event-card" onClick={() => handleFeatureClick('Calendar')}>
-            <div className="event-card-icon wine-icon">
-              <Wine size={20} />
-            </div>
-            <div className="event-card-content">
-              <span className="event-card-title">Wine & Cheese Social</span>
-              <span className="event-card-subtitle">7:00 PM · Rooftop Lounge</span>
-            </div>
-            <ChevronRight size={20} className="event-card-arrow" />
-          </button>
+          <div className="events-scroll-container">
+            {upcomingEvents.map((event) => {
+              const IconComponent = event.icon
+              return (
+                <button key={event.id} className="event-card" onClick={() => handleFeatureClick('Calendar')}>
+                  <div className={`event-card-icon ${event.iconClass}`}>
+                    <IconComponent size={20} />
+                  </div>
+                  <div className="event-card-content">
+                    <span className="event-card-title">{event.title}</span>
+                    <span className="event-card-subtitle">{event.subtitle}</span>
+                  </div>
+                  <ChevronRight size={20} className="event-card-arrow" />
+                </button>
+              )
+            })}
+          </div>
         </section>
 
-        {/* Quick Actions */}
-        <section className="quick-actions-section">
-          <button className="action-card" onClick={() => handleFeatureClick('Packages')}>
-            <div className="action-card-icon">
-              <Package size={22} />
-            </div>
-            <div className="action-card-content">
-              <span className="action-card-title">Manage Deliveries</span>
-              <span className="action-card-subtitle">Track and arrange pickups</span>
-            </div>
-            <ChevronRight size={20} className="action-card-arrow" />
-          </button>
-
-          <button className="action-card" onClick={() => handleFeatureClick('Community')}>
-            <div className="action-card-icon">
-              <MessageSquare size={22} />
-            </div>
-            <div className="action-card-content">
-              <span className="action-card-title">Connect with Neighbors</span>
-              <span className="action-card-subtitle">Chat, buy & sell, & share updates</span>
-            </div>
-            <ChevronRight size={20} className="action-card-arrow" />
-          </button>
-        </section>
-        </main>
+                </main>
 
         {/* Bottom Navigation - Inside app container for alignment */}
         <nav id="main-bottom-nav" className="bottom-nav">

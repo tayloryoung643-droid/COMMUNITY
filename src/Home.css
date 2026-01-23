@@ -543,6 +543,85 @@
   color: #9B6B6B;
 }
 
+.event-card-icon.maintenance-icon {
+  background: #FEF3E2;
+  color: #EA580C;
+}
+
+.event-card-icon.market-icon {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+
+.event-card-icon.movie-icon {
+  background: #E3F2FD;
+  color: #1565C0;
+}
+
+.event-card-icon.community-icon {
+  background: #F3E5F5;
+  color: #7B1FA2;
+}
+
+.event-card-icon.social-icon {
+  background: #FCE4EC;
+  color: #C2185B;
+}
+
+.event-card-icon.fitness-icon {
+  background: #E0F7FA;
+  color: #00838F;
+}
+
+.event-card-icon.outdoor-icon {
+  background: #E8F5E9;
+  color: #388E3C;
+}
+
+.event-card-icon.culture-icon {
+  background: #FFF3E0;
+  color: #E65100;
+}
+
+.event-card-icon.music-icon {
+  background: #EDE7F6;
+  color: #512DA8;
+}
+
+/* Events scroll container */
+.events-scroll-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.events-scroll-container .event-card {
+  margin-bottom: 0;
+  padding: 18px 16px;
+  min-height: 72px;
+  flex-shrink: 0;
+}
+
+.events-scroll-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.events-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.events-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+
+.events-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
 .event-card-content {
   flex: 1;
   min-width: 0;
