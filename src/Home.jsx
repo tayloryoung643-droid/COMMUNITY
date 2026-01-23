@@ -194,7 +194,7 @@ function Home({ buildingCode, onNavigate }) {
         </main>
 
         {/* Bottom Navigation - Inside app container for alignment */}
-        <nav className="bottom-nav">
+        <nav id="main-bottom-nav" className="bottom-nav">
           <button className="nav-tab active" onClick={() => handleFeatureClick('Home')}>
             <HomeIcon size={22} />
             <span>Home</span>
