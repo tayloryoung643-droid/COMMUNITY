@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Package, Calendar, Users, ChevronRight, MessageSquare, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon, Home as HomeIcon, Wine, Building2, Wrench, Film, ShoppingBag, Music, Coffee, Dumbbell, TreeDeciduous, PartyPopper, Bell, Sparkles, Heart, Palette, BookOpen, Mic } from 'lucide-react'
+import { Package, Calendar, Users, ChevronRight, MessageSquare, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon, Home as HomeIcon, Wine, Building2, Wrench, Film, ShoppingBag, Music, Coffee, Dumbbell, TreeDeciduous, PartyPopper, Bell, Sparkles, Heart, Palette, BookOpen, Mic, Menu, Settings } from 'lucide-react'
 import './Home.css'
 
 function Home({ buildingCode, onNavigate }) {
@@ -14,6 +14,10 @@ function Home({ buildingCode, onNavigate }) {
     hasPhoto: false
   })
   const [showContactSuccess, setShowContactSuccess] = useState(false)
+
+  // Hamburger menu state
+  const [menuOpen, setMenuOpen] = useState(false)
+  const unreadMessages = 2 // Simulated unread count
 
   const subjectOptions = [
     'Maintenance Request',
@@ -144,7 +148,24 @@ function Home({ buildingCode, onNavigate }) {
             <div className="hero-warm-overlay"></div>
             <div className="hero-gradient-overlay"></div>
 
-            {/* Weather Widget - Top Left */}
+            {/* Top Bar - Hamburger Menu & Notification Bell */}
+            <div className="hero-top-bar">
+              <button
+                className="hamburger-btn"
+                onClick={() => setMenuOpen(true)}
+                aria-label="Open menu"
+              >
+                <Menu size={24} />
+              </button>
+              <button className="notification-btn" aria-label="Notifications">
+                <Bell size={22} />
+                {unreadMessages > 0 && (
+                  <span className="notification-badge">{unreadMessages}</span>
+                )}
+              </button>
+            </div>
+
+            {/* Weather Widget - Below top bar */}
             <div className="weather-widget">
               <div className="weather-datetime">
                 {formatDay(currentTime)} | {formatTime(currentTime)}
@@ -309,6 +330,56 @@ function Home({ buildingCode, onNavigate }) {
         <div className="contact-success-toast">
           <Check size={20} />
           <span>Message Sent!</span>
+        </div>
+      )}
+
+      {/* Slide-out Navigation Menu */}
+      {menuOpen && (
+        <div className="menu-overlay" onClick={() => setMenuOpen(false)}>
+          <div className="menu-panel" onClick={e => e.stopPropagation()}>
+            <div className="menu-header">
+              <div className="menu-title">
+                <span className="menu-the">The</span>
+                <span className="menu-building-name">Paramount</span>
+              </div>
+              <button
+                className="menu-close-btn"
+                onClick={() => setMenuOpen(false)}
+                aria-label="Close menu"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <nav className="menu-nav">
+              <button className="menu-item" onClick={() => { handleFeatureClick('Community'); setMenuOpen(false); }}>
+                <Users size={22} />
+                <span>Community</span>
+              </button>
+              <button className="menu-item" onClick={() => { handleFeatureClick('Messages'); setMenuOpen(false); }}>
+                <MessageSquare size={22} />
+                <span>Messages</span>
+                {unreadMessages > 0 && (
+                  <span className="menu-badge">{unreadMessages}</span>
+                )}
+              </button>
+              <button className="menu-item" onClick={() => { handleFeatureClick('Calendar'); setMenuOpen(false); }}>
+                <Calendar size={22} />
+                <span>Calendar</span>
+              </button>
+              <button className="menu-item" onClick={() => { handleFeatureClick('Packages'); setMenuOpen(false); }}>
+                <Package size={22} />
+                <span>Packages</span>
+              </button>
+              <button className="menu-item" onClick={() => { handleFeatureClick('Building'); setMenuOpen(false); }}>
+                <Building2 size={22} />
+                <span>Building</span>
+              </button>
+              <button className="menu-item" onClick={() => { handleFeatureClick('Settings'); setMenuOpen(false); }}>
+                <Settings size={22} />
+                <span>Settings</span>
+              </button>
+            </nav>
+          </div>
         </div>
       )}
     </div>
