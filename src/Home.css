@@ -69,10 +69,10 @@
     z-index: 0;
     pointer-events: none;
 
-    /* Building image - zoomed OUT, positioned at TOP */
+    /* Building image - zoomed out, showing more of the lower floors */
     background-image: url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80');
-    background-size: 120%;
-    background-position: center 40%;
+    background-size: 100%;
+    background-position: center 70%;
     background-repeat: no-repeat;
 
     /* NO BLUR - crystal clear building */
@@ -91,32 +91,31 @@
 
     /* Multi-layer fade: bottom fade + side vignette + warmth */
     background:
-      /* Bottom fade to cream - starts lower to keep top clear */
+      /* Bottom fade to cream - starts higher so "Today at The Paramount" is readable */
       linear-gradient(
         to bottom,
         transparent 0%,
-        transparent 45%,
-        rgba(246, 243, 238, 0.3) 55%,
-        rgba(246, 243, 238, 0.6) 70%,
-        rgba(246, 243, 238, 0.9) 85%,
-        #F6F3EE 100%
+        transparent 25%,
+        rgba(246, 243, 238, 0.3) 35%,
+        rgba(246, 243, 238, 0.6) 45%,
+        rgba(246, 243, 238, 0.85) 55%,
+        #F6F3EE 65%
       ),
       /* Side vignette - soft feathered edges */
       radial-gradient(
         ellipse 85% 80% at 50% 25%,
         transparent 0%,
-        transparent 55%,
-        rgba(246, 243, 238, 0.3) 70%,
-        rgba(246, 243, 238, 0.7) 85%,
-        #F6F3EE 100%
+        transparent 40%,
+        rgba(246, 243, 238, 0.3) 55%,
+        rgba(246, 243, 238, 0.7) 70%,
+        #F6F3EE 85%
       ),
       /* Warmth overlay - matches mobile golden hour tones */
       linear-gradient(
         180deg,
-        rgba(255, 170, 80, 0.2) 0%,
-        rgba(255, 170, 80, 0.15) 30%,
-        rgba(255, 170, 80, 0.1) 60%,
-        transparent 80%
+        rgba(255, 170, 80, 0.15) 0%,
+        rgba(255, 170, 80, 0.1) 20%,
+        transparent 40%
       );
   }
 
