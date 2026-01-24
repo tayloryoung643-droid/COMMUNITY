@@ -12,7 +12,7 @@
   align-items: center;
   justify-content: space-evenly;
   height: 64px;
-  background: #FFFFFF;
+  background: #FFFCF7;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   padding: 0;
   padding-bottom: env(safe-area-inset-bottom, 0);
@@ -32,7 +32,7 @@
   padding: 8px 4px;
   background: transparent;
   border: none;
-  color: #9CA3AF;
+  color: #8A8075;
   font-size: 10px;
   font-weight: 500;
   cursor: pointer;

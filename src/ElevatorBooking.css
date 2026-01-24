@@ -5,14 +5,14 @@
 
 .elevator-booking-container {
   min-height: 100vh;
-  background: #F8F5F0;
+  background: #F5F0E8;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 /* Header */
 .elevator-booking-header {
-  padding: 24px 16px 16px;
+  padding: 8px 16px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -24,7 +24,7 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: #FFFFFF;
+  background: #FFFCF7;
   border: none;
   border-radius: 12px;
   color: #4A4A4A;
@@ -108,7 +108,7 @@
 
 /* Booking form */
 .booking-form-container {
-  background: #FFFFFF;
+  background: #FFFCF7;
   border: none;
   border-radius: 18px;
   padding: 20px;
@@ -157,7 +157,7 @@
   padding: 12px 14px;
   font-size: 15px;
   color: #1A1A1A;
-  background: #F7F5F2;
+  background: #F3EEE5;
   border: 1px solid rgba(0, 0, 0, 0.04);
   border-radius: 12px;
   transition: all 0.2s ease;
@@ -167,7 +167,7 @@
 .booking-form input:focus,
 .booking-form select:focus {
   outline: none;
-  border-color: #9CA3AF;
+  border-color: #8A8075;
   background: white;
 }
 
@@ -196,7 +196,7 @@
 
 .cancel-button {
   color: #4A4A4A;
-  background: #F7F5F2;
+  background: #F3EEE5;
   border: none;
 }
 
@@ -235,7 +235,7 @@
 /* Reservation cards */
 .reservation-card {
   position: relative;
-  background: #FFFFFF;
+  background: #FFFCF7;
   border: none;
   border-radius: 18px;
   padding: 18px 16px;
@@ -274,7 +274,7 @@
 
 .time-slot {
   font-size: 13px;
-  color: #9CA3AF;
+  color: #8A8075;
 }
 
 /* Status badges */
@@ -315,7 +315,7 @@
 .detail-label {
   font-size: 13px;
   font-weight: 500;
-  color: #9CA3AF;
+  color: #8A8075;
 }
 
 .detail-value {

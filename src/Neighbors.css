@@ -5,14 +5,14 @@
 
 .neighbors-container {
   min-height: 100vh;
-  background: #F8F5F0;
+  background: #F5F0E8;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 /* Header */
 .neighbors-header {
-  padding: 24px 16px 16px;
+  padding: 8px 16px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -24,7 +24,7 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: #FFFFFF;
+  background: #FFFCF7;
   border: none;
   border-radius: 12px;
   color: #4A4A4A;
@@ -87,7 +87,7 @@
 
 /* Neighbor cards */
 .neighbor-card {
-  background: #FFFFFF;
+  background: #FFFCF7;
   border: none;
   border-radius: 18px;
   padding: 18px 16px;
@@ -107,7 +107,7 @@
 .avatar-ring {
   padding: 2px;
   border-radius: 50%;
-  background: #F7F5F2;
+  background: #F3EEE5;
 }
 
 .avatar-ring-blue {
@@ -138,7 +138,7 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #F7F5F2;
+  background: #F3EEE5;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -163,7 +163,7 @@
 
 .neighbor-unit {
   font-size: 13px;
-  color: #9CA3AF;
+  color: #8A8075;
   margin: 0;
 }
 

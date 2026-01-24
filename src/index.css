@@ -363,19 +363,19 @@ p {
 .resident-inner-page {
   position: relative;
   min-height: 100vh;
-  background: #F8F5F0; /* Warmer cream base */
+  background: #F5F0E8; /* Noticeably warmer cream - visible warmth */
 }
 
-/* Building image - same as Home hero, covers top 44vh */
+/* Building image - reduced height hero (~20% shorter) */
 .resident-inner-page::before {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 44vh;
-  min-height: 320px;
-  max-height: 420px;
+  height: 35vh;
+  min-height: 260px;
+  max-height: 340px;
   background-image: url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80');
   background-size: cover;
   background-position: center;
@@ -383,36 +383,36 @@ p {
   pointer-events: none;
 }
 
-/* Combined overlays - warm amber + gradient fade (warmer tones) */
+/* Combined overlays - strong amber + gradient fade (reduced height) */
 .resident-inner-page::after {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 44vh;
-  min-height: 320px;
-  max-height: 420px;
+  height: 35vh;
+  min-height: 260px;
+  max-height: 340px;
   z-index: 0;
   pointer-events: none;
   /* Layer 1: Gradient fade to warm cream */
-  /* Layer 2: Warm amber overlay - increased warmth */
+  /* Layer 2: Strong amber overlay - visibly warm */
   background:
     linear-gradient(
       180deg,
       transparent 0%,
-      transparent 50%,
-      rgba(248, 245, 240, 0.15) 60%,
-      rgba(248, 245, 240, 0.4) 70%,
-      rgba(248, 245, 240, 0.7) 80%,
-      rgba(248, 245, 240, 0.92) 90%,
-      #F8F5F0 100%
+      transparent 40%,
+      rgba(245, 240, 232, 0.25) 50%,
+      rgba(245, 240, 232, 0.55) 62%,
+      rgba(245, 240, 232, 0.85) 75%,
+      rgba(245, 240, 232, 0.98) 88%,
+      #F5F0E8 100%
     ),
     linear-gradient(
       180deg,
-      rgba(255, 165, 70, 0.28) 0%,
-      rgba(255, 175, 90, 0.18) 50%,
-      rgba(255, 180, 100, 0.08) 100%
+      rgba(255, 160, 60, 0.35) 0%,
+      rgba(255, 170, 80, 0.25) 50%,
+      rgba(255, 175, 95, 0.12) 100%
     );
 }
 
@@ -427,12 +427,12 @@ p {
    Matches Home hero treatment exactly
    ============================================= */
 
-/* Hero header area for inner pages */
+/* Hero header area for inner pages - reduced height */
 .inner-page-hero {
   position: relative;
-  height: 44vh;
-  min-height: 320px;
-  max-height: 420px;
+  height: 35vh;
+  min-height: 260px;
+  max-height: 340px;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -509,10 +509,10 @@ p {
   color: rgba(255, 255, 255, 0.8);
 }
 
-/* Page Title - Centered, moved up for tighter vertical rhythm */
+/* Page Title - Centered, positioned for shorter hero */
 .inner-page-title-container {
   position: absolute;
-  bottom: 65px; /* Moved up ~15px for better balance */
+  bottom: 70px; /* Adjusted for reduced hero height */
   left: 0;
   right: 0;
   text-align: center;
@@ -529,10 +529,10 @@ p {
   font-family: 'Georgia', 'Times New Roman', serif;
 }
 
-/* Content areas after hero - tighter spacing for better flow */
+/* Content areas after hero - minimal spacing for tight layout */
 .resident-inner-page main,
 .resident-inner-page .building-content,
 .resident-inner-page .packages-summary,
 .resident-inner-page .community-split-layout {
-  padding-top: 16px; /* Reduced from 24px for tighter vertical rhythm */
+  padding-top: 4px; /* Aggressive reduction - content sits close to hero */
 }

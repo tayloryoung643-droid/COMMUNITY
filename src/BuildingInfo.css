@@ -5,14 +5,14 @@
 
 .building-info-container {
   min-height: 100vh;
-  background: #F8F5F0;
+  background: #F5F0E8;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 /* Header */
 .building-info-header {
-  padding: 24px 16px 16px;
+  padding: 8px 16px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -24,7 +24,7 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: #FFFFFF;
+  background: #FFFCF7;
   border: none;
   border-radius: 12px;
   color: #4A4A4A;
@@ -59,7 +59,7 @@
 
 /* Accordion Item */
 .accordion-item {
-  background: #FFFFFF;
+  background: #FFFCF7;
   border: none;
   border-radius: 18px;
   overflow: hidden;
@@ -122,7 +122,7 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  color: #9CA3AF;
+  color: #8A8075;
   transition: all 0.2s ease;
 }
 
@@ -153,7 +153,7 @@
   flex-direction: column;
   gap: 4px;
   padding: 14px;
-  background: #F7F5F2;
+  background: #F3EEE5;
   border-radius: 12px;
   margin-bottom: 8px;
 }

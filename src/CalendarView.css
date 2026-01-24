@@ -5,7 +5,7 @@
 
 .calendar-view-container {
   min-height: 100vh;
-  background: #F8F5F0;
+  background: #F5F0E8;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -24,7 +24,7 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: #FFFFFF;
+  background: #FFFCF7;
   border: none;
   border-radius: 12px;
   color: #4A4A4A;
@@ -34,13 +34,13 @@
 }
 
 .view-toggle-btn:hover {
-  background: #F7F5F2;
+  background: #F3EEE5;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
 }
 
 /* Content */
 .calendar-view-content {
-  padding: 24px 16px 100px;
+  padding: 8px 16px 100px;
 }
 
 /* Filter Tabs */
@@ -62,8 +62,8 @@
   padding: 8px 16px;
   font-size: 13px;
   font-weight: 500;
-  color: #9CA3AF;
-  background: #FFFFFF;
+  color: #8A8075;
+  background: #FFFCF7;
   border: none;
   border-radius: 20px;
   cursor: pointer;
@@ -73,7 +73,7 @@
 }
 
 .calendar-filters .filter-btn:hover {
-  background: #F7F5F2;
+  background: #F3EEE5;
   color: #4A4A4A;
 }
 
@@ -92,7 +92,7 @@
 /* Calendar Card */
 .calendar-card {
   position: relative;
-  background: #FFFFFF;
+  background: #FFFCF7;
   border: none;
   border-radius: 18px;
   padding: 18px 16px;
@@ -131,7 +131,7 @@
 
 .calendar-exact-date {
   font-size: 13px;
-  color: #9CA3AF;
+  color: #8A8075;
 }
 
 .calendar-category-tag {
@@ -142,7 +142,7 @@
   border-radius: 16px;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  background: #F7F5F2;
+  background: #F3EEE5;
   color: #7A7265;
 }
 
@@ -177,7 +177,7 @@
 
 .calendar-description {
   font-size: 13px;
-  color: #9CA3AF;
+  color: #8A8075;
   line-height: 1.5;
   margin: 0 0 8px 0;
 }
@@ -229,7 +229,7 @@
    ============================================ */
 
 .calendar-grid-container {
-  background: #FFFFFF;
+  background: #FFFCF7;
   border-radius: 18px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02);
@@ -249,7 +249,7 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  background: #F7F5F2;
+  background: #F3EEE5;
   border: none;
   border-radius: 10px;
   color: #4A4A4A;
@@ -280,7 +280,7 @@
   text-align: center;
   font-size: 12px;
   font-weight: 600;
-  color: #9CA3AF;
+  color: #8A8075;
   padding: 8px 0;
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -307,7 +307,7 @@
 }
 
 .calendar-day:not(.empty):hover {
-  background: #F7F5F2;
+  background: #F3EEE5;
 }
 
 .calendar-day.empty {
@@ -323,7 +323,7 @@
 }
 
 .calendar-day.has-events:not(.today) {
-  background: #F7F5F2;
+  background: #F3EEE5;
 }
 
 .day-number {
@@ -348,7 +348,7 @@
 
 .more-events {
   font-size: 9px;
-  color: #9CA3AF;
+  color: #8A8075;
   font-weight: 500;
 }
 
@@ -393,7 +393,7 @@
 
 .month-event-date {
   font-size: 12px;
-  color: #9CA3AF;
+  color: #8A8075;
 }
 
 .month-event-title {

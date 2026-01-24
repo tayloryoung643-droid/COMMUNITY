@@ -5,14 +5,14 @@
 
 .bulletin-board-container {
   min-height: 100vh;
-  background: #F8F5F0;
+  background: #F5F0E8;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 /* Header */
 .bulletin-board-header {
-  padding: 24px 16px 16px;
+  padding: 8px 16px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -24,7 +24,7 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: #FFFFFF;
+  background: #FFFCF7;
   border: none;
   border-radius: 12px;
   color: #4A4A4A;
@@ -98,8 +98,8 @@
   padding: 8px 14px;
   font-size: 13px;
   font-weight: 500;
-  color: #9CA3AF;
-  background: #FFFFFF;
+  color: #8A8075;
+  background: #FFFCF7;
   border: none;
   border-radius: 20px;
   cursor: pointer;
@@ -109,7 +109,7 @@
 }
 
 .category-btn:hover {
-  background: #F7F5F2;
+  background: #F3EEE5;
   color: #4A4A4A;
 }
 
@@ -136,7 +136,7 @@
 }
 
 .empty-listings svg {
-  color: #9CA3AF;
+  color: #8A8075;
   opacity: 0.5;
   margin-bottom: 16px;
 }
@@ -150,13 +150,13 @@
 
 .empty-listings p {
   font-size: 14px;
-  color: #9CA3AF;
+  color: #8A8075;
   margin: 0;
 }
 
 /* Listing Card */
 .listing-card {
-  background: #FFFFFF;
+  background: #FFFCF7;
   border: none;
   border-radius: 18px;
   padding: 18px 16px;
@@ -184,7 +184,7 @@
   border-radius: 16px;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  background: #F7F5F2;
+  background: #F3EEE5;
   color: #7A7265;
 }
 
@@ -213,7 +213,7 @@
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: #9CA3AF;
+  color: #8A8075;
 }
 
 .listing-title {
@@ -225,7 +225,7 @@
 
 .listing-details {
   font-size: 14px;
-  color: #9CA3AF;
+  color: #8A8075;
   margin: 0 0 16px 0;
   line-height: 1.5;
 }
@@ -252,7 +252,7 @@
 
 .listing-unit {
   font-size: 12px;
-  color: #9CA3AF;
+  color: #8A8075;
 }
 
 .contact-btn {
@@ -301,7 +301,7 @@
   max-width: 440px;
   max-height: 90vh;
   overflow-y: auto;
-  background: #FFFFFF;
+  background: #FFFCF7;
   border-radius: 20px;
   animation: modalSlideUp 0.3s ease;
 }
@@ -325,7 +325,7 @@
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   position: sticky;
   top: 0;
-  background: #FFFFFF;
+  background: #FFFCF7;
   z-index: 1;
 }
 
@@ -345,13 +345,13 @@
   background: transparent;
   border: none;
   border-radius: 8px;
-  color: #9CA3AF;
+  color: #8A8075;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .bulletin-board-container .modal-close:hover {
-  background: #F7F5F2;
+  background: #F3EEE5;
   color: #1A1A1A;
 }
 
@@ -380,7 +380,7 @@
 }
 
 .bulletin-board-container .modal-cancel:hover {
-  background: #F7F5F2;
+  background: #F3EEE5;
 }
 
 .bulletin-board-container .modal-submit {
@@ -429,7 +429,7 @@
   font-size: 15px;
   font-family: inherit;
   color: #1A1A1A;
-  background: #F7F5F2;
+  background: #F3EEE5;
   border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 12px;
   transition: all 0.2s ease;
@@ -437,14 +437,14 @@
 
 .form-group input::placeholder,
 .form-group textarea::placeholder {
-  color: #9CA3AF;
+  color: #8A8075;
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #9CA3AF;
-  background: #FFFFFF;
+  border-color: #8A8075;
+  background: #FFFCF7;
 }
 
 .form-group textarea {
@@ -466,8 +466,8 @@
   padding: 10px 14px;
   font-size: 13px;
   font-weight: 500;
-  color: #9CA3AF;
-  background: #F7F5F2;
+  color: #8A8075;
+  background: #F3EEE5;
   border: 1px solid transparent;
   border-radius: 12px;
   cursor: pointer;
@@ -489,10 +489,10 @@
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #9CA3AF;
+  color: #8A8075;
   margin: 0;
   padding: 12px 14px;
-  background: #F7F5F2;
+  background: #F3EEE5;
   border-radius: 12px;
 }
 
@@ -530,7 +530,7 @@
 
 .contact-details p {
   font-size: 14px;
-  color: #9CA3AF;
+  color: #8A8075;
   margin: 0 0 16px 0;
 }
 
@@ -540,14 +540,14 @@
   font-size: 18px;
   font-weight: 600;
   color: #1A1A1A;
-  background: #F7F5F2;
+  background: #F3EEE5;
   border-radius: 16px;
   margin-bottom: 16px;
 }
 
 .contact-hint {
   font-size: 12px;
-  color: #9CA3AF;
+  color: #8A8075;
   line-height: 1.5;
 }
 
@@ -561,7 +561,7 @@
   font-size: 15px;
   font-weight: 500;
   color: #4A4A4A;
-  background: #F7F5F2;
+  background: #F3EEE5;
   border: none;
   border-radius: 12px;
   cursor: pointer;

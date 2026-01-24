@@ -10,25 +10,25 @@
   box-sizing: border-box;
 }
 
-/* Color palette - warmer cream whites */
+/* Color palette - noticeably warmer, premium sunlit feel */
 :root {
-  --bg-page: #E6E2DA;
-  --bg-app: #F8F5F0; /* Warmer cream */
-  --bg-card: #FFFFFF;
-  --bg-card-secondary: #F5F2ED; /* Warmer secondary */
+  --bg-page: #E8E3D8;
+  --bg-app: #F5F0E8; /* Noticeably warmer cream */
+  --bg-card: #FFFCF7; /* Warm white - visible cream tint */
+  --bg-card-secondary: #F3EEE5; /* Warmer secondary surfaces */
   --text-primary: #1A1A1A;
   --text-secondary: #4A4A4A;
-  --text-muted: #9CA3AF;
-  --border-subtle: rgba(0, 0, 0, 0.04);
-  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02);
-  --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
+  --text-muted: #8A8075; /* Warmer muted text */
+  --border-subtle: rgba(139, 115, 85, 0.08);
+  --shadow-soft: 0 2px 8px rgba(120, 100, 70, 0.06), 0 4px 16px rgba(120, 100, 70, 0.03);
+  --shadow-hover: 0 4px 12px rgba(120, 100, 70, 0.08), 0 8px 24px rgba(120, 100, 70, 0.05);
 }
 
-/* Page background - visible when zoomed out */
+/* Page background - noticeably warm cream */
 .home-page {
   min-height: 100vh;
   width: 100%;
-  background: #F5F1EA; /* Warmer background */
+  background: #F3EDE3; /* Noticeably warm - visible difference */
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   -webkit-font-smoothing: antialiased;
   position: relative;
@@ -42,7 +42,7 @@
     justify-content: center;
     padding: 32px 24px 120px;
     box-sizing: border-box;
-    background: #F5F1EA; /* Warmer beige base */
+    background: #F3EDE3; /* Noticeably warm - matches mobile */
   }
 }
 
@@ -80,7 +80,7 @@
     opacity: 1;
   }
 
-  /* FADE OVERLAY - clear at top, fades to warm cream at bottom and sides */
+  /* FADE OVERLAY - clear at top, fades to warm cream sooner for tighter layout */
   .ambient-bg::before {
     content: "";
     position: absolute;
@@ -91,31 +91,31 @@
 
     /* Multi-layer fade: bottom fade + side vignette + warmth */
     background:
-      /* Bottom fade to warmer cream */
+      /* Bottom fade to warmer cream - starts sooner for reduced hero */
       linear-gradient(
         to bottom,
         transparent 0%,
-        transparent 25%,
-        rgba(245, 241, 234, 0.3) 35%,
-        rgba(245, 241, 234, 0.6) 45%,
-        rgba(245, 241, 234, 0.85) 55%,
-        #F5F1EA 65%
+        transparent 18%,
+        rgba(243, 237, 227, 0.3) 28%,
+        rgba(243, 237, 227, 0.6) 38%,
+        rgba(243, 237, 227, 0.88) 48%,
+        #F3EDE3 55%
       ),
       /* Side vignette - soft feathered edges */
       radial-gradient(
-        ellipse 85% 80% at 50% 25%,
+        ellipse 85% 80% at 50% 20%,
         transparent 0%,
-        transparent 40%,
-        rgba(245, 241, 234, 0.3) 55%,
-        rgba(245, 241, 234, 0.7) 70%,
-        #F5F1EA 85%
+        transparent 35%,
+        rgba(243, 237, 227, 0.35) 50%,
+        rgba(243, 237, 227, 0.75) 65%,
+        #F3EDE3 80%
       ),
-      /* Warmth overlay - enhanced golden hour tones */
+      /* Warmth overlay - stronger golden hour tones */
       linear-gradient(
         180deg,
-        rgba(255, 165, 70, 0.2) 0%,
-        rgba(255, 175, 90, 0.12) 25%,
-        transparent 45%
+        rgba(255, 155, 50, 0.38) 0%,
+        rgba(255, 165, 70, 0.25) 20%,
+        transparent 40%
       );
   }
 
@@ -133,9 +133,10 @@
 
   .hero-image-container {
     background: transparent;
-    height: auto;
-    min-height: 180px;
-    max-height: none;
+    height: 35vh;
+    min-height: 260px;
+    max-height: 340px;
+    position: relative;
   }
 
   /* NO glass panel - just text on background */
@@ -172,11 +173,13 @@
     opacity: 0.9;
   }
 
-  /* Building name - white text with shadow */
+  /* Building name - white text with shadow, same height as mobile */
   .hero-text-container {
-    position: relative;
-    bottom: auto;
-    padding: 30px 20px 40px;
+    position: absolute;
+    bottom: 70px; /* Matches mobile - adjusted for reduced hero */
+    left: 0;
+    right: 0;
+    padding: 0 20px;
   }
 
   .hero-the {
@@ -258,9 +261,9 @@
 
 .hero-image-container {
   position: relative;
-  height: 44vh;
-  min-height: 320px;
-  max-height: 420px;
+  height: 35vh;
+  min-height: 260px;
+  max-height: 340px;
   width: 100%;
   overflow: hidden;
   box-sizing: border-box;
@@ -281,26 +284,26 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(255, 165, 70, 0.28) 0%,
-    rgba(255, 175, 90, 0.2) 50%,
-    rgba(255, 180, 100, 0.12) 100%
+    rgba(255, 155, 50, 0.38) 0%,
+    rgba(255, 165, 70, 0.28) 50%,
+    rgba(255, 175, 90, 0.15) 100%
   );
   pointer-events: none;
 }
 
-/* Smooth fade to warm cream background */
+/* Smooth fade to warm cream background - adjusted for shorter hero */
 .hero-gradient-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
     transparent 0%,
-    transparent 50%,
-    rgba(248, 245, 240, 0.15) 60%,
-    rgba(248, 245, 240, 0.4) 70%,
-    rgba(248, 245, 240, 0.7) 80%,
-    rgba(248, 245, 240, 0.92) 90%,
-    #F8F5F0 100%
+    transparent 40%,
+    rgba(243, 237, 227, 0.25) 50%,
+    rgba(243, 237, 227, 0.55) 62%,
+    rgba(243, 237, 227, 0.85) 75%,
+    rgba(243, 237, 227, 0.98) 88%,
+    #F3EDE3 100%
   );
   pointer-events: none;
 }
@@ -351,7 +354,7 @@
 /* Building Name - "The" smaller italic, "Paramount" large serif */
 .hero-text-container {
   position: absolute;
-  bottom: 65px; /* Moved up ~15px for better balance */
+  bottom: 70px; /* Adjusted for reduced hero height */
   left: 0;
   right: 0;
   text-align: center;
@@ -390,7 +393,7 @@
 
 .home-page .main-content {
   width: 100%;
-  padding: 16px 16px 32px; /* Reduced top padding for tighter layout */
+  padding: 4px 16px 32px; /* Aggressive top padding reduction - content tight to hero */
   margin: 0;
   margin-left: 0;
   margin-right: 0;

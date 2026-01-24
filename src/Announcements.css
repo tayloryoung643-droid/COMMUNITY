@@ -5,14 +5,14 @@
 
 .announcements-container {
   min-height: 100vh;
-  background: #F8F5F0;
+  background: #F5F0E8;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 /* Header */
 .announcements-header {
-  padding: 24px 16px 16px;
+  padding: 8px 16px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -24,7 +24,7 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: #FFFFFF;
+  background: #FFFCF7;
   border: none;
   border-radius: 12px;
   color: #4A4A4A;
@@ -58,7 +58,7 @@
 /* Announcement cards */
 .announcement-card {
   position: relative;
-  background: #FFFFFF;
+  background: #FFFCF7;
   border: none;
   border-radius: 18px;
   padding: 18px 16px;
@@ -129,7 +129,7 @@
   text-transform: uppercase;
   letter-spacing: 0.02em;
   width: fit-content;
-  background: #F7F5F2;
+  background: #F3EEE5;
   color: #7A7265;
 }
 
@@ -155,7 +155,7 @@
 
 .announcement-date {
   font-size: 13px;
-  color: #9CA3AF;
+  color: #8A8075;
 }
 
 .announcement-title {
@@ -168,7 +168,7 @@
 
 .announcement-message {
   font-size: 14px;
-  color: #9CA3AF;
+  color: #8A8075;
   line-height: 1.6;
   margin: 0;
 }

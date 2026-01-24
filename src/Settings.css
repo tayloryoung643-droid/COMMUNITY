@@ -5,7 +5,7 @@
 
 .settings-container {
   min-height: 100vh;
-  background: #FAF9F7;
+  background: #F5F0E8;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   -webkit-font-smoothing: antialiased;
   padding-bottom: 40px;
@@ -25,7 +25,7 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: #FFFFFF;
+  background: #FFFCF7;
   border: none;
   border-radius: 12px;
   color: #4A4A4A;
@@ -81,7 +81,7 @@
 
 /* Settings Card */
 .settings-card {
-  background: #FFFFFF;
+  background: #FFFCF7;
   border: none;
   border-radius: 18px;
   padding: 20px;
@@ -122,7 +122,7 @@
   font-size: 32px;
   font-weight: 600;
   color: white;
-  background: linear-gradient(135deg, #7A7265, #9CA3AF);
+  background: linear-gradient(135deg, #7A7265, #8A8075);
 }
 
 .change-photo-btn {
@@ -141,7 +141,7 @@
 }
 
 .change-photo-btn:hover {
-  background: #F7F5F2;
+  background: #F3EEE5;
   border-color: rgba(0, 0, 0, 0.12);
   color: #1A1A1A;
 }
@@ -166,7 +166,7 @@
 }
 
 .settings-card .form-group label svg {
-  color: #9CA3AF;
+  color: #8A8075;
 }
 
 .settings-card .form-group input,
@@ -176,7 +176,7 @@
   font-size: 15px;
   font-family: inherit;
   color: #1A1A1A;
-  background: #F7F5F2;
+  background: #F3EEE5;
   border: 1px solid rgba(0, 0, 0, 0.04);
   border-radius: 12px;
   transition: all 0.2s ease;
@@ -184,14 +184,14 @@
 
 .settings-card .form-group input::placeholder,
 .settings-card .form-group textarea::placeholder {
-  color: #9CA3AF;
+  color: #8A8075;
 }
 
 .settings-card .form-group input:focus,
 .settings-card .form-group textarea:focus {
   outline: none;
   border-color: #0D9488;
-  background: #FFFFFF;
+  background: #FFFCF7;
   box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
 }
 
@@ -204,7 +204,7 @@
   padding: 12px 14px;
   font-size: 15px;
   color: #6B7280;
-  background: #F7F5F2;
+  background: #F3EEE5;
   border: 1px solid rgba(0, 0, 0, 0.04);
   border-radius: 12px;
 }
@@ -235,7 +235,7 @@
 }
 
 .toggle-info > svg {
-  color: #9CA3AF;
+  color: #8A8075;
   flex-shrink: 0;
 }
 
@@ -253,7 +253,7 @@
 
 .toggle-description {
   font-size: 13px;
-  color: #9CA3AF;
+  color: #8A8075;
 }
 
 /* Toggle Switch */
@@ -306,7 +306,7 @@
 }
 
 .settings-link-row:hover {
-  background: #F7F5F2;
+  background: #F3EEE5;
 }
 
 .link-row-info {
@@ -336,12 +336,12 @@
 
 .link-row-description {
   font-size: 13px;
-  color: #9CA3AF;
+  color: #8A8075;
   text-align: left;
 }
 
 .link-row-arrow {
-  color: #9CA3AF;
+  color: #8A8075;
   transition: all 0.2s ease;
 }
 
@@ -378,7 +378,7 @@
 }
 
 .logout-arrow {
-  color: #9CA3AF;
+  color: #8A8075;
 }
 
 /* Emergency Contacts */
@@ -407,7 +407,7 @@
 
 .emergency-label {
   font-size: 13px;
-  color: #9CA3AF;
+  color: #8A8075;
 }
 
 .emergency-number {
