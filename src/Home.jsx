@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Package, Calendar, Users, ChevronRight, MessageSquare, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon, Home as HomeIcon, Wine, Building2, Wrench, Film, ShoppingBag, Music, Coffee, Dumbbell, TreeDeciduous, PartyPopper, Bell, Sparkles, Heart, Palette, BookOpen, Mic, Menu, Settings } from 'lucide-react'
+import { Package, Calendar, Users, ChevronRight, MessageSquare, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon, Home as HomeIcon, Wine, Building2, Wrench, Film, ShoppingBag, Music, Coffee, Dumbbell, TreeDeciduous, PartyPopper, Bell, Sparkles, Heart, Palette, BookOpen, Mic, Menu, Settings, LogOut, Mail } from 'lucide-react'
 import './Home.css'
 
 function Home({ buildingCode, onNavigate }) {
@@ -333,50 +333,66 @@ function Home({ buildingCode, onNavigate }) {
         </div>
       )}
 
-      {/* Slide-out Navigation Menu */}
+      {/* Dropdown Navigation Menu */}
       {menuOpen && (
         <div className="menu-overlay" onClick={() => setMenuOpen(false)}>
           <div className="menu-panel" onClick={e => e.stopPropagation()}>
             <div className="menu-header">
-              <div className="menu-title">
-                <span className="menu-the">The</span>
-                <span className="menu-building-name">Paramount</span>
-              </div>
+              <span className="menu-title">The Paramount</span>
               <button
                 className="menu-close-btn"
                 onClick={() => setMenuOpen(false)}
                 aria-label="Close menu"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
+
+            {/* User Avatar */}
+            <div className="menu-user">
+              <div className="menu-avatar">
+                <img
+                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face"
+                  alt="User"
+                />
+              </div>
+            </div>
+
             <nav className="menu-nav">
+              <button className="menu-item" onClick={() => { handleFeatureClick('Home'); setMenuOpen(false); }}>
+                <HomeIcon size={20} />
+                <span>Home</span>
+              </button>
               <button className="menu-item" onClick={() => { handleFeatureClick('Community'); setMenuOpen(false); }}>
-                <Users size={22} />
+                <MessageSquare size={20} />
                 <span>Community</span>
               </button>
               <button className="menu-item" onClick={() => { handleFeatureClick('Messages'); setMenuOpen(false); }}>
-                <MessageSquare size={22} />
+                <Mail size={20} />
                 <span>Messages</span>
                 {unreadMessages > 0 && (
                   <span className="menu-badge">{unreadMessages}</span>
                 )}
               </button>
               <button className="menu-item" onClick={() => { handleFeatureClick('Calendar'); setMenuOpen(false); }}>
-                <Calendar size={22} />
+                <Calendar size={20} />
                 <span>Calendar</span>
               </button>
               <button className="menu-item" onClick={() => { handleFeatureClick('Packages'); setMenuOpen(false); }}>
-                <Package size={22} />
+                <Package size={20} />
                 <span>Packages</span>
               </button>
               <button className="menu-item" onClick={() => { handleFeatureClick('Building'); setMenuOpen(false); }}>
-                <Building2 size={22} />
+                <Building2 size={20} />
                 <span>Building</span>
               </button>
               <button className="menu-item" onClick={() => { handleFeatureClick('Settings'); setMenuOpen(false); }}>
-                <Settings size={22} />
+                <Settings size={20} />
                 <span>Settings</span>
+              </button>
+              <button className="menu-item menu-item-logout" onClick={() => { handleFeatureClick('Logout'); setMenuOpen(false); }}>
+                <LogOut size={20} />
+                <span>Log out</span>
               </button>
             </nav>
           </div>

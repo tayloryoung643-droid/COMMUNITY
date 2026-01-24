@@ -1160,12 +1160,12 @@
 }
 
 /* ============================================
-   SLIDE-OUT MENU OVERLAY
+   DROPDOWN MENU OVERLAY
    ============================================ */
 .menu-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.15);
   z-index: 10000;
   animation: fadeIn 0.2s ease;
 }
@@ -1175,18 +1175,18 @@
   to { opacity: 1; }
 }
 
-/* Mobile: Slide down from top */
+/* Mobile: Slide down from top, full width */
 .menu-panel {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-bottom-left-radius: 24px;
   border-bottom-right-radius: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   max-height: 85vh;
   overflow-y: auto;
@@ -1207,89 +1207,96 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 20px 16px;
+  padding: 20px 20px 12px;
   padding-top: calc(20px + env(safe-area-inset-top, 0));
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .menu-title {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.menu-the {
-  font-size: 14px;
-  font-weight: 300;
-  font-style: italic;
-  color: #6B7280;
-  letter-spacing: 0.5px;
-}
-
-.menu-building-name {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 500;
   color: #1A1A1A;
-  letter-spacing: 1px;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  letter-spacing: 0.3px;
 }
 
 .menu-close-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  background: rgba(0, 0, 0, 0.05);
+  width: 36px;
+  height: 36px;
+  background: transparent;
   border: none;
-  border-radius: 12px;
-  color: #4A4A4A;
+  border-radius: 10px;
+  color: #9CA3AF;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .menu-close-btn:hover {
-  background: rgba(0, 0, 0, 0.1);
-  color: #1A1A1A;
+  background: rgba(0, 0, 0, 0.05);
+  color: #6B7280;
+}
+
+/* User Avatar */
+.menu-user {
+  padding: 8px 20px 16px;
+}
+
+.menu-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.menu-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .menu-nav {
   display: flex;
   flex-direction: column;
-  padding: 12px 8px 20px;
+  padding: 4px 12px 20px;
   padding-bottom: calc(20px + env(safe-area-inset-bottom, 0));
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   width: 100%;
-  padding: 16px 16px;
+  padding: 14px 12px;
   background: transparent;
   border: none;
-  border-radius: 14px;
-  color: #1A1A1A;
-  font-size: 17px;
-  font-weight: 500;
+  border-radius: 10px;
+  color: #374151;
+  font-size: 16px;
+  font-weight: 400;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   text-align: left;
   position: relative;
 }
 
 .menu-item:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .menu-item:active {
-  background: rgba(0, 0, 0, 0.08);
-  transform: scale(0.98);
+  background: rgba(0, 0, 0, 0.06);
 }
 
 .menu-item svg {
-  color: #6B7280;
+  color: #9CA3AF;
   flex-shrink: 0;
+  stroke-width: 1.5;
+}
+
+.menu-item-logout {
+  margin-top: 8px;
 }
 
 .menu-badge {
@@ -1297,108 +1304,102 @@
   min-width: 24px;
   height: 24px;
   padding: 0 8px;
-  background: #ef4444;
-  color: white;
+  background: rgba(107, 114, 128, 0.15);
+  color: #4B5563;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Desktop: Left side drawer overlay */
+/* Desktop: Floating dropdown panel in top-left */
 @media (min-width: 768px) {
   .menu-overlay {
-    background: rgba(0, 0, 0, 0.25);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: none;
   }
 
   .menu-panel {
-    top: 0;
-    left: 0;
+    position: absolute;
+    top: 16px;
+    left: 16px;
     right: auto;
-    bottom: 0;
-    width: 340px;
-    max-height: none;
-    border-radius: 0;
-    border-top-right-radius: 28px;
-    border-bottom-right-radius: 28px;
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(32px);
-    -webkit-backdrop-filter: blur(32px);
-    box-shadow: 8px 0 40px rgba(0, 0, 0, 0.08), 2px 0 8px rgba(0, 0, 0, 0.04);
-    animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    bottom: auto;
+    width: 280px;
+    max-height: calc(100vh - 32px);
+    border-radius: 20px;
+    background: rgba(248, 248, 250, 0.95);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.08),
+      0 8px 48px rgba(0, 0, 0, 0.06),
+      0 0 0 1px rgba(0, 0, 0, 0.04);
+    animation: dropdownIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow-y: auto;
   }
 
-  @keyframes slideInLeft {
+  @keyframes dropdownIn {
     from {
       opacity: 0;
-      transform: translateX(-100%);
+      transform: translateY(-12px) scale(0.96);
     }
     to {
       opacity: 1;
-      transform: translateX(0);
+      transform: translateY(0) scale(1);
     }
   }
 
   .menu-header {
-    padding: 32px 28px 24px;
-    border-bottom: none;
+    padding: 20px 20px 8px;
   }
 
   .menu-title {
-    gap: 2px;
-  }
-
-  .menu-the {
-    font-size: 13px;
-    color: #9CA3AF;
-  }
-
-  .menu-building-name {
-    font-size: 22px;
-    font-weight: 400;
-    color: #374151;
-    letter-spacing: 0.5px;
+    font-size: 17px;
+    font-weight: 500;
+    color: #1A1A1A;
   }
 
   .menu-close-btn {
-    position: absolute;
-    top: 24px;
-    right: 20px;
-    width: 40px;
-    height: 40px;
-    background: transparent;
-    color: #9CA3AF;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
   }
 
-  .menu-close-btn:hover {
-    background: rgba(0, 0, 0, 0.04);
-    color: #6B7280;
+  .menu-user {
+    padding: 8px 20px 12px;
+  }
+
+  .menu-avatar {
+    width: 52px;
+    height: 52px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   }
 
   .menu-nav {
-    padding: 8px 16px 32px;
+    padding: 4px 8px 16px;
   }
 
   .menu-item {
-    padding: 20px 16px;
+    padding: 12px 12px;
     font-size: 15px;
     font-weight: 400;
-    color: #4B5563;
-    border-radius: 12px;
+    color: #374151;
+    border-radius: 8px;
+    gap: 12px;
   }
 
   .menu-item svg {
     color: #9CA3AF;
     width: 20px;
     height: 20px;
+    stroke-width: 1.5;
   }
 
   .menu-item:hover {
-    background: rgba(0, 0, 0, 0.03);
+    background: rgba(0, 0, 0, 0.04);
   }
 
   .menu-item:hover svg {
@@ -1406,11 +1407,23 @@
   }
 
   .menu-badge {
-    background: #ef4444;
-    font-size: 12px;
+    background: rgba(107, 114, 128, 0.12);
+    color: #6B7280;
+    font-size: 13px;
+    font-weight: 500;
     min-width: 22px;
     height: 22px;
     padding: 0 7px;
+    border-radius: 11px;
+  }
+
+  .menu-item-logout {
+    margin-top: 4px;
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
+    padding-top: 12px;
+    margin-left: 4px;
+    margin-right: 4px;
+    border-radius: 0 0 8px 8px;
   }
 
   /* Desktop top bar adjustments */
