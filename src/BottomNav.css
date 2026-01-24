@@ -1,12 +1,10 @@
 /* ============================================
    GLOBAL BOTTOM NAV - Managed by MobileShell
+   Same bottom nav on mobile and desktop
    ============================================ */
 
 .global-bottom-nav {
   position: relative; /* Shell handles fixed positioning */
-  bottom: 0;
-  left: 0;
-  right: 0;
   width: 100%;
   display: flex;
   align-items: center;
@@ -36,7 +34,7 @@
   font-size: 10px;
   font-weight: 500;
   cursor: pointer;
-  transition: color 0.15s ease;
+  transition: all 0.15s ease;
   letter-spacing: 0.01em;
 }
 
@@ -68,7 +66,7 @@
   flex-shrink: 0;
 }
 
-/* Mobile specific overrides */
+/* Mobile specific - ensure consistent sizing */
 @media (max-width: 767px) {
   .global-bottom-nav {
     height: 64px !important;

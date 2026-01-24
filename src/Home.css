@@ -35,169 +35,15 @@
   /* --hero-image is set inline via React for the ambient background */
 }
 
-/* Desktop: MobileShell handles centering, just set background */
-@media (min-width: 768px) {
-  .home-page {
-    display: block;
-    padding: 0;
-    box-sizing: border-box;
-    background: transparent; /* Shell provides background */
-  }
-}
-
 /* ============================================
-   AMBIENT BACKGROUND - Desktop only (1024px+)
-   Real DOM element using the SAME hero image
+   NO DESKTOP OVERRIDES
+   Desktop inherits mobile styles exactly
+   Home looks identical on all screen sizes
    ============================================ */
 
-/* Real ambient background layer */
+/* Ambient background - hidden, not used */
 .ambient-bg {
-  display: none; /* Hidden by default (mobile) */
-}
-
-/* Show on desktop only */
-@media (min-width: 768px) {
-  /* BUILDING IMAGE - crystal clear, recognizable */
-  .ambient-bg {
-    display: block;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 0;
-    pointer-events: none;
-
-    /* Building image - zoomed out, showing more of the lower floors */
-    background-image: url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80');
-    background-size: 100%;
-    background-position: center 70%;
-    background-repeat: no-repeat;
-
-    /* NO BLUR - crystal clear building */
-    filter: blur(0);
-    opacity: 1;
-  }
-
-  /* FADE OVERLAY - clear at top, fades to warm cream sooner for tighter layout */
-  .ambient-bg::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-
-    /* Multi-layer fade: bottom fade + side vignette + warmth */
-    background:
-      /* Bottom fade to warmer cream - starts sooner for reduced hero */
-      linear-gradient(
-        to bottom,
-        transparent 0%,
-        transparent 18%,
-        rgba(243, 237, 227, 0.3) 28%,
-        rgba(243, 237, 227, 0.6) 38%,
-        rgba(243, 237, 227, 0.88) 48%,
-        #F3EDE3 55%
-      ),
-      /* Side vignette - soft feathered edges */
-      radial-gradient(
-        ellipse 85% 80% at 50% 20%,
-        transparent 0%,
-        transparent 35%,
-        rgba(243, 237, 227, 0.35) 50%,
-        rgba(243, 237, 227, 0.75) 65%,
-        #F3EDE3 80%
-      ),
-      /* Warmth overlay - stronger golden hour tones */
-      linear-gradient(
-        180deg,
-        rgba(255, 155, 50, 0.38) 0%,
-        rgba(255, 165, 70, 0.25) 20%,
-        transparent 40%
-      );
-  }
-
-  /* HIDE the sharp hero image card entirely on desktop */
-  .hero-image-container .hero-image,
-  .hero-image-container .hero-warm-overlay,
-  .hero-image-container .hero-gradient-overlay {
-    display: none;
-  }
-
-  /* Hero section becomes transparent - text floats on background */
-  .hero-section {
-    background: transparent !important;
-  }
-
-  .hero-image-container {
-    background: transparent;
-    height: 35vh;
-    min-height: 260px;
-    max-height: 340px;
-    position: relative;
-  }
-
-  /* NO glass panel - just text on background */
-  .hero-image-container::before {
-    display: none;
-  }
-
-  /* Weather widget - white text for visibility on building image */
-  .weather-widget {
-    position: relative;
-    top: auto;
-    left: auto;
-    padding: 20px;
-    color: white;
-  }
-
-  .weather-datetime {
-    color: rgba(255, 255, 255, 0.9);
-    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  }
-
-  .weather-temp {
-    color: white;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  }
-
-  .weather-condition {
-    color: rgba(255, 255, 255, 0.85);
-    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  }
-
-  .weather-icon {
-    color: white;
-    opacity: 0.9;
-  }
-
-  /* Building name - white text with shadow, same height as mobile */
-  .hero-text-container {
-    position: absolute;
-    bottom: 70px; /* Matches mobile - adjusted for reduced hero */
-    left: 0;
-    right: 0;
-    padding: 0 20px;
-  }
-
-  .hero-the {
-    color: rgba(255, 255, 255, 0.9);
-    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  }
-
-  .hero-building-name {
-    color: white;
-    text-shadow: 0 3px 12px rgba(0,0,0,0.4);
-  }
-}
-
-/* Content above background (desktop only) */
-@media (min-width: 768px) {
-  .home-page > *:not(.ambient-bg) {
-    position: relative;
-    z-index: 1;
-  }
+  display: none;
 }
 
 /* ============================================
@@ -217,21 +63,8 @@
   box-sizing: border-box;
 }
 
-/* Desktop: content fills the shell frame */
-@media (min-width: 768px) {
-  .app-container {
-    background: transparent;
-  }
-
-  /* Ensure all content wrappers are transparent */
-  .home-page .main-content,
-  .hero-section,
-  .today-section,
-  .coming-up-section,
-  .quick-actions-section {
-    background: transparent !important;
-  }
-}
+/* NO desktop overrides for app-container
+   Desktop inherits mobile styles exactly */
 
 /* ============================================
    HERO SECTION - Full width of container
