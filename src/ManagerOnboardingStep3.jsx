@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import './ManagerOnboardingStep3.css'
 
-function ManagerOnboardingStep3({ onBack, onContinue, onSkip, initialData }) {
+function ManagerOnboardingStep3({ onBack, onContinue, onSkip, initialData, isDemoMode }) {
   const fileInputRef = useRef(null)
 
   // Input method tabs
@@ -34,8 +34,8 @@ function ManagerOnboardingStep3({ onBack, onContinue, onSkip, initialData }) {
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingStep, setProcessingStep] = useState('')
 
-  // Generated residents state
-  const [residents, setResidents] = useState(null)
+  // Generated residents state - restore from initialData if available
+  const [residents, setResidents] = useState(initialData?.residents || null)
   const [editingRow, setEditingRow] = useState(null)
   const [editValues, setEditValues] = useState({})
 
@@ -91,7 +91,123 @@ function ManagerOnboardingStep3({ onBack, onContinue, onSkip, initialData }) {
     return uploadedFile || pastedText.trim().length > 0
   }
 
-  // Simulate AI processing
+  // Parse resident data from pasted text (basic parsing for real users)
+  const parseResidentData = (text) => {
+    const lines = text.split('\n').filter(line => line.trim())
+    const valid = []
+    const needsReview = []
+    let idCounter = 1
+
+    // Email regex pattern
+    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/
+    // Unit number patterns (e.g., "401", "Unit 401", "#401", "Apt 401")
+    const unitRegex = /(?:unit|apt|#|apartment)?\s*(\d{1,5}[a-zA-Z]?)/i
+
+    for (const line of lines) {
+      const email = line.match(emailRegex)?.[0] || ''
+      const unitMatch = line.match(unitRegex)
+      const unit = unitMatch?.[1] || ''
+
+      // Try to extract name - remove email and unit, clean up
+      let name = line
+        .replace(emailRegex, '')
+        .replace(/unit\s*\d+[a-zA-Z]?/gi, '')
+        .replace(/apt\.?\s*\d+[a-zA-Z]?/gi, '')
+        .replace(/#\d+[a-zA-Z]?/g, '')
+        .replace(/[,\-()]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+
+      // Skip empty lines or lines with no useful data
+      if (!name && !unit && !email) continue
+
+      const resident = {
+        id: idCounter++,
+        name: name || '',
+        unit: unit || '',
+        email: email,
+        status: 'ready'
+      }
+
+      // Determine if valid or needs review
+      if (name && unit && email) {
+        resident.status = 'ready'
+        valid.push(resident)
+      } else if (name || unit || email) {
+        // Has some data but incomplete
+        if (!email) {
+          resident.status = 'needs_email'
+          resident.issue = 'Missing email address'
+        } else if (!name) {
+          resident.status = 'needs_name'
+          resident.issue = 'Name not found'
+        } else if (!unit) {
+          resident.status = 'needs_unit'
+          resident.issue = 'Unit number not found'
+        }
+        needsReview.push(resident)
+      }
+    }
+
+    return { valid, needsReview }
+  }
+
+  // Demo residents data (only used in demo mode)
+  const getDemoResidents = () => ({
+    valid: [
+      { id: 1, name: 'John Smith', unit: '401', email: 'john.smith@email.com', status: 'ready' },
+      { id: 2, name: 'Sarah Johnson', unit: '402', email: 'sarah.j@gmail.com', status: 'ready' },
+      { id: 3, name: 'Mike Wilson', unit: '403', email: 'mike@wilson.com', status: 'ready' },
+      { id: 4, name: 'Emily Davis', unit: '404', email: 'emily.davis@outlook.com', status: 'ready' },
+      { id: 5, name: 'Robert Brown', unit: '405', email: 'rbrown@company.com', status: 'ready' },
+      { id: 6, name: 'Jennifer Martinez', unit: '501', email: 'jenn.martinez@email.com', status: 'ready' },
+      { id: 7, name: 'David Lee', unit: '502', email: 'david.lee@gmail.com', status: 'ready' },
+      { id: 8, name: 'Lisa Anderson', unit: '503', email: 'l.anderson@email.com', status: 'ready' },
+      { id: 9, name: 'James Taylor', unit: '504', email: 'jtaylor@business.com', status: 'ready' },
+      { id: 10, name: 'Amanda White', unit: '505', email: 'amanda.w@email.com', status: 'ready' },
+      { id: 11, name: 'Christopher Harris', unit: '601', email: 'c.harris@company.com', status: 'ready' },
+      { id: 12, name: 'Michelle Clark', unit: '602', email: 'michelle.clark@gmail.com', status: 'ready' },
+      { id: 13, name: 'Daniel Lewis', unit: '603', email: 'dlewis@email.com', status: 'ready' },
+      { id: 14, name: 'Jessica Robinson', unit: '604', email: 'jess.r@outlook.com', status: 'ready' },
+      { id: 15, name: 'Matthew Walker', unit: '605', email: 'matt.walker@email.com', status: 'ready' },
+      { id: 16, name: 'Ashley Hall', unit: '701', email: 'ashley.hall@gmail.com', status: 'ready' },
+      { id: 17, name: 'Andrew Young', unit: '702', email: 'a.young@company.com', status: 'ready' },
+      { id: 18, name: 'Stephanie King', unit: '703', email: 'stephanie.k@email.com', status: 'ready' },
+      { id: 19, name: 'Joshua Wright', unit: '704', email: 'josh.wright@business.com', status: 'ready' },
+      { id: 20, name: 'Nicole Scott', unit: '705', email: 'nicole.s@gmail.com', status: 'ready' },
+      { id: 21, name: 'Ryan Green', unit: '801', email: 'ryan.green@email.com', status: 'ready' },
+      { id: 22, name: 'Megan Adams', unit: '802', email: 'megan.a@outlook.com', status: 'ready' },
+      { id: 23, name: 'Kevin Baker', unit: '803', email: 'kbaker@company.com', status: 'ready' },
+      { id: 24, name: 'Lauren Nelson', unit: '804', email: 'lauren.n@email.com', status: 'ready' },
+      { id: 25, name: 'Brandon Carter', unit: '805', email: 'b.carter@gmail.com', status: 'ready' },
+      { id: 26, name: 'Rachel Mitchell', unit: '901', email: 'rachel.m@business.com', status: 'ready' },
+      { id: 27, name: 'Justin Perez', unit: '902', email: 'justin.perez@email.com', status: 'ready' },
+      { id: 28, name: 'Amber Roberts', unit: '903', email: 'amber.r@outlook.com', status: 'ready' },
+      { id: 29, name: 'Tyler Turner', unit: '904', email: 'tturner@company.com', status: 'ready' },
+      { id: 30, name: 'Kayla Phillips', unit: '905', email: 'kayla.p@gmail.com', status: 'ready' },
+      { id: 31, name: 'Eric Campbell', unit: '1001', email: 'e.campbell@email.com', status: 'ready' },
+      { id: 32, name: 'Heather Parker', unit: '1002', email: 'heather.p@business.com', status: 'ready' },
+      { id: 33, name: 'Sean Evans', unit: '1003', email: 's.evans@outlook.com', status: 'ready' },
+      { id: 34, name: 'Christina Edwards', unit: '1004', email: 'christina.e@email.com', status: 'ready' },
+      { id: 35, name: 'Jason Collins', unit: '1005', email: 'jason.c@gmail.com', status: 'ready' },
+      { id: 36, name: 'Brittany Stewart', unit: '1101', email: 'b.stewart@company.com', status: 'ready' },
+      { id: 37, name: 'Mark Sanchez', unit: '1102', email: 'mark.s@email.com', status: 'ready' },
+      { id: 38, name: 'Samantha Morris', unit: '1103', email: 'samantha.m@business.com', status: 'ready' },
+      { id: 39, name: 'Derek Rogers', unit: '1104', email: 'd.rogers@outlook.com', status: 'ready' },
+      { id: 40, name: 'Courtney Reed', unit: '1105', email: 'courtney.r@gmail.com', status: 'ready' },
+      { id: 41, name: 'Patrick Cook', unit: '1201', email: 'p.cook@email.com', status: 'ready' },
+      { id: 42, name: 'Melissa Morgan', unit: '1202', email: 'melissa.m@company.com', status: 'ready' },
+      { id: 43, name: 'Adam Bell', unit: '1203', email: 'adam.bell@business.com', status: 'ready' },
+      { id: 44, name: 'Danielle Murphy', unit: '1204', email: 'd.murphy@outlook.com', status: 'ready' }
+    ],
+    needsReview: [
+      { id: 101, name: 'Bob', unit: '502', email: '', status: 'needs_email', issue: 'Missing email address' },
+      { id: 102, name: 'Unit 1205 Resident', unit: '1205', email: 'resident1205@temp.com', status: 'needs_name', issue: 'Name not found - using placeholder' },
+      { id: 103, name: 'Tom & Jane Miller', unit: '1206', email: 'miller.family@email.com', status: 'multiple', issue: 'Multiple residents detected - may need separate entries' }
+    ]
+  })
+
+  // Process resident data - uses demo data only in demo mode
   const organizeResidents = async () => {
     setIsProcessing(true)
 
@@ -108,62 +224,23 @@ function ManagerOnboardingStep3({ onBack, onContinue, onSkip, initialData }) {
       await new Promise(resolve => setTimeout(resolve, 700))
     }
 
-    // Simulate AI-organized resident data
-    const simulatedResidents = {
-      valid: [
-        { id: 1, name: 'John Smith', unit: '401', email: 'john.smith@email.com', status: 'ready' },
-        { id: 2, name: 'Sarah Johnson', unit: '402', email: 'sarah.j@gmail.com', status: 'ready' },
-        { id: 3, name: 'Mike Wilson', unit: '403', email: 'mike@wilson.com', status: 'ready' },
-        { id: 4, name: 'Emily Davis', unit: '404', email: 'emily.davis@outlook.com', status: 'ready' },
-        { id: 5, name: 'Robert Brown', unit: '405', email: 'rbrown@company.com', status: 'ready' },
-        { id: 6, name: 'Jennifer Martinez', unit: '501', email: 'jenn.martinez@email.com', status: 'ready' },
-        { id: 7, name: 'David Lee', unit: '502', email: 'david.lee@gmail.com', status: 'ready' },
-        { id: 8, name: 'Lisa Anderson', unit: '503', email: 'l.anderson@email.com', status: 'ready' },
-        { id: 9, name: 'James Taylor', unit: '504', email: 'jtaylor@business.com', status: 'ready' },
-        { id: 10, name: 'Amanda White', unit: '505', email: 'amanda.w@email.com', status: 'ready' },
-        { id: 11, name: 'Christopher Harris', unit: '601', email: 'c.harris@company.com', status: 'ready' },
-        { id: 12, name: 'Michelle Clark', unit: '602', email: 'michelle.clark@gmail.com', status: 'ready' },
-        { id: 13, name: 'Daniel Lewis', unit: '603', email: 'dlewis@email.com', status: 'ready' },
-        { id: 14, name: 'Jessica Robinson', unit: '604', email: 'jess.r@outlook.com', status: 'ready' },
-        { id: 15, name: 'Matthew Walker', unit: '605', email: 'matt.walker@email.com', status: 'ready' },
-        { id: 16, name: 'Ashley Hall', unit: '701', email: 'ashley.hall@gmail.com', status: 'ready' },
-        { id: 17, name: 'Andrew Young', unit: '702', email: 'a.young@company.com', status: 'ready' },
-        { id: 18, name: 'Stephanie King', unit: '703', email: 'stephanie.k@email.com', status: 'ready' },
-        { id: 19, name: 'Joshua Wright', unit: '704', email: 'josh.wright@business.com', status: 'ready' },
-        { id: 20, name: 'Nicole Scott', unit: '705', email: 'nicole.s@gmail.com', status: 'ready' },
-        { id: 21, name: 'Ryan Green', unit: '801', email: 'ryan.green@email.com', status: 'ready' },
-        { id: 22, name: 'Megan Adams', unit: '802', email: 'megan.a@outlook.com', status: 'ready' },
-        { id: 23, name: 'Kevin Baker', unit: '803', email: 'kbaker@company.com', status: 'ready' },
-        { id: 24, name: 'Lauren Nelson', unit: '804', email: 'lauren.n@email.com', status: 'ready' },
-        { id: 25, name: 'Brandon Carter', unit: '805', email: 'b.carter@gmail.com', status: 'ready' },
-        { id: 26, name: 'Rachel Mitchell', unit: '901', email: 'rachel.m@business.com', status: 'ready' },
-        { id: 27, name: 'Justin Perez', unit: '902', email: 'justin.perez@email.com', status: 'ready' },
-        { id: 28, name: 'Amber Roberts', unit: '903', email: 'amber.r@outlook.com', status: 'ready' },
-        { id: 29, name: 'Tyler Turner', unit: '904', email: 'tturner@company.com', status: 'ready' },
-        { id: 30, name: 'Kayla Phillips', unit: '905', email: 'kayla.p@gmail.com', status: 'ready' },
-        { id: 31, name: 'Eric Campbell', unit: '1001', email: 'e.campbell@email.com', status: 'ready' },
-        { id: 32, name: 'Heather Parker', unit: '1002', email: 'heather.p@business.com', status: 'ready' },
-        { id: 33, name: 'Sean Evans', unit: '1003', email: 's.evans@outlook.com', status: 'ready' },
-        { id: 34, name: 'Christina Edwards', unit: '1004', email: 'christina.e@email.com', status: 'ready' },
-        { id: 35, name: 'Jason Collins', unit: '1005', email: 'jason.c@gmail.com', status: 'ready' },
-        { id: 36, name: 'Brittany Stewart', unit: '1101', email: 'b.stewart@company.com', status: 'ready' },
-        { id: 37, name: 'Mark Sanchez', unit: '1102', email: 'mark.s@email.com', status: 'ready' },
-        { id: 38, name: 'Samantha Morris', unit: '1103', email: 'samantha.m@business.com', status: 'ready' },
-        { id: 39, name: 'Derek Rogers', unit: '1104', email: 'd.rogers@outlook.com', status: 'ready' },
-        { id: 40, name: 'Courtney Reed', unit: '1105', email: 'courtney.r@gmail.com', status: 'ready' },
-        { id: 41, name: 'Patrick Cook', unit: '1201', email: 'p.cook@email.com', status: 'ready' },
-        { id: 42, name: 'Melissa Morgan', unit: '1202', email: 'melissa.m@company.com', status: 'ready' },
-        { id: 43, name: 'Adam Bell', unit: '1203', email: 'adam.bell@business.com', status: 'ready' },
-        { id: 44, name: 'Danielle Murphy', unit: '1204', email: 'd.murphy@outlook.com', status: 'ready' }
-      ],
-      needsReview: [
-        { id: 101, name: 'Bob', unit: '502', email: '', status: 'needs_email', issue: 'Missing email address' },
-        { id: 102, name: 'Unit 1205 Resident', unit: '1205', email: 'resident1205@temp.com', status: 'needs_name', issue: 'Name not found - using placeholder' },
-        { id: 103, name: 'Tom & Jane Miller', unit: '1206', email: 'miller.family@email.com', status: 'multiple', issue: 'Multiple residents detected - may need separate entries' }
-      ]
+    let processedResidents
+
+    if (isDemoMode) {
+      // In demo mode, show demo residents
+      processedResidents = getDemoResidents()
+    } else {
+      // In real mode, parse the actual input data
+      if (pastedText.trim()) {
+        processedResidents = parseResidentData(pastedText)
+      } else {
+        // If no pasted text (just file upload), show empty results
+        // In a real app, we'd parse the uploaded file here
+        processedResidents = { valid: [], needsReview: [] }
+      }
     }
 
-    setResidents(simulatedResidents)
+    setResidents(processedResidents)
     setIsProcessing(false)
     setProcessingStep('')
   }

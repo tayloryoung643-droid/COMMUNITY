@@ -18,22 +18,22 @@ import {
 } from 'lucide-react'
 import './ManagerOnboardingStep1.css'
 
-function ManagerOnboardingStep1({ onBack, onContinue }) {
+function ManagerOnboardingStep1({ onBack, onContinue, initialData }) {
   const fileInputRef = useRef(null)
 
-  // Building Information
-  const [buildingName, setBuildingName] = useState('')
-  const [buildingAddress, setBuildingAddress] = useState('')
-  const [numberOfFloors, setNumberOfFloors] = useState('')
-  const [numberOfUnits, setNumberOfUnits] = useState('')
-  const [buildingCode, setBuildingCode] = useState('')
+  // Building Information - pre-populate from initialData if available
+  const [buildingName, setBuildingName] = useState(initialData?.building?.name || '')
+  const [buildingAddress, setBuildingAddress] = useState(initialData?.building?.address || '')
+  const [numberOfFloors, setNumberOfFloors] = useState(initialData?.building?.floors?.toString() || '')
+  const [numberOfUnits, setNumberOfUnits] = useState(initialData?.building?.units?.toString() || '')
+  const [buildingCode, setBuildingCode] = useState(initialData?.building?.code || '')
 
-  // Property Manager Information
-  const [managerName, setManagerName] = useState('')
-  const [managerEmail, setManagerEmail] = useState('')
-  const [managerPhone, setManagerPhone] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
+  // Property Manager Information - pre-populate from initialData if available
+  const [managerName, setManagerName] = useState(initialData?.manager?.name || '')
+  const [managerEmail, setManagerEmail] = useState(initialData?.manager?.email || '')
+  const [managerPhone, setManagerPhone] = useState(initialData?.manager?.phone || '')
+  const [password, setPassword] = useState(initialData?.manager?.password || '')
+  const [confirmPassword, setConfirmPassword] = useState(initialData?.manager?.password || '')
   const [logoFile, setLogoFile] = useState(null)
   const [logoPreview, setLogoPreview] = useState(null)
 

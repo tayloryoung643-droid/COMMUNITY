@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import { useAuth } from './contexts/AuthContext'
 import Login from './Login'
@@ -111,8 +111,35 @@ function App() {
     setPosts(prevPosts => [post, ...prevPosts])
   }
 
-  // Store manager onboarding data
-  const [onboardingData, setOnboardingData] = useState(null)
+  // Store manager onboarding data with localStorage persistence
+  const [onboardingData, setOnboardingData] = useState(() => {
+    // Try to restore from localStorage on initial load
+    try {
+      const saved = localStorage.getItem('onboardingData')
+      return saved ? JSON.parse(saved) : null
+    } catch {
+      return null
+    }
+  })
+
+  // Persist onboarding data to localStorage whenever it changes
+  useEffect(() => {
+    if (onboardingData) {
+      try {
+        // Don't persist file objects (they can't be serialized)
+        const dataToSave = {
+          ...onboardingData,
+          building: onboardingData.building ? {
+            ...onboardingData.building,
+            logo: null // Don't persist File objects
+          } : null
+        }
+        localStorage.setItem('onboardingData', JSON.stringify(dataToSave))
+      } catch (e) {
+        console.error('Failed to save onboarding data:', e)
+      }
+    }
+  }, [onboardingData])
 
   const handleResidentLogin = (code) => {
     setBuildingCode(code)
@@ -269,6 +296,8 @@ function App() {
     // Reset to login screen and clear building code
     setBuildingCode('')
     setOnboardingData(null)
+    // Clear localStorage onboarding data
+    localStorage.removeItem('onboardingData')
     setCurrentScreen('login')
   }
 
@@ -416,8 +445,14 @@ function App() {
   if (currentScreen === 'manager-onboarding-step1') {
     return (
       <ManagerOnboardingStep1
-        onBack={() => setCurrentScreen('login')}
+        onBack={() => {
+          // Clear onboarding data when going back to login
+          setOnboardingData(null)
+          localStorage.removeItem('onboardingData')
+          setCurrentScreen('login')
+        }}
         onContinue={handleOnboardingStep1Continue}
+        initialData={onboardingData}
       />
     )
   }
@@ -440,6 +475,7 @@ function App() {
         onContinue={handleOnboardingStep3Continue}
         onSkip={handleOnboardingStep3Skip}
         initialData={onboardingData}
+        isDemoMode={isDemoMode}
       />
     )
   }

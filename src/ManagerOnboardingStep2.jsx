@@ -50,9 +50,11 @@ function ManagerOnboardingStep2({ onBack, onContinue, onSkip, initialData }) {
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingStep, setProcessingStep] = useState('')
 
-  // Generated FAQ state
-  const [generatedFAQ, setGeneratedFAQ] = useState(null)
-  const [expandedCategories, setExpandedCategories] = useState([])
+  // Generated FAQ state - restore from initialData if available
+  const [generatedFAQ, setGeneratedFAQ] = useState(initialData?.faq || null)
+  const [expandedCategories, setExpandedCategories] = useState(
+    initialData?.faq ? Object.keys(initialData.faq) : []
+  )
   const [editingItem, setEditingItem] = useState(null)
   const [editValue, setEditValue] = useState('')
 
