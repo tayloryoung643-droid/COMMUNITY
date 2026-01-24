@@ -15,6 +15,7 @@ import Settings from './Settings'
 import CalendarView from './CalendarView'
 import BuildingInfo from './BuildingInfo'
 import Building from './Building'
+import BottomNav from './BottomNav'
 import ManagerOnboardingStep1 from './ManagerOnboardingStep1'
 import ManagerOnboardingStep2 from './ManagerOnboardingStep2'
 import ManagerOnboardingStep3 from './ManagerOnboardingStep3'
@@ -232,53 +233,121 @@ function App() {
     )
   }
 
+  // Define which screens are resident screens (should show bottom nav)
+  const residentScreens = [
+    'home', 'announcements', 'packages', 'events', 'neighbors', 'emergency',
+    'elevator-booking', 'community', 'bulletin-board', 'settings', 'building-info',
+    'calendar', 'building'
+  ]
+  const showBottomNav = residentScreens.includes(currentScreen)
+
   // Show different screens based on currentScreen value
   if (currentScreen === 'announcements') {
-    return <Announcements onBack={handleBack} />
+    return (
+      <>
+        <Announcements onBack={handleBack} />
+        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
+      </>
+    )
   }
 
   if (currentScreen === 'packages') {
-    return <Packages onBack={handleBack} />
+    return (
+      <>
+        <Packages onBack={handleBack} />
+        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
+      </>
+    )
   }
 
   if (currentScreen === 'events') {
-    return <Events onBack={handleBack} />
+    return (
+      <>
+        <Events onBack={handleBack} />
+        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
+      </>
+    )
   }
 
   if (currentScreen === 'neighbors') {
-    return <Neighbors onBack={handleBack} />
+    return (
+      <>
+        <Neighbors onBack={handleBack} />
+        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
+      </>
+    )
   }
 
   if (currentScreen === 'emergency') {
-    return <Emergency onBack={handleBack} />
+    return (
+      <>
+        <Emergency onBack={handleBack} />
+        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
+      </>
+    )
   }
 
   if (currentScreen === 'elevator-booking') {
-    return <ElevatorBooking onBack={handleBack} />
+    return (
+      <>
+        <ElevatorBooking onBack={handleBack} />
+        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
+      </>
+    )
   }
 
   if (currentScreen === 'community') {
-    return <CommunityFeed onBack={handleBack} posts={posts} onAddPost={handleAddPost} />
+    return (
+      <>
+        <CommunityFeed onBack={handleBack} posts={posts} onAddPost={handleAddPost} />
+        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
+      </>
+    )
   }
 
   if (currentScreen === 'bulletin-board') {
-    return <BulletinBoard onBack={handleBack} />
+    return (
+      <>
+        <BulletinBoard onBack={handleBack} />
+        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
+      </>
+    )
   }
 
   if (currentScreen === 'settings') {
-    return <Settings onBack={handleBack} onLogout={handleLogout} onNavigate={handleNavigation} />
+    return (
+      <>
+        <Settings onBack={handleBack} onLogout={handleLogout} onNavigate={handleNavigation} />
+        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
+      </>
+    )
   }
 
   if (currentScreen === 'building-info') {
-    return <BuildingInfo onBack={() => setCurrentScreen('settings')} />
+    return (
+      <>
+        <BuildingInfo onBack={() => setCurrentScreen('settings')} />
+        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
+      </>
+    )
   }
 
   if (currentScreen === 'calendar') {
-    return <CalendarView onBack={handleBack} onNavigate={handleNavigation} />
+    return (
+      <>
+        <CalendarView onBack={handleBack} onNavigate={handleNavigation} />
+        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
+      </>
+    )
   }
 
   if (currentScreen === 'building') {
-    return <Building onBack={handleBack} onNavigate={handleNavigation} />
+    return (
+      <>
+        <Building onBack={handleBack} onNavigate={handleNavigation} />
+        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
+      </>
+    )
   }
 
   if (currentScreen === 'manager-onboarding-step1') {
@@ -342,7 +411,12 @@ function App() {
   }
 
   if (currentScreen === 'home') {
-    return <Home buildingCode={buildingCode} onNavigate={handleNavigation} />
+    return (
+      <>
+        <Home buildingCode={buildingCode} onNavigate={handleNavigation} />
+        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
+      </>
+    )
   }
 
   // Otherwise, show the Login screen

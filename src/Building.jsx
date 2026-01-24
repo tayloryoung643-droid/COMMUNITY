@@ -96,25 +96,6 @@ function Building({ onBack, onNavigate }) {
         </section>
       </div>
 
-      {/* Bottom Navigation */}
-      <nav className="bottom-nav">
-        <button className="nav-tab" onClick={() => handleFeatureClick('Home')}>
-          <HomeIcon size={22} />
-          <span>Home</span>
-        </button>
-        <button className="nav-tab" onClick={() => handleFeatureClick('Calendar')}>
-          <Calendar size={22} />
-          <span>Events</span>
-        </button>
-        <button className="nav-tab" onClick={() => handleFeatureClick('Community')}>
-          <MessageSquare size={22} />
-          <span>Community</span>
-        </button>
-        <button className="nav-tab active" onClick={() => handleFeatureClick('Building')}>
-          <Building2 size={22} />
-          <span>Building</span>
-        </button>
-      </nav>
     </div>
   )
 }

@@ -1,0 +1,77 @@
+/* ============================================
+   GLOBAL BOTTOM NAV - Persistent across all pages
+   ============================================ */
+
+.global-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  height: 64px;
+  background: #FFFFFF;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  z-index: 9999;
+  box-sizing: border-box;
+}
+
+.global-bottom-nav .nav-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  max-width: 25%;
+  padding: 8px 4px;
+  background: transparent;
+  border: none;
+  color: #9CA3AF;
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease;
+  letter-spacing: 0.01em;
+}
+
+.global-bottom-nav .nav-tab span {
+  white-space: nowrap;
+  font-size: 10px;
+}
+
+.global-bottom-nav .nav-tab:hover {
+  color: #6B7280;
+}
+
+.global-bottom-nav .nav-tab.active {
+  color: #1A1A1A;
+}
+
+.global-bottom-nav .nav-tab svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 1.5;
+  flex-shrink: 0;
+}
+
+/* Mobile specific overrides */
+@media (max-width: 767px) {
+  .global-bottom-nav {
+    height: 64px !important;
+  }
+
+  .global-bottom-nav .nav-tab {
+    flex: 1 !important;
+    width: 25% !important;
+  }
+
+  .global-bottom-nav .nav-tab span {
+    font-size: 9px !important;
+  }
+}
