@@ -156,11 +156,11 @@
   margin-bottom: 0;
 }
 
-/* Calendar Card - Matches Home event-card exactly */
+/* Calendar Card - Horizontal layout with icon left, details right */
 .calendar-card {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: flex-start;
+  gap: 14px;
   position: relative;
   background: #FFFCF7;
   border: none;
@@ -178,33 +178,9 @@
   box-shadow: 0 4px 12px rgba(120, 100, 70, 0.08), 0 8px 24px rgba(120, 100, 70, 0.05);
 }
 
-/* ============================================
-   TODAY'S EVENT - Expanded featured tile
-   ============================================ */
-.calendar-card.today-event {
-  padding: 18px 16px;
-  border-radius: 18px;
+/* Today's events - slightly more prominent */
+.event-group[data-group="today"] .calendar-card {
   background: #FFFCF7;
-  gap: 10px;
-}
-
-.calendar-card.today-event .calendar-card-body {
-  gap: 14px;
-}
-
-.calendar-card.today-event .calendar-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-}
-
-.calendar-card.today-event .calendar-title {
-  font-size: 15px;
-}
-
-.calendar-card.today-event .calendar-description {
-  -webkit-line-clamp: 3;
-  margin-top: 4px;
 }
 
 .calendar-card-accent {
@@ -266,62 +242,12 @@
   border-radius: 12px;
 }
 
-/* Card header - shows date/time for all cards */
-.calendar-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-}
-
-.calendar-card.today-event .calendar-card-header {
-  align-items: flex-start;
-}
-
-.calendar-date-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  flex: 1;
-}
-
-.calendar-relative-date {
+/* Calendar Meta - date/time as secondary info */
+.calendar-meta {
   font-size: 13px;
-  font-weight: 600;
-  color: #7A7265;
-}
-
-.calendar-exact-date {
-  font-size: 14px;
-  font-weight: 500;
-  color: #4A4A4A;
-}
-
-.calendar-time-inline {
-  font-size: 13px;
+  font-weight: 400;
   color: #8A8075;
-}
-
-.calendar-category-tag {
-  display: inline-flex;
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 16px;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  background: #F3EEE5;
-  color: #7A7265;
-  flex-shrink: 0;
-}
-
-.calendar-card-body {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex: 1;
-  min-width: 0;
+  margin-top: 2px;
 }
 
 .calendar-icon {
@@ -397,9 +323,6 @@
   overflow: hidden;
 }
 
-.calendar-card.today-event .calendar-description {
-  -webkit-line-clamp: 3;
-}
 
 .calendar-time {
   font-size: 13px;

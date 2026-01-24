@@ -249,30 +249,26 @@ function CalendarView({ onNavigate }) {
                       className={`calendar-card ${isMaintenance ? 'maintenance-card' : ''} ${item.actionRequired ? 'action-required' : ''}`}
                       onClick={() => handleEventClick(item)}
                     >
-                      <div className="calendar-card-header">
-                        <div className="calendar-date-info">
-                          <span className="calendar-exact-date">{formatDateLong(item.date)}</span>
-                          <span className="calendar-time-inline">{item.time}</span>
-                        </div>
+                      <div className={`calendar-icon ${isMaintenance ? 'maintenance-icon' : ''}`} style={{ background: `${item.color}${isMaintenance ? '30' : '15'}` }}>
+                        <IconComponent size={20} style={{ color: item.color }} />
+                      </div>
+                      <div className="calendar-details">
+                        <h3 className="calendar-title">{item.title}</h3>
+                        <span className="calendar-meta">
+                          {group.title === 'Today' ? 'Today' : formatDate(item.date)} • {item.time}
+                        </span>
+                        {item.description && (
+                          <p className="calendar-description">{item.description}</p>
+                        )}
                         {item.actionRequired && (
                           <span className="action-required-badge">
                             <AlertCircle size={12} />
                             Action Required
                           </span>
                         )}
-                      </div>
-
-                      <div className="calendar-card-body">
-                        <div className={`calendar-icon ${isMaintenance ? 'maintenance-icon' : ''}`} style={{ background: `${item.color}${isMaintenance ? '30' : '15'}` }}>
-                          <IconComponent size={20} style={{ color: item.color }} />
-                        </div>
-                        <div className="calendar-details">
-                          <h3 className="calendar-title">{item.title}</h3>
-                          <p className="calendar-description">{item.description}</p>
-                          {item.affectedUnits && (
-                            <span className="affected-units">{item.affectedUnits}</span>
-                          )}
-                        </div>
+                        {item.affectedUnits && (
+                          <span className="affected-units">{item.affectedUnits}</span>
+                        )}
                       </div>
                     </article>
                   )

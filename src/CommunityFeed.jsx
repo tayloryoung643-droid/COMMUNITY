@@ -634,48 +634,44 @@ function CommunityFeed({ onNavigate }) {
 
                 return (
                   <article key={post.id} className="post-card">
-                    <div className="post-header">
-                      <div className="post-author">
-                        <div className="author-avatar" style={{ background: `linear-gradient(135deg, ${typeConfig.color}, ${typeConfig.color}88)` }}>
-                          {post.author.charAt(0)}
+                    <div className="author-avatar" style={{ background: `linear-gradient(135deg, ${typeConfig.color}, ${typeConfig.color}88)` }}>
+                      {post.author.charAt(0)}
+                    </div>
+                    <div className="post-body">
+                      <div className="post-header">
+                        <span className="author-name">{post.author}</span>
+                        <span className="header-separator">·</span>
+                        <span className="post-unit">{post.unit}</span>
+                        <span className="header-separator">·</span>
+                        <span className="post-time">{formatTimeAgo(post.timestamp)}</span>
+                      </div>
+
+                      <div className="post-content">
+                        <p>{post.text}</p>
+                      </div>
+
+                      <div className="post-footer">
+                        <div className="post-type-badge" style={{ background: `${typeConfig.color}15`, color: typeConfig.color }}>
+                          <IconComponent size={11} />
+                          <span>{typeConfig.label}</span>
                         </div>
-                        <div className="author-info">
-                          <span className="author-name">{post.author}</span>
-                          <span className="post-meta">
-                            <span className="post-unit">{post.unit}</span>
-                            <span className="meta-dot">·</span>
-                            <span className="post-time">{formatTimeAgo(post.timestamp)}</span>
-                          </span>
+                        <div className="post-actions">
+                          <button
+                            className={`action-btn ${isLiked ? 'liked' : ''}`}
+                            onClick={(e) => { e.stopPropagation(); handleLike(post.id); }}
+                          >
+                            <Heart size={16} fill={isLiked ? '#ef4444' : 'none'} />
+                            <span>{post.likes + (isLiked ? 1 : 0)}</span>
+                          </button>
+                          <button className="action-btn" onClick={(e) => e.stopPropagation()}>
+                            <MessageCircle size={16} />
+                            <span>{post.comments}</span>
+                          </button>
+                          <button className="action-btn" onClick={(e) => e.stopPropagation()}>
+                            <Share2 size={16} />
+                          </button>
                         </div>
                       </div>
-                      <div className="post-type-badge" style={{ background: `${typeConfig.color}20`, color: typeConfig.color }}>
-                        <IconComponent size={12} />
-                        <span>{typeConfig.label}</span>
-                      </div>
-                    </div>
-
-                    <div className="post-content">
-                      <p>{post.text}</p>
-                    </div>
-
-                    <div className="post-actions">
-                      <button
-                        className={`action-btn ${isLiked ? 'liked' : ''}`}
-                        onClick={() => handleLike(post.id)}
-                      >
-                        <Heart size={18} fill={isLiked ? '#ef4444' : 'none'} />
-                        <span>{post.likes + (isLiked ? 1 : 0)}</span>
-                      </button>
-                      <button className="action-btn">
-                        <MessageCircle size={18} />
-                        <span>{post.comments}</span>
-                      </button>
-                      <button className="action-btn">
-                        <Share2 size={18} />
-                      </button>
-                      <button className="action-btn more-btn">
-                        <MoreHorizontal size={18} />
-                      </button>
                     </div>
                   </article>
                 )

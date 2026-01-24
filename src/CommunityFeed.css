@@ -176,7 +176,7 @@
   margin: 0;
 }
 
-/* Post Card - Compact to match Home event-card */
+/* Post Card - Horizontal layout with avatar left, content right */
 .post-card {
   display: flex;
   align-items: flex-start;
@@ -194,11 +194,7 @@
   box-shadow: 0 4px 12px rgba(120, 100, 70, 0.08), 0 8px 24px rgba(120, 100, 70, 0.05);
 }
 
-/* Post Avatar - Left side icon like Home tiles */
-.post-author {
-  display: contents;
-}
-
+/* Avatar - Left side */
 .author-avatar {
   width: 36px;
   height: 36px;
@@ -212,30 +208,21 @@
   flex-shrink: 0;
 }
 
-/* Post Content Area */
-.post-content-wrapper {
+/* Post Body - Right side content column */
+.post-body {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
-/* Post Header - inline with content */
+/* Post Header - Author info inline */
 .post-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 2px;
-}
-
-.author-info {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: 1;
-  min-width: 0;
+  gap: 4px;
+  flex-wrap: wrap;
 }
 
 .author-name {
@@ -244,52 +231,77 @@
   color: #1A1A1A;
 }
 
-.post-meta {
+.header-separator {
+  font-size: 13px;
+  color: #C0BAB0;
+}
+
+.post-unit {
   font-size: 13px;
   color: #8A8075;
-  white-space: nowrap;
 }
 
-.meta-dot {
-  display: none;
+.post-time {
+  font-size: 13px;
+  color: #8A8075;
 }
 
-/* Post Type Badge - smaller, inline */
-.post-type-badge {
-  display: none; /* Hidden for compact view */
-}
-
-/* Post Content - single line subtitle style */
+/* Post Content - Full width, 2 lines max */
 .post-content {
   margin: 0;
+  width: 100%;
 }
 
 .post-content p {
-  font-size: 13px;
-  color: #8A8075;
-  line-height: 1.4;
+  font-size: 14px;
+  color: #4A4A4A;
+  line-height: 1.5;
   margin: 0;
   white-space: pre-wrap;
-  /* Single line for compact density */
+  /* Allow 2 full lines before truncation */
   display: -webkit-box;
-  -webkit-line-clamp: 1;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* Post Actions - compact inline */
+/* Post Footer - Badge and actions row */
+.post-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  gap: 8px;
+}
+
+/* Post Type Badge - Small secondary indicator */
+.post-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 10px;
+  text-transform: capitalize;
+}
+
+.post-type-badge svg {
+  flex-shrink: 0;
+}
+
+/* Post Actions - Compact inline */
 .post-actions {
   display: flex;
   align-items: center;
   gap: 2px;
-  margin-top: 4px;
 }
 
 .action-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
+  gap: 3px;
+  padding: 4px 6px;
   font-size: 12px;
   font-weight: 500;
   color: #8A8075;
@@ -311,10 +323,6 @@
 
 .action-btn.liked:hover {
   background: #FFEBEE;
-}
-
-.more-btn {
-  margin-left: auto;
 }
 
 /* Mobile Neighbors Toggle */
