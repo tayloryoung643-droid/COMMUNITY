@@ -41,10 +41,6 @@ function Settings({ onBack, onLogout, onNavigate }) {
 
   return (
     <div className="settings-container">
-      {/* Background orbs */}
-      <div className="bg-orb bg-orb-1"></div>
-      <div className="bg-orb bg-orb-2"></div>
-
       <header className="settings-header">
         <button className="back-button-glass" onClick={onBack}>
           <ArrowLeft size={20} />
@@ -65,7 +61,7 @@ function Settings({ onBack, onLogout, onNavigate }) {
             {/* Profile Photo */}
             <div className="profile-photo-section">
               <div className="profile-photo">
-                <span className="photo-placeholder">TY</span>
+                <img src="/images/profile-taylor.jpg" alt="Taylor Young" />
               </div>
               <button className="change-photo-btn">
                 <Camera size={16} />
