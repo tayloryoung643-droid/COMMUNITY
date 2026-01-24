@@ -10,11 +10,12 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* View Controls - aligned with filters row */
+/* View Controls - absolutely positioned, doesn't affect content flow */
 .calendar-view-controls {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 12px;
+  position: absolute;
+  top: 0;
+  right: 16px;
+  z-index: 5;
 }
 
 /* View Toggle Button */
@@ -40,8 +41,9 @@
 
 /* Content - pulled up tight to headline */
 .calendar-view-content {
+  position: relative; /* For absolutely positioned view toggle */
   padding: 0 16px 100px;
-  margin-top: -70px; /* Pull content up much closer to headline */
+  margin-top: -36px; /* Pull filters up to ~12px below headline */
 }
 
 /* Filter Tabs - Centered between headline and cards */
@@ -49,7 +51,7 @@
   display: flex;
   justify-content: center;
   gap: 8px;
-  margin-bottom: var(--filter-spacing, 12px);
+  margin-bottom: 22px; /* ~20-24px space before event cards */
   overflow-x: auto;
   padding-bottom: 4px;
   scrollbar-width: none;
