@@ -50,9 +50,10 @@
   padding: 0 16px 100px;
 }
 
-/* Hide desktop sidebar on mobile */
+/* Sidebar - show mobile version by default, hide desktop */
 .neighbors-sidebar {
-  display: none;
+  display: block;
+  margin-bottom: 16px;
 }
 
 .sidebar-desktop {
@@ -61,7 +62,6 @@
 
 .sidebar-mobile {
   display: block;
-  margin-bottom: 16px;
 }
 
 /* Feed Column */
