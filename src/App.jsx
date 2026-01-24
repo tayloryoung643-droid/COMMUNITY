@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import { useAuth } from './contexts/AuthContext'
+import { supabase } from './lib/supabase'
 import Login from './Login'
 import Home from './Home'
 import Announcements from './Announcements'
@@ -187,8 +188,69 @@ function App() {
     setCurrentScreen('manager-onboarding-step4')
   }
 
-  const handleOnboardingStep4Launch = (formData) => {
+  // Shared function to create building and link manager
+  const createBuildingAndLinkManager = async (formData) => {
+    try {
+      // 1. Insert the building into public.buildings
+      const { data: newBuilding, error: buildingError } = await supabase
+        .from('buildings')
+        .insert({
+          name: formData.building.name,
+          address: formData.building.address,
+          total_floors: formData.building.floors,
+          total_units: formData.building.units,
+          access_code: formData.building.code,
+          // logo_url would need to be uploaded to storage first if we want to support it
+        })
+        .select()
+        .single()
+
+      if (buildingError) {
+        console.error('[Onboarding] Failed to create building:', buildingError)
+        return { success: false, error: `Failed to create building: ${buildingError.message}` }
+      }
+
+      console.log('[Onboarding] Building created:', newBuilding)
+
+      // 2. Update the current user's record with building_id and role='manager'
+      const { error: userError } = await supabase
+        .from('users')
+        .update({
+          building_id: newBuilding.id,
+          role: 'manager',
+          full_name: formData.manager?.name || null,
+        })
+        .eq('id', user.id)
+
+      if (userError) {
+        console.error('[Onboarding] Failed to update user:', userError)
+        // Optionally: rollback the building creation here
+        return { success: false, error: `Failed to link manager to building: ${userError.message}` }
+      }
+
+      console.log('[Onboarding] User updated with building_id:', newBuilding.id)
+
+      return { success: true, building: newBuilding }
+    } catch (err) {
+      console.error('[Onboarding] Unexpected error:', err)
+      return { success: false, error: err.message }
+    }
+  }
+
+  const handleOnboardingStep4Launch = async (formData) => {
     setOnboardingData(formData)
+
+    // Create building and link manager in Supabase
+    const result = await createBuildingAndLinkManager(formData)
+
+    if (!result.success) {
+      alert(`Error: ${result.error}\n\nPlease try again.`)
+      return // Don't navigate away on error
+    }
+
+    // Clear localStorage onboarding data since we're done
+    localStorage.removeItem('onboardingData')
+
     // Show success message and go to dashboard
     if (formData.invitesSent) {
       alert(`Success! Invites sent to ${formData.inviteCount} residents!`)
@@ -196,8 +258,20 @@ function App() {
     setCurrentScreen('manager-dashboard')
   }
 
-  const handleOnboardingStep4Skip = (formData) => {
+  const handleOnboardingStep4Skip = async (formData) => {
     setOnboardingData(formData)
+
+    // Create building and link manager in Supabase
+    const result = await createBuildingAndLinkManager(formData)
+
+    if (!result.success) {
+      alert(`Error: ${result.error}\n\nPlease try again.`)
+      return // Don't navigate away on error
+    }
+
+    // Clear localStorage onboarding data since we're done
+    localStorage.removeItem('onboardingData')
+
     setCurrentScreen('manager-dashboard')
   }
 
