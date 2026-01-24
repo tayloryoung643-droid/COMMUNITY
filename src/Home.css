@@ -80,9 +80,9 @@
 
 .hero-image-container {
   position: relative;
-  height: 35vh;
-  min-height: 260px;
-  max-height: 340px;
+  height: 28vh;
+  min-height: 200px;
+  max-height: 280px;
   width: 100%;
   overflow: hidden;
   box-sizing: border-box;
@@ -110,17 +110,17 @@
   pointer-events: none;
 }
 
-/* Smooth fade to warm cream background - adjusted for shorter hero */
+/* Smooth fade to warm cream background - tighter for compact hero */
 .hero-gradient-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
     transparent 0%,
-    transparent 40%,
-    rgba(243, 237, 227, 0.25) 50%,
-    rgba(243, 237, 227, 0.55) 62%,
-    rgba(243, 237, 227, 0.85) 75%,
+    transparent 35%,
+    rgba(243, 237, 227, 0.3) 48%,
+    rgba(243, 237, 227, 0.6) 60%,
+    rgba(243, 237, 227, 0.88) 75%,
     rgba(243, 237, 227, 0.98) 88%,
     #F3EDE3 100%
   );
@@ -173,7 +173,7 @@
 /* Building Name - "The" smaller italic, "Paramount" large serif */
 .hero-text-container {
   position: absolute;
-  bottom: 70px; /* Adjusted for reduced hero height */
+  bottom: 48px; /* Tighter position for compact hero */
   left: 0;
   right: 0;
   text-align: center;
@@ -181,23 +181,23 @@
 
 .hero-the {
   display: block;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 300;
   font-style: italic;
   color: rgba(255, 255, 255, 0.9);
   margin-bottom: 2px;
-  letter-spacing: 1px;
+  letter-spacing: 0.05em;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.2);
 }
 
 .hero-building-name {
-  font-size: 42px;
-  font-weight: 400;
+  font-size: 34px; /* Reduced ~19% from 42px - lighter, more refined */
+  font-weight: 300; /* Lighter weight for premium feel */
   color: white;
-  letter-spacing: 2px;
+  letter-spacing: 0.08em; /* Subtle tracking for editorial feel */
   margin: 0;
   text-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'Playfair Display', 'Canela', 'GT Super Display', Georgia, 'Times New Roman', serif;
 }
 
 /* ============================================
@@ -212,11 +212,14 @@
 
 .home-page .main-content {
   width: 100%;
-  padding: 4px 16px 32px; /* Aggressive top padding reduction - content tight to hero */
+  padding: 0 16px 32px;
   margin: 0;
+  margin-top: var(--hero-content-offset, -16px); /* Unified hero-to-content offset */
   margin-left: 0;
   margin-right: 0;
   box-sizing: border-box;
+  position: relative;
+  z-index: 2; /* Ensure content sits above hero fade */
 }
 
 /* Section Titles - calm and understated */

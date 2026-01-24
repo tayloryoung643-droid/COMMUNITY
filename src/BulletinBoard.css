@@ -76,11 +76,12 @@
   transform: translateY(-1px);
 }
 
-/* Category Filters */
+/* Category Filters - Centered between headline and cards */
 .category-filters {
   display: flex;
+  justify-content: center;
   gap: 8px;
-  margin-bottom: 20px;
+  margin-bottom: var(--filter-spacing, 12px);
   overflow-x: auto;
   padding-bottom: 4px;
   scrollbar-width: none;

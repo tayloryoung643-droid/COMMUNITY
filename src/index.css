@@ -1,3 +1,6 @@
+/* Import premium editorial serif for headlines */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500&display=swap');
+
 * {
   box-sizing: border-box;
 }
@@ -301,16 +304,16 @@ p {
   background: #F5F0E8; /* Noticeably warmer cream - visible warmth */
 }
 
-/* Building image - reduced height hero (~20% shorter) */
+/* Building image - compact hero for tighter spacing */
 .resident-inner-page::before {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 35vh;
-  min-height: 260px;
-  max-height: 340px;
+  height: 28vh;
+  min-height: 200px;
+  max-height: 280px;
   background-image: url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80');
   background-size: cover;
   background-position: center;
@@ -318,16 +321,16 @@ p {
   pointer-events: none;
 }
 
-/* Combined overlays - strong amber + gradient fade (reduced height) */
+/* Combined overlays - strong amber + gradient fade */
 .resident-inner-page::after {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 35vh;
-  min-height: 260px;
-  max-height: 340px;
+  height: 28vh;
+  min-height: 200px;
+  max-height: 280px;
   z-index: 0;
   pointer-events: none;
   /* Layer 1: Gradient fade to warm cream */
@@ -336,10 +339,10 @@ p {
     linear-gradient(
       180deg,
       transparent 0%,
-      transparent 40%,
-      rgba(245, 240, 232, 0.25) 50%,
-      rgba(245, 240, 232, 0.55) 62%,
-      rgba(245, 240, 232, 0.85) 75%,
+      transparent 35%,
+      rgba(245, 240, 232, 0.3) 48%,
+      rgba(245, 240, 232, 0.6) 60%,
+      rgba(245, 240, 232, 0.88) 75%,
       rgba(245, 240, 232, 0.98) 88%,
       #F5F0E8 100%
     ),
@@ -365,9 +368,9 @@ p {
 /* Hero header area for inner pages - reduced height */
 .inner-page-hero {
   position: relative;
-  height: 35vh;
-  min-height: 260px;
-  max-height: 340px;
+  height: 28vh;
+  min-height: 200px;
+  max-height: 280px;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -447,7 +450,7 @@ p {
 /* Page Title - Centered, positioned for shorter hero */
 .inner-page-title-container {
   position: absolute;
-  bottom: 70px; /* Adjusted for reduced hero height */
+  bottom: 48px; /* Tighter position for compact hero */
   left: 0;
   right: 0;
   text-align: center;
@@ -455,19 +458,32 @@ p {
 }
 
 .inner-page-title {
-  font-size: 42px;
-  font-weight: 400;
-  color: #1A1A1A; /* Black headlines for inner pages */
-  letter-spacing: 2px;
+  font-size: 34px; /* Reduced ~19% from 42px - lighter, more refined */
+  font-weight: 300; /* Lighter weight for premium feel */
+  color: #1A1A1A;
+  letter-spacing: 0.08em; /* Subtle tracking for editorial feel */
   margin: 0;
-  text-shadow: none; /* No shadow needed for dark text */
-  font-family: 'Georgia', 'Times New Roman', serif;
+  text-shadow: none;
+  font-family: 'Playfair Display', 'Canela', 'GT Super Display', Georgia, 'Times New Roman', serif;
 }
 
-/* Content areas after hero - minimal spacing for tight layout */
+/* ============================================
+   HERO-TO-CONTENT OFFSET
+   Unified spacing between headline and first tile
+   Applied consistently across ALL pages
+   ============================================ */
+:root {
+  --hero-content-offset: -24px; /* Pull content up closer to headline */
+  --filter-spacing: 12px; /* Space between filters and content */
+}
+
+/* Content areas after hero - unified tight spacing */
 .resident-inner-page main,
 .resident-inner-page .building-content,
 .resident-inner-page .packages-summary,
 .resident-inner-page .community-split-layout {
-  padding-top: 4px; /* Aggressive reduction - content sits close to hero */
+  margin-top: var(--hero-content-offset);
+  padding-top: 0;
+  position: relative;
+  z-index: 2; /* Ensure content sits above hero fade */
 }

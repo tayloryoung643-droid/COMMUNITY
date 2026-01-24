@@ -10,11 +10,11 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* View Controls - below hero */
+/* View Controls - aligned with filters row */
 .calendar-view-controls {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 /* View Toggle Button */
@@ -38,16 +38,18 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
 }
 
-/* Content */
+/* Content - pulled up tight to headline */
 .calendar-view-content {
-  padding: 8px 16px 100px;
+  padding: 0 16px 100px;
+  margin-top: -70px; /* Pull content up much closer to headline */
 }
 
-/* Filter Tabs */
+/* Filter Tabs - Centered between headline and cards */
 .calendar-filters {
   display: flex;
+  justify-content: center;
   gap: 8px;
-  margin-bottom: 20px;
+  margin-bottom: var(--filter-spacing, 12px);
   overflow-x: auto;
   padding-bottom: 4px;
   scrollbar-width: none;

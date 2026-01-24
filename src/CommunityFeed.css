@@ -98,11 +98,12 @@
   color: #7A7265;
 }
 
-/* Post Filters */
+/* Post Filters - Centered between headline and cards */
 .post-filters {
   display: flex;
+  justify-content: center;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: var(--filter-spacing, 12px);
   overflow-x: auto;
   padding-bottom: 4px;
   scrollbar-width: none;
