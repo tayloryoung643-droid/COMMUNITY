@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Building2, User, Mail, Lock, ArrowRight, Package, Calendar, Users, Key, Sparkles } from 'lucide-react'
+import { Building2, User, Mail, Lock, ArrowRight, Package, Calendar, Headphones, Sparkles } from 'lucide-react'
 import { validateBuildingCode } from './services/buildingService'
 import './Login.css'
 
@@ -24,10 +24,8 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
       const { valid, building } = await validateBuildingCode(buildingCode)
 
       if (valid && building) {
-        // Building code is valid - proceed with login
         onResidentLogin(buildingCode, building)
       } else {
-        // Invalid building code
         setError('Invalid building code. Use the Demo login button to explore the app.')
       }
     } catch (err) {
@@ -62,11 +60,10 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
 
   return (
     <div className="login-container">
-      {/* Animated Background */}
+      {/* Ambient Background */}
       <div className="bg-gradient"></div>
-      <div className="bg-grid"></div>
 
-      {/* Floating Shapes */}
+      {/* Floating Bokeh Shapes */}
       <div className="floating-shapes">
         <div className="shape shape-1"></div>
         <div className="shape shape-2"></div>
@@ -76,42 +73,50 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
         <div className="shape shape-6"></div>
       </div>
 
-      {/* Background orbs */}
+      {/* Background Orbs */}
       <div className="bg-orb bg-orb-1"></div>
       <div className="bg-orb bg-orb-2"></div>
       <div className="bg-orb bg-orb-3"></div>
 
       <div className="login-content">
         <div className="login-card-glass">
-          {/* Logo/Title */}
+          {/* App Logo & Branding */}
           <div className="login-header">
             <div className="login-logo">
-              <Building2 size={36} />
-              <div className="logo-glow"></div>
+              <Building2 size={32} />
             </div>
-            <h1 className="login-title">
-              <span className="title-the">The</span>
-              <span className="title-main">Community</span>
-            </h1>
-            <p className="login-tagline">Know your neighbors, finally.</p>
+            <h1 className="login-title">Community</h1>
+            <p className="login-tagline">
+              Stay connected, manage your building, and get things done.
+            </p>
           </div>
 
-          {/* Tab Selector */}
-          <div className="login-tabs">
+          {/* Role Toggle */}
+          <div className="role-toggle">
             <button
-              className={`login-tab ${activeTab === 'resident' ? 'active' : ''}`}
+              className={`role-btn ${activeTab === 'resident' ? 'active' : ''}`}
               onClick={() => { setActiveTab('resident'); clearError() }}
             >
               <User size={18} />
               <span>I'm a Resident</span>
             </button>
             <button
-              className={`login-tab ${activeTab === 'manager' ? 'active' : ''}`}
+              className={`role-btn ${activeTab === 'manager' ? 'active' : ''}`}
               onClick={() => { setActiveTab('manager'); clearError() }}
             >
               <Building2 size={18} />
-              <span>I'm a Property Manager</span>
+              <span>I manage this building</span>
             </button>
+          </div>
+
+          {/* Role Descriptions */}
+          <div className="role-descriptions">
+            <p className={`role-desc ${activeTab === 'resident' ? 'active' : ''}`}>
+              Join your building and connect with neighbors
+            </p>
+            <p className={`role-desc ${activeTab === 'manager' ? 'active' : ''}`}>
+              Manage residents, events, and building operations
+            </p>
           </div>
 
           {/* Error Message */}
@@ -124,15 +129,10 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
           {/* Resident Form */}
           {activeTab === 'resident' && (
             <div className="login-form">
-              <div className="form-group-glass">
-                <label htmlFor="building-code">
-                  <Key size={16} />
-                  Building Code
-                </label>
+              <div className="input-group">
                 <div className="input-wrapper">
                   <Building2 size={18} className="input-icon" />
                   <input
-                    id="building-code"
                     type="text"
                     placeholder="Enter your building code"
                     value={buildingCode}
@@ -144,13 +144,13 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
               </div>
 
               <button className="login-btn-primary" onClick={handleResidentLogin} disabled={isLoading}>
-                <span>{isLoading ? 'Verifying...' : 'Join Building'}</span>
+                <span>{isLoading ? 'Joining...' : 'Join Building'}</span>
                 {!isLoading && <ArrowRight size={18} />}
               </button>
 
-              <button className="demo-login-link" onClick={() => onDemoLogin('resident')} disabled={isLoading}>
+              <button className="demo-login-btn" onClick={() => onDemoLogin('resident')} disabled={isLoading}>
                 <Sparkles size={14} />
-                Demo login (skip to resident home)
+                <span>Demo login (skip to resident home)</span>
               </button>
             </div>
           )}
@@ -158,34 +158,24 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
           {/* Manager Form */}
           {activeTab === 'manager' && (
             <div className="login-form">
-              <div className="form-group-glass">
-                <label htmlFor="manager-email">
-                  <Mail size={16} />
-                  Email
-                </label>
+              <div className="input-group">
                 <div className="input-wrapper">
                   <Mail size={18} className="input-icon" />
                   <input
-                    id="manager-email"
                     type="email"
-                    placeholder="you@company.com"
+                    placeholder="Email address"
                     value={managerEmail}
                     onChange={(e) => { setManagerEmail(e.target.value); clearError() }}
                   />
                 </div>
               </div>
 
-              <div className="form-group-glass">
-                <label htmlFor="manager-password">
-                  <Lock size={16} />
-                  Password
-                </label>
+              <div className="input-group">
                 <div className="input-wrapper">
                   <Lock size={18} className="input-icon" />
                   <input
-                    id="manager-password"
                     type="password"
-                    placeholder="Enter your password"
+                    placeholder="Password"
                     value={managerPassword}
                     onChange={(e) => { setManagerPassword(e.target.value); clearError() }}
                     onKeyPress={(e) => e.key === 'Enter' && handleManagerLogin()}
@@ -198,7 +188,7 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
                 {!isLoading && <ArrowRight size={18} />}
               </button>
 
-              <div className="login-register-link">
+              <div className="register-prompt">
                 <span>Don't have a building yet?</span>
                 <button className="register-link" onClick={onRegisterClick}>
                   Register your building
@@ -206,36 +196,39 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
                 </button>
               </div>
 
-              <button className="demo-login-link" onClick={() => onDemoLogin('manager')} disabled={isLoading}>
+              <button className="demo-login-btn" onClick={() => onDemoLogin('manager')} disabled={isLoading}>
                 <Sparkles size={14} />
-                Demo login (skip to dashboard)
+                <span>Demo login (skip to dashboard)</span>
               </button>
             </div>
           )}
-        </div>
 
-        {/* Feature Highlights */}
-        <div className="feature-highlights">
-          <div className="feature-item">
-            <div className="feature-icon">
-              <Package size={20} />
+          {/* Value Props Row */}
+          <div className="value-props">
+            <div className="value-prop-item">
+              <div className="value-prop-icon">
+                <Package size={18} />
+              </div>
+              <span>Package<br/>Management</span>
             </div>
-            <span>Track Packages</span>
-          </div>
-          <div className="feature-divider"></div>
-          <div className="feature-item">
-            <div className="feature-icon">
-              <Calendar size={20} />
+            <div className="value-prop-item">
+              <div className="value-prop-icon">
+                <Calendar size={18} />
+              </div>
+              <span>Community<br/>Events</span>
             </div>
-            <span>Book Amenities</span>
-          </div>
-          <div className="feature-divider"></div>
-          <div className="feature-item">
-            <div className="feature-icon">
-              <Users size={20} />
+            <div className="value-prop-item">
+              <div className="value-prop-icon">
+                <Headphones size={18} />
+              </div>
+              <span>Resident<br/>Support</span>
             </div>
-            <span>Connect with Neighbors</span>
           </div>
+
+          {/* Trust Signal */}
+          <p className="trust-signal">
+            Managed by your building | Private & secure
+          </p>
         </div>
       </div>
     </div>
