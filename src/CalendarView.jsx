@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Calendar, ChevronRight, ChevronLeft, Wrench, Wine, Users, Megaphone, Bell, Clock, List, Grid3X3, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
+import { Calendar, ChevronRight, ChevronLeft, Wrench, Wine, Users, Megaphone, Bell, Clock, List, Grid3X3, Sun, Cloud, CloudRain, Snowflake, Moon, AlertCircle } from 'lucide-react'
 import HamburgerMenu from './HamburgerMenu'
 import './CalendarView.css'
 
@@ -50,12 +50,14 @@ function CalendarView({ onNavigate }) {
       id: 1,
       date: '2026-01-15',
       time: '9am - 12pm',
-      title: 'Water shut off - Floors 10-15',
+      title: 'Water shut off',
       description: 'Scheduled maintenance on water pipes. Please store water in advance.',
       category: 'maintenance',
       categoryLabel: 'Maintenance',
       icon: Wrench,
-      color: '#f59e0b'
+      color: '#f59e0b',
+      actionRequired: true,
+      affectedUnits: 'Floors 10-15'
     },
     {
       id: 2,
@@ -88,7 +90,9 @@ function CalendarView({ onNavigate }) {
       category: 'maintenance',
       categoryLabel: 'Maintenance',
       icon: Wrench,
-      color: '#f59e0b'
+      color: '#f59e0b',
+      actionRequired: false,
+      affectedUnits: 'All units'
     },
     {
       id: 5,
@@ -121,7 +125,9 @@ function CalendarView({ onNavigate }) {
       category: 'maintenance',
       categoryLabel: 'Maintenance',
       icon: Wrench,
-      color: '#f59e0b'
+      color: '#f59e0b',
+      actionRequired: true,
+      affectedUnits: 'All units'
     },
     {
       id: 8,
@@ -143,7 +149,9 @@ function CalendarView({ onNavigate }) {
       category: 'maintenance',
       categoryLabel: 'Maintenance',
       icon: Wrench,
-      color: '#f59e0b'
+      color: '#f59e0b',
+      actionRequired: false,
+      affectedUnits: 'West tower'
     },
     {
       id: 10,
@@ -175,19 +183,53 @@ function CalendarView({ onNavigate }) {
     return date.toLocaleDateString('en-US', options)
   }
 
-  const getRelativeDate = (dateString) => {
+  const formatDateLong = (dateString) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+  }
+
+  const getTemporalGroup = (dateString) => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const date = new Date(dateString)
     date.setHours(0, 0, 0, 0)
     const diffDays = Math.floor((date - today) / (1000 * 60 * 60 * 24))
 
+    // Get day of week (0 = Sunday)
+    const todayDayOfWeek = today.getDay()
+    const daysUntilEndOfWeek = 6 - todayDayOfWeek // Days until Saturday
+
+    if (diffDays < 0) return 'Past'
     if (diffDays === 0) return 'Today'
     if (diffDays === 1) return 'Tomorrow'
-    if (diffDays < 7) return `In ${diffDays} days`
-    if (diffDays < 14) return 'Next week'
-    return formatDate(dateString)
+    if (diffDays <= daysUntilEndOfWeek) return 'This Week'
+    if (diffDays <= daysUntilEndOfWeek + 7) return 'Next Week'
+    return 'Coming Up'
   }
+
+  // Group events by temporal period
+  const groupEventsByTime = (items) => {
+    const groups = {}
+    const groupOrder = ['Today', 'Tomorrow', 'This Week', 'Next Week', 'Coming Up']
+
+    items.forEach(item => {
+      const group = getTemporalGroup(item.date)
+      if (!groups[group]) {
+        groups[group] = []
+      }
+      groups[group].push(item)
+    })
+
+    // Return ordered array of groups
+    return groupOrder
+      .filter(group => groups[group] && groups[group].length > 0)
+      .map(group => ({
+        title: group,
+        items: groups[group]
+      }))
+  }
+
+  const groupedEvents = groupEventsByTime(filteredItems)
 
   // Calendar grid helpers
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 0, 1)) // January 2026
@@ -282,43 +324,53 @@ function CalendarView({ onNavigate }) {
         </div>
 
         {viewMode === 'list' ? (
-          /* List View */
+          /* List View - Grouped by temporal periods */
           <div className="calendar-list">
-            {filteredItems.map(item => {
-              const IconComponent = item.icon
-              return (
-                <article key={item.id} className="calendar-card">
-                  <div className="calendar-card-accent" style={{ background: item.color }}></div>
+            {groupedEvents.map(group => (
+              <div key={group.title} className="event-group">
+                <div className="event-group-header">
+                  <h2 className="event-group-title">{group.title}</h2>
+                </div>
 
-                  <div className="calendar-card-header">
-                    <div className="calendar-date-info">
-                      <span className="calendar-relative-date">{getRelativeDate(item.date)}</span>
-                      <span className="calendar-exact-date">{formatDate(item.date)}</span>
-                    </div>
-                    <span
-                      className="calendar-category-tag"
-                      style={{ background: `${item.color}20`, color: item.color }}
+                {group.items.map(item => {
+                  const IconComponent = item.icon
+                  const isMaintenance = item.category === 'maintenance'
+
+                  return (
+                    <article
+                      key={item.id}
+                      className={`calendar-card ${isMaintenance ? 'maintenance-card' : ''} ${item.actionRequired ? 'action-required' : ''}`}
                     >
-                      {item.categoryLabel}
-                    </span>
-                  </div>
-
-                  <div className="calendar-card-body">
-                    <div className="calendar-icon" style={{ background: `${item.color}20` }}>
-                      <IconComponent size={20} style={{ color: item.color }} />
-                    </div>
-                    <div className="calendar-details">
-                      <h3 className="calendar-title">{item.title}</h3>
-                      <p className="calendar-description">{item.description}</p>
-                      <div className="calendar-time">
-                        <Clock size={14} />
-                        <span>{item.time}</span>
+                      <div className="calendar-card-header">
+                        <div className="calendar-date-info">
+                          <span className="calendar-exact-date">{formatDateLong(item.date)}</span>
+                          <span className="calendar-time-inline">{item.time}</span>
+                        </div>
+                        {item.actionRequired && (
+                          <span className="action-required-badge">
+                            <AlertCircle size={12} />
+                            Action Required
+                          </span>
+                        )}
                       </div>
-                    </div>
-                  </div>
-                </article>
-              )
-            })}
+
+                      <div className="calendar-card-body">
+                        <div className={`calendar-icon ${isMaintenance ? 'maintenance-icon' : ''}`} style={{ background: `${item.color}${isMaintenance ? '30' : '15'}` }}>
+                          <IconComponent size={20} style={{ color: item.color }} />
+                        </div>
+                        <div className="calendar-details">
+                          <h3 className="calendar-title">{item.title}</h3>
+                          <p className="calendar-description">{item.description}</p>
+                          {item.affectedUnits && (
+                            <span className="affected-units">{item.affectedUnits}</span>
+                          )}
+                        </div>
+                      </div>
+                    </article>
+                  )
+                })}
+              </div>
+            ))}
           </div>
         ) : (
           /* Calendar Grid View */
