@@ -1307,25 +1307,35 @@
   justify-content: center;
 }
 
-/* Desktop: Left side drawer */
+/* Desktop: Right side drawer overlay */
 @media (min-width: 768px) {
-  .menu-panel {
-    top: 0;
-    left: 0;
-    right: auto;
-    bottom: 0;
-    width: 320px;
-    max-height: none;
-    border-radius: 0;
-    border-top-right-radius: 24px;
-    border-bottom-right-radius: 24px;
-    animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  .menu-overlay {
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
   }
 
-  @keyframes slideInLeft {
+  .menu-panel {
+    top: 0;
+    left: auto;
+    right: 0;
+    bottom: 0;
+    width: 340px;
+    max-height: none;
+    border-radius: 0;
+    border-top-left-radius: 28px;
+    border-bottom-left-radius: 28px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    box-shadow: -8px 0 40px rgba(0, 0, 0, 0.08), -2px 0 8px rgba(0, 0, 0, 0.04);
+    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes slideInRight {
     from {
       opacity: 0;
-      transform: translateX(-100%);
+      transform: translateX(100%);
     }
     to {
       opacity: 1;
@@ -1334,16 +1344,73 @@
   }
 
   .menu-header {
-    padding: 28px 24px 20px;
+    padding: 32px 28px 24px;
+    border-bottom: none;
+  }
+
+  .menu-title {
+    gap: 2px;
+  }
+
+  .menu-the {
+    font-size: 13px;
+    color: #9CA3AF;
+  }
+
+  .menu-building-name {
+    font-size: 22px;
+    font-weight: 400;
+    color: #374151;
+    letter-spacing: 0.5px;
+  }
+
+  .menu-close-btn {
+    position: absolute;
+    top: 24px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    color: #9CA3AF;
+  }
+
+  .menu-close-btn:hover {
+    background: rgba(0, 0, 0, 0.04);
+    color: #6B7280;
   }
 
   .menu-nav {
-    padding: 16px 12px 24px;
+    padding: 8px 16px 32px;
   }
 
   .menu-item {
-    padding: 18px 20px;
-    font-size: 16px;
+    padding: 20px 16px;
+    font-size: 15px;
+    font-weight: 400;
+    color: #4B5563;
+    border-radius: 12px;
+  }
+
+  .menu-item svg {
+    color: #9CA3AF;
+    width: 20px;
+    height: 20px;
+  }
+
+  .menu-item:hover {
+    background: rgba(0, 0, 0, 0.03);
+  }
+
+  .menu-item:hover svg {
+    color: #6B7280;
+  }
+
+  .menu-badge {
+    background: #ef4444;
+    font-size: 12px;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 7px;
   }
 
   /* Desktop top bar adjustments */
