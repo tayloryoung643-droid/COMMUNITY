@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Pin, Car, Box, ShoppingBag, Briefcase, Search, Plus, X, Send, MessageCircle, Clock, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Pin, Car, Box, ShoppingBag, Briefcase, Search, Plus, X, Send, MessageCircle, Clock, ChevronRight, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getListings, createListing } from './services/bulletinService'
 import './BulletinBoard.css'
@@ -161,6 +161,43 @@ function BulletinBoard({ onBack }) {
     details: ''
   })
 
+  // Weather and time state - matches Home exactly
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const weatherData = {
+    temp: 58,
+    condition: 'clear',
+    conditionText: 'Mostly Clear'
+  }
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const getWeatherIcon = (condition) => {
+    const hour = currentTime.getHours()
+    const isNight = hour >= 18 || hour < 6
+    if (isNight) return Moon
+    switch (condition) {
+      case 'clear':
+      case 'sunny': return Sun
+      case 'cloudy': return Cloud
+      case 'rainy': return CloudRain
+      case 'snowy': return Snowflake
+      default: return Sun
+    }
+  }
+
+  const formatTimeWeather = (date) => {
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+  }
+
+  const formatDayWeather = (date) => {
+    return date.toLocaleDateString('en-US', { weekday: 'long' })
+  }
+
+  const WeatherIcon = getWeatherIcon(weatherData.condition)
+
   // Categories
   const categories = [
     { id: 'all', label: 'All', icon: Pin },
@@ -290,14 +327,23 @@ function BulletinBoard({ onBack }) {
   if (loading) {
     return (
       <div className="bulletin-board-container resident-inner-page">
-        <header className="bulletin-board-header">
-          <button className="back-button-glass" onClick={onBack}>
+        <div className="inner-page-hero">
+          <button className="inner-page-back-btn" onClick={onBack}>
             <ArrowLeft size={20} />
-            <span>Back</span>
           </button>
-          <h1 className="page-title-light">Bulletin Board</h1>
-        </header>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: 'rgba(255,255,255,0.7)' }}>
+          <div className="inner-page-weather">
+            <div className="weather-datetime">{formatDayWeather(currentTime)} | {formatTimeWeather(currentTime)}</div>
+            <div className="weather-temp-row">
+              <WeatherIcon size={20} className="weather-icon" />
+              <span className="weather-temp">{weatherData.temp}°</span>
+            </div>
+            <div className="weather-condition">{weatherData.conditionText}</div>
+          </div>
+          <div className="inner-page-title-container">
+            <h1 className="inner-page-title">Bulletin</h1>
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '30vh', color: '#9CA3AF' }}>
           Loading listings...
         </div>
       </div>
@@ -308,14 +354,23 @@ function BulletinBoard({ onBack }) {
   if (error) {
     return (
       <div className="bulletin-board-container resident-inner-page">
-        <header className="bulletin-board-header">
-          <button className="back-button-glass" onClick={onBack}>
+        <div className="inner-page-hero">
+          <button className="inner-page-back-btn" onClick={onBack}>
             <ArrowLeft size={20} />
-            <span>Back</span>
           </button>
-          <h1 className="page-title-light">Bulletin Board</h1>
-        </header>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: '#ef4444' }}>
+          <div className="inner-page-weather">
+            <div className="weather-datetime">{formatDayWeather(currentTime)} | {formatTimeWeather(currentTime)}</div>
+            <div className="weather-temp-row">
+              <WeatherIcon size={20} className="weather-icon" />
+              <span className="weather-temp">{weatherData.temp}°</span>
+            </div>
+            <div className="weather-condition">{weatherData.conditionText}</div>
+          </div>
+          <div className="inner-page-title-container">
+            <h1 className="inner-page-title">Bulletin</h1>
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '30vh', color: '#ef4444' }}>
           {error}
         </div>
       </div>
@@ -324,14 +379,23 @@ function BulletinBoard({ onBack }) {
 
   return (
     <div className="bulletin-board-container resident-inner-page">
-
-      <header className="bulletin-board-header">
-        <button className="back-button-glass" onClick={onBack}>
+      {/* Hero Section with Weather and Title */}
+      <div className="inner-page-hero">
+        <button className="inner-page-back-btn" onClick={onBack}>
           <ArrowLeft size={20} />
-          <span>Back</span>
         </button>
-        <h1 className="page-title-light">Bulletin Board</h1>
-      </header>
+        <div className="inner-page-weather">
+          <div className="weather-datetime">{formatDayWeather(currentTime)} | {formatTimeWeather(currentTime)}</div>
+          <div className="weather-temp-row">
+            <WeatherIcon size={20} className="weather-icon" />
+            <span className="weather-temp">{weatherData.temp}°</span>
+          </div>
+          <div className="weather-condition">{weatherData.conditionText}</div>
+        </div>
+        <div className="inner-page-title-container">
+          <h1 className="inner-page-title">Bulletin</h1>
+        </div>
+      </div>
 
       <main className="bulletin-board-content">
         {/* Post Listing Button */}

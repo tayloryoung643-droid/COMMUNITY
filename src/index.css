@@ -420,3 +420,118 @@ p {
   position: relative;
   z-index: 1;
 }
+
+/* =============================================
+   INNER PAGE HERO HEADER - Weather + Title
+   Matches Home hero treatment exactly
+   ============================================= */
+
+/* Hero header area for inner pages */
+.inner-page-hero {
+  position: relative;
+  height: 44vh;
+  min-height: 320px;
+  max-height: 420px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Back button - top left, in the hero */
+.inner-page-back-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  padding-top: env(safe-area-inset-top, 0);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.inner-page-back-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.02);
+}
+
+/* Weather Widget - Matches Home exactly */
+.inner-page-weather {
+  position: absolute;
+  top: 70px;
+  left: 16px;
+  padding-top: env(safe-area-inset-top, 0);
+  color: white;
+  z-index: 5;
+}
+
+.inner-page-weather .weather-datetime {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 4px;
+  letter-spacing: 0.02em;
+}
+
+.inner-page-weather .weather-temp-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 2px;
+}
+
+.inner-page-weather .weather-icon {
+  color: white;
+  opacity: 0.85;
+}
+
+.inner-page-weather .weather-temp {
+  font-size: 32px;
+  font-weight: 300;
+  color: white;
+  line-height: 1;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.2);
+}
+
+.inner-page-weather .weather-condition {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Page Title - Centered, positioned like "The Paramount" */
+.inner-page-title-container {
+  position: absolute;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  z-index: 5;
+}
+
+.inner-page-title {
+  font-size: 42px;
+  font-weight: 400;
+  color: white;
+  letter-spacing: 2px;
+  margin: 0;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+/* Content areas after hero - add proper spacing */
+.resident-inner-page main,
+.resident-inner-page .building-content,
+.resident-inner-page .packages-summary,
+.resident-inner-page .community-split-layout {
+  padding-top: 24px;
+}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Calendar, Clock, MapPin, Users, Check } from 'lucide-react'
+import { ArrowLeft, Calendar, Clock, MapPin, Users, Check, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getEvents, addRSVP, removeRSVP } from './services/eventService'
 import './Events.css'
@@ -81,6 +81,43 @@ function Events({ onBack }) {
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // Weather and time state - matches Home exactly
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const weatherData = {
+    temp: 58,
+    condition: 'clear',
+    conditionText: 'Mostly Clear'
+  }
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const getWeatherIcon = (condition) => {
+    const hour = currentTime.getHours()
+    const isNight = hour >= 18 || hour < 6
+    if (isNight) return Moon
+    switch (condition) {
+      case 'clear':
+      case 'sunny': return Sun
+      case 'cloudy': return Cloud
+      case 'rainy': return CloudRain
+      case 'snowy': return Snowflake
+      default: return Sun
+    }
+  }
+
+  const formatTimeWeather = (date) => {
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+  }
+
+  const formatDayWeather = (date) => {
+    return date.toLocaleDateString('en-US', { weekday: 'long' })
+  }
+
+  const WeatherIcon = getWeatherIcon(weatherData.condition)
 
   useEffect(() => {
     console.log('[Events] Demo mode:', isInDemoMode)
@@ -173,16 +210,23 @@ function Events({ onBack }) {
   if (loading) {
     return (
       <div className="events-container resident-inner-page">
-        <div className="bg-orb bg-orb-1"></div>
-        <div className="bg-orb bg-orb-2"></div>
-        <header className="events-header">
-          <button className="back-button-glass" onClick={onBack}>
+        <div className="inner-page-hero">
+          <button className="inner-page-back-btn" onClick={onBack}>
             <ArrowLeft size={20} />
-            <span>Back</span>
           </button>
-          <h1 className="page-title-light">Events</h1>
-        </header>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: 'rgba(255,255,255,0.7)' }}>
+          <div className="inner-page-weather">
+            <div className="weather-datetime">{formatDayWeather(currentTime)} | {formatTimeWeather(currentTime)}</div>
+            <div className="weather-temp-row">
+              <WeatherIcon size={20} className="weather-icon" />
+              <span className="weather-temp">{weatherData.temp}°</span>
+            </div>
+            <div className="weather-condition">{weatherData.conditionText}</div>
+          </div>
+          <div className="inner-page-title-container">
+            <h1 className="inner-page-title">Events</h1>
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '30vh', color: '#9CA3AF' }}>
           Loading events...
         </div>
       </div>
@@ -193,16 +237,23 @@ function Events({ onBack }) {
   if (error) {
     return (
       <div className="events-container resident-inner-page">
-        <div className="bg-orb bg-orb-1"></div>
-        <div className="bg-orb bg-orb-2"></div>
-        <header className="events-header">
-          <button className="back-button-glass" onClick={onBack}>
+        <div className="inner-page-hero">
+          <button className="inner-page-back-btn" onClick={onBack}>
             <ArrowLeft size={20} />
-            <span>Back</span>
           </button>
-          <h1 className="page-title-light">Events</h1>
-        </header>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: '#ef4444' }}>
+          <div className="inner-page-weather">
+            <div className="weather-datetime">{formatDayWeather(currentTime)} | {formatTimeWeather(currentTime)}</div>
+            <div className="weather-temp-row">
+              <WeatherIcon size={20} className="weather-icon" />
+              <span className="weather-temp">{weatherData.temp}°</span>
+            </div>
+            <div className="weather-condition">{weatherData.conditionText}</div>
+          </div>
+          <div className="inner-page-title-container">
+            <h1 className="inner-page-title">Events</h1>
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '30vh', color: '#ef4444' }}>
           {error}
         </div>
       </div>
@@ -211,17 +262,23 @@ function Events({ onBack }) {
 
   return (
     <div className="events-container resident-inner-page">
-      {/* Background orbs */}
-      <div className="bg-orb bg-orb-1"></div>
-      <div className="bg-orb bg-orb-2"></div>
-
-      <header className="events-header">
-        <button className="back-button-glass" onClick={onBack}>
+      {/* Hero Section with Weather and Title */}
+      <div className="inner-page-hero">
+        <button className="inner-page-back-btn" onClick={onBack}>
           <ArrowLeft size={20} />
-          <span>Back</span>
         </button>
-        <h1 className="page-title-light">Events</h1>
-      </header>
+        <div className="inner-page-weather">
+          <div className="weather-datetime">{formatDayWeather(currentTime)} | {formatTimeWeather(currentTime)}</div>
+          <div className="weather-temp-row">
+            <WeatherIcon size={20} className="weather-icon" />
+            <span className="weather-temp">{weatherData.temp}°</span>
+          </div>
+          <div className="weather-condition">{weatherData.conditionText}</div>
+        </div>
+        <div className="inner-page-title-container">
+          <h1 className="inner-page-title">Events</h1>
+        </div>
+      </div>
 
       <main className="events-content">
         {/* Upcoming Events Section */}

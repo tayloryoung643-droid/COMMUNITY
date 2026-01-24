@@ -1,9 +1,46 @@
-import { useState } from 'react'
-import { ArrowLeft, Clock, FileText, Truck, Recycle, CalendarCheck, ChevronDown, ChevronUp } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ArrowLeft, Clock, FileText, Truck, Recycle, CalendarCheck, ChevronDown, ChevronUp, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import './BuildingInfo.css'
 
 function BuildingInfo({ onBack }) {
   const [expandedSections, setExpandedSections] = useState(['hours'])
+
+  // Weather and time state - matches Home exactly
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const weatherData = {
+    temp: 58,
+    condition: 'clear',
+    conditionText: 'Mostly Clear'
+  }
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const getWeatherIcon = (condition) => {
+    const hour = currentTime.getHours()
+    const isNight = hour >= 18 || hour < 6
+    if (isNight) return Moon
+    switch (condition) {
+      case 'clear':
+      case 'sunny': return Sun
+      case 'cloudy': return Cloud
+      case 'rainy': return CloudRain
+      case 'snowy': return Snowflake
+      default: return Sun
+    }
+  }
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+  }
+
+  const formatDay = (date) => {
+    return date.toLocaleDateString('en-US', { weekday: 'long' })
+  }
+
+  const WeatherIcon = getWeatherIcon(weatherData.condition)
 
   const toggleSection = (sectionId) => {
     setExpandedSections(prev =>
@@ -139,17 +176,23 @@ function BuildingInfo({ onBack }) {
 
   return (
     <div className="building-info-container resident-inner-page">
-      {/* Background orbs */}
-      <div className="bg-orb bg-orb-1"></div>
-      <div className="bg-orb bg-orb-2"></div>
-
-      <header className="building-info-header">
-        <button className="back-button-glass" onClick={onBack}>
+      {/* Hero Section with Weather and Title */}
+      <div className="inner-page-hero">
+        <button className="inner-page-back-btn" onClick={onBack}>
           <ArrowLeft size={20} />
-          <span>Back</span>
         </button>
-        <h1 className="page-title-light">Building Info & FAQ</h1>
-      </header>
+        <div className="inner-page-weather">
+          <div className="weather-datetime">{formatDay(currentTime)} | {formatTime(currentTime)}</div>
+          <div className="weather-temp-row">
+            <WeatherIcon size={20} className="weather-icon" />
+            <span className="weather-temp">{weatherData.temp}°</span>
+          </div>
+          <div className="weather-condition">{weatherData.conditionText}</div>
+        </div>
+        <div className="inner-page-title-container">
+          <h1 className="inner-page-title">Info & FAQ</h1>
+        </div>
+      </div>
 
       <main className="building-info-content">
         <div className="accordion-list">

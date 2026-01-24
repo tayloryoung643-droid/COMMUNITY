@@ -10,16 +10,11 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* Header */
-.calendar-view-header {
-  padding: 24px 16px 16px;
+/* View Controls - below hero */
+.calendar-view-controls {
   display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.calendar-view-header .page-title-light {
-  flex: 1;
+  justify-content: flex-end;
+  margin-bottom: 16px;
 }
 
 /* View Toggle Button */
@@ -43,36 +38,9 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
 }
 
-.calendar-view-container .back-button-glass {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: #FFFFFF;
-  border: none;
-  border-radius: 12px;
-  color: #4A4A4A;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02);
-  transition: all 0.2s ease;
-}
-
-.calendar-view-container .back-button-glass:hover {
-  transform: translateX(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
-}
-
-.calendar-view-container .page-title-light {
-  font-size: 22px;
-  font-weight: 600;
-  color: #1A1A1A;
-  margin: 0;
-  letter-spacing: -0.02em;
-}
-
 /* Content */
 .calendar-view-content {
-  padding: 0 16px 100px;
+  padding: 24px 16px 100px;
 }
 
 /* Filter Tabs */

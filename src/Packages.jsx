@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Package, Truck, Mail, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Package, Truck, Mail, CheckCircle, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getPackages } from './services/packageService'
 import './Packages.css'
@@ -86,6 +86,43 @@ function Packages({ onBack }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  // Weather and time state - matches Home exactly
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const weatherData = {
+    temp: 58,
+    condition: 'clear',
+    conditionText: 'Mostly Clear'
+  }
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const getWeatherIcon = (condition) => {
+    const hour = currentTime.getHours()
+    const isNight = hour >= 18 || hour < 6
+    if (isNight) return Moon
+    switch (condition) {
+      case 'clear':
+      case 'sunny': return Sun
+      case 'cloudy': return Cloud
+      case 'rainy': return CloudRain
+      case 'snowy': return Snowflake
+      default: return Sun
+    }
+  }
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+  }
+
+  const formatDay = (date) => {
+    return date.toLocaleDateString('en-US', { weekday: 'long' })
+  }
+
+  const WeatherIcon = getWeatherIcon(weatherData.condition)
+
   // Check for demo mode using both isDemoMode flag and userProfile.is_demo
   const isInDemoMode = isDemoMode || userProfile?.is_demo === true
 
@@ -151,22 +188,23 @@ function Packages({ onBack }) {
   if (loading) {
     return (
       <div className="packages-container resident-inner-page">
-        <div className="bg-orb bg-orb-1"></div>
-        <div className="bg-orb bg-orb-2"></div>
-        <header className="packages-header">
-          <button className="back-button-glass" onClick={onBack}>
+        <div className="inner-page-hero">
+          <button className="inner-page-back-btn" onClick={onBack}>
             <ArrowLeft size={20} />
-            <span>Back</span>
           </button>
-          <h1 className="page-title-light">Packages</h1>
-        </header>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '50vh',
-          color: 'rgba(255,255,255,0.7)'
-        }}>
+          <div className="inner-page-weather">
+            <div className="weather-datetime">{formatDay(currentTime)} | {formatTime(currentTime)}</div>
+            <div className="weather-temp-row">
+              <WeatherIcon size={20} className="weather-icon" />
+              <span className="weather-temp">{weatherData.temp}°</span>
+            </div>
+            <div className="weather-condition">{weatherData.conditionText}</div>
+          </div>
+          <div className="inner-page-title-container">
+            <h1 className="inner-page-title">Packages</h1>
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '30vh', color: '#9CA3AF' }}>
           Loading packages...
         </div>
       </div>
@@ -177,22 +215,23 @@ function Packages({ onBack }) {
   if (error) {
     return (
       <div className="packages-container resident-inner-page">
-        <div className="bg-orb bg-orb-1"></div>
-        <div className="bg-orb bg-orb-2"></div>
-        <header className="packages-header">
-          <button className="back-button-glass" onClick={onBack}>
+        <div className="inner-page-hero">
+          <button className="inner-page-back-btn" onClick={onBack}>
             <ArrowLeft size={20} />
-            <span>Back</span>
           </button>
-          <h1 className="page-title-light">Packages</h1>
-        </header>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '50vh',
-          color: '#ef4444'
-        }}>
+          <div className="inner-page-weather">
+            <div className="weather-datetime">{formatDay(currentTime)} | {formatTime(currentTime)}</div>
+            <div className="weather-temp-row">
+              <WeatherIcon size={20} className="weather-icon" />
+              <span className="weather-temp">{weatherData.temp}°</span>
+            </div>
+            <div className="weather-condition">{weatherData.conditionText}</div>
+          </div>
+          <div className="inner-page-title-container">
+            <h1 className="inner-page-title">Packages</h1>
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '30vh', color: '#ef4444' }}>
           {error}
         </div>
       </div>
@@ -201,17 +240,23 @@ function Packages({ onBack }) {
 
   return (
     <div className="packages-container resident-inner-page">
-      {/* Background orbs */}
-      <div className="bg-orb bg-orb-1"></div>
-      <div className="bg-orb bg-orb-2"></div>
-
-      <header className="packages-header">
-        <button className="back-button-glass" onClick={onBack}>
+      {/* Hero Section with Weather and Title */}
+      <div className="inner-page-hero">
+        <button className="inner-page-back-btn" onClick={onBack}>
           <ArrowLeft size={20} />
-          <span>Back</span>
         </button>
-        <h1 className="page-title-light">Packages</h1>
-      </header>
+        <div className="inner-page-weather">
+          <div className="weather-datetime">{formatDay(currentTime)} | {formatTime(currentTime)}</div>
+          <div className="weather-temp-row">
+            <WeatherIcon size={20} className="weather-icon" />
+            <span className="weather-temp">{weatherData.temp}°</span>
+          </div>
+          <div className="weather-condition">{weatherData.conditionText}</div>
+        </div>
+        <div className="inner-page-title-container">
+          <h1 className="inner-page-title">Packages</h1>
+        </div>
+      </div>
 
       <div className="packages-summary">
         <div className="summary-card">

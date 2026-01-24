@@ -1,10 +1,47 @@
-import { useState } from 'react'
-import { ArrowLeft, Calendar, ChevronRight, ChevronLeft, Wrench, Wine, Users, Megaphone, Bell, Clock, List, Grid3X3 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ArrowLeft, Calendar, ChevronRight, ChevronLeft, Wrench, Wine, Users, Megaphone, Bell, Clock, List, Grid3X3, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import './CalendarView.css'
 
 function CalendarView({ onBack }) {
   const [activeFilter, setActiveFilter] = useState('all')
   const [viewMode, setViewMode] = useState('list') // 'list' or 'calendar'
+
+  // Weather and time state - matches Home exactly
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const weatherData = {
+    temp: 58,
+    condition: 'clear',
+    conditionText: 'Mostly Clear'
+  }
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const getWeatherIcon = (condition) => {
+    const hour = currentTime.getHours()
+    const isNight = hour >= 18 || hour < 6
+    if (isNight) return Moon
+    switch (condition) {
+      case 'clear':
+      case 'sunny': return Sun
+      case 'cloudy': return Cloud
+      case 'rainy': return CloudRain
+      case 'snowy': return Snowflake
+      default: return Sun
+    }
+  }
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+  }
+
+  const formatDay = (date) => {
+    return date.toLocaleDateString('en-US', { weekday: 'long' })
+  }
+
+  const WeatherIcon = getWeatherIcon(weatherData.condition)
 
   // Combined events and announcements data
   const calendarItems = [
@@ -196,26 +233,42 @@ function CalendarView({ onBack }) {
 
   return (
     <div className="calendar-view-container resident-inner-page">
-      {/* Background orbs */}
-      <div className="bg-orb bg-orb-1"></div>
-      <div className="bg-orb bg-orb-2"></div>
-
-      <header className="calendar-view-header">
-        <button className="back-button-glass" onClick={onBack}>
+      {/* Hero Section with Weather and Title */}
+      <div className="inner-page-hero">
+        {/* Back Button */}
+        <button className="inner-page-back-btn" onClick={onBack}>
           <ArrowLeft size={20} />
-          <span>Back</span>
         </button>
-        <h1 className="page-title-light">Calendar</h1>
-        <button
-          className="view-toggle-btn"
-          onClick={() => setViewMode(viewMode === 'list' ? 'calendar' : 'list')}
-          aria-label={viewMode === 'list' ? 'Switch to calendar view' : 'Switch to list view'}
-        >
-          {viewMode === 'list' ? <Grid3X3 size={20} /> : <List size={20} />}
-        </button>
-      </header>
+
+        {/* Weather Widget - matches Home exactly */}
+        <div className="inner-page-weather">
+          <div className="weather-datetime">
+            {formatDay(currentTime)} | {formatTime(currentTime)}
+          </div>
+          <div className="weather-temp-row">
+            <WeatherIcon size={20} className="weather-icon" />
+            <span className="weather-temp">{weatherData.temp}°</span>
+          </div>
+          <div className="weather-condition">{weatherData.conditionText}</div>
+        </div>
+
+        {/* Page Title - centered like "The Paramount" */}
+        <div className="inner-page-title-container">
+          <h1 className="inner-page-title">Calendar</h1>
+        </div>
+      </div>
 
       <main className="calendar-view-content">
+        {/* View Toggle */}
+        <div className="calendar-view-controls">
+          <button
+            className="view-toggle-btn"
+            onClick={() => setViewMode(viewMode === 'list' ? 'calendar' : 'list')}
+            aria-label={viewMode === 'list' ? 'Switch to calendar view' : 'Switch to list view'}
+          >
+            {viewMode === 'list' ? <Grid3X3 size={20} /> : <List size={20} />}
+          </button>
+        </div>
         {/* Filter Tabs */}
         <div className="calendar-filters">
           {filters.map(filter => (
