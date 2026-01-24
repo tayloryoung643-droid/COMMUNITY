@@ -44,7 +44,12 @@ function App() {
       unit: 'Unit 1201',
       timestamp: Date.now() - 1800000, // 30 min ago
       likes: 8,
-      comments: 3
+      comments: 3,
+      commentsList: [
+        { id: 101, author: 'Mike T.', firstName: 'Mike', unit: 'Unit 805', text: 'Yes please! I\'ll swing by in 10 minutes!', timestamp: Date.now() - 1500000, replies: [] },
+        { id: 102, author: 'Jennifer K.', firstName: 'Jennifer', unit: 'Unit 1504', text: 'That sounds amazing! Save me a slice?', timestamp: Date.now() - 1200000, replies: [] },
+        { id: 103, author: 'Alex R.', firstName: 'Alex', unit: 'Unit 802', text: 'So kind of you! Love this community 💛', timestamp: Date.now() - 900000, replies: [] }
+      ]
     },
     {
       id: 2,
@@ -54,7 +59,11 @@ function App() {
       unit: 'Unit 805',
       timestamp: Date.now() - 7200000, // 2 hours ago
       likes: 2,
-      comments: 5
+      comments: 2,
+      commentsList: [
+        { id: 201, author: 'Sarah M.', firstName: 'Sarah', unit: 'Unit 1201', text: 'I have a 6ft ladder you can borrow! DM me to arrange pickup.', timestamp: Date.now() - 6000000, replies: [] },
+        { id: 202, author: 'Building Staff', firstName: 'Staff', unit: 'Management', text: 'We also have a ladder in the maintenance closet - ask the front desk!', timestamp: Date.now() - 5400000, replies: [] }
+      ]
     },
     {
       id: 3,
@@ -64,7 +73,11 @@ function App() {
       unit: 'Unit 1504',
       timestamp: Date.now() - 14400000, // 4 hours ago
       likes: 12,
-      comments: 4
+      comments: 2,
+      commentsList: [
+        { id: 301, author: 'Building Staff', firstName: 'Staff', unit: 'Management', text: 'Thanks for the heads up! Technician has been called and should arrive within the hour.', timestamp: Date.now() - 13000000, replies: [] },
+        { id: 302, author: 'Mike T.', firstName: 'Mike', unit: 'Unit 805', text: 'Noticed this too. Thanks for reporting!', timestamp: Date.now() - 12000000, replies: [] }
+      ]
     },
     {
       id: 4,
@@ -74,7 +87,12 @@ function App() {
       unit: 'Unit 802',
       timestamp: Date.now() - 86400000, // 1 day ago
       likes: 24,
-      comments: 11
+      comments: 3,
+      commentsList: [
+        { id: 401, author: 'Sarah M.', firstName: 'Sarah', unit: 'Unit 1201', text: 'Welcome to the building! You\'re going to love it here.', timestamp: Date.now() - 80000000, replies: [] },
+        { id: 402, author: 'Jennifer K.', firstName: 'Jennifer', unit: 'Unit 1504', text: 'The rooftop BBQ is the best! See you there!', timestamp: Date.now() - 75000000, replies: [] },
+        { id: 403, author: 'Mike T.', firstName: 'Mike', unit: 'Unit 805', text: 'Welcome neighbor! Let us know if you need help moving in.', timestamp: Date.now() - 70000000, replies: [] }
+      ]
     }
   ])
 

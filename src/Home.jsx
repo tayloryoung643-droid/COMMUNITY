@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Package, Calendar, Users, ChevronRight, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon } from 'lucide-react'
+import { Package, Calendar, Users, ChevronRight, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon, HelpCircle, MessageSquare } from 'lucide-react'
 import HamburgerMenu from './HamburgerMenu'
 import { eventsData } from './eventsData'
 import './Home.css'
@@ -94,6 +94,43 @@ function Home({ buildingCode, onNavigate }) {
     }
   }
 
+  // Today's community post - prioritize Ask, Help, Borrow, or New Resident posts
+  // Only show posts created today
+  const todayCommunityPost = {
+    id: 99,
+    type: 'ask',
+    text: "Does anyone have a ladder I could borrow this weekend? Need to change some light bulbs in the high ceilings. Happy to return it Sunday evening!",
+    author: 'Mike T.',
+    unit: 'Unit 805',
+    timestamp: Date.now() - 7200000, // 2 hours ago (today)
+    likes: 2,
+    comments: 3,
+    commentsList: [
+      { id: 991, author: 'Sarah M.', firstName: 'Sarah', unit: 'Unit 1201', text: 'I have a 6ft ladder you can borrow! DM me to arrange pickup.', timestamp: Date.now() - 6000000, replies: [] },
+      { id: 992, author: 'Building Staff', firstName: 'Staff', unit: 'Management', text: 'We also have a ladder in the maintenance closet - ask the front desk!', timestamp: Date.now() - 5400000, replies: [] },
+      { id: 993, author: 'Jennifer K.', firstName: 'Jennifer', unit: 'Unit 1504', text: 'I can help hold it steady if you need a hand!', timestamp: Date.now() - 3600000, replies: [] }
+    ]
+  }
+
+  // Handler to open community post detail
+  const handleCommunityPostClick = (post) => {
+    if (onNavigate) {
+      onNavigate('PostDetail', post)
+    }
+  }
+
+  // Get post type badge info
+  const getPostTypeBadge = (type) => {
+    switch (type) {
+      case 'ask':
+        return { label: 'ASK', icon: HelpCircle, color: '#8b5cf6' }
+      case 'share':
+        return { label: 'SHARE', icon: MessageSquare, color: '#3b82f6' }
+      default:
+        return { label: type.toUpperCase(), icon: MessageSquare, color: '#6B7280' }
+    }
+  }
+
   return (
     <div
       className="home-page"
@@ -166,6 +203,35 @@ function Home({ buildingCode, onNavigate }) {
             </div>
             <span className="today-card-time">Tonight · 6:00 PM</span>
           </button>
+
+          {/* Today's Community Post */}
+          {todayCommunityPost && (
+            <button className="today-card community-post-card" onClick={() => handleCommunityPostClick(todayCommunityPost)}>
+              <div
+                className="today-card-icon community-icon"
+                style={{ background: `${getPostTypeBadge(todayCommunityPost.type).color}15` }}
+              >
+                {todayCommunityPost.author.charAt(0)}
+              </div>
+              <div className="today-card-content">
+                <div className="community-post-header">
+                  <span className="community-post-author">{todayCommunityPost.author}</span>
+                  <span className="community-post-unit">{todayCommunityPost.unit}</span>
+                  <span
+                    className="community-post-badge"
+                    style={{ background: `${getPostTypeBadge(todayCommunityPost.type).color}15`, color: getPostTypeBadge(todayCommunityPost.type).color }}
+                  >
+                    {getPostTypeBadge(todayCommunityPost.type).label}
+                  </span>
+                </div>
+                <span className="today-card-subtitle community-post-preview">
+                  {todayCommunityPost.text.length > 80
+                    ? todayCommunityPost.text.substring(0, 80) + '...'
+                    : todayCommunityPost.text}
+                </span>
+              </div>
+            </button>
+          )}
         </section>
 
         {/* Coming Up - scrollable list of all upcoming events */}

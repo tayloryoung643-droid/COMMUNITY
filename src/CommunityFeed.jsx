@@ -15,7 +15,12 @@ const DEMO_POSTS = [
     unit: 'Unit 1205',
     timestamp: Date.now() - 3600000,
     likes: 12,
-    comments: 5
+    comments: 3,
+    commentsList: [
+      { id: 101, author: 'Sarah Mitchell', firstName: 'Sarah', unit: 'Unit 1201', text: 'Welcome to the building! You should try Bella Italia on Main St - amazing pasta!', timestamp: Date.now() - 3000000, replies: [] },
+      { id: 102, author: 'David Kim', firstName: 'David', unit: 'Unit 1507', text: 'Welcome Emily! The Thai place on Oak Ave is great too.', timestamp: Date.now() - 2400000, replies: [] },
+      { id: 103, author: 'Marcus Johnson', firstName: 'Marcus', unit: 'Unit 804', text: 'Looking forward to meeting you at the next building social!', timestamp: Date.now() - 1800000, replies: [] }
+    ]
   },
   {
     id: 2,
@@ -25,7 +30,11 @@ const DEMO_POSTS = [
     unit: 'Unit 804',
     timestamp: Date.now() - 7200000,
     likes: 3,
-    comments: 8
+    comments: 2,
+    commentsList: [
+      { id: 201, author: 'Building Staff', firstName: 'Staff', unit: 'Management', text: 'Hi Marcus! Packages are held at the front desk. You\'ll get a notification when something arrives.', timestamp: Date.now() - 6800000, replies: [] },
+      { id: 202, author: 'Jessica Patel', firstName: 'Jessica', unit: 'Unit 402', text: 'They also have lockers for Amazon packages - ask the front desk for the code!', timestamp: Date.now() - 6000000, replies: [] }
+    ]
   },
   {
     id: 3,
@@ -35,7 +44,11 @@ const DEMO_POSTS = [
     unit: 'Unit 1201',
     timestamp: Date.now() - 14400000,
     likes: 18,
-    comments: 4
+    comments: 2,
+    commentsList: [
+      { id: 301, author: 'Building Staff', firstName: 'Staff', unit: 'Management', text: 'Thanks for reporting this Sarah! We\'ve contacted the elevator company and a technician will be here tomorrow morning.', timestamp: Date.now() - 13000000, replies: [] },
+      { id: 302, author: 'David Kim', firstName: 'David', unit: 'Unit 1507', text: 'I noticed that too. Thanks for flagging it!', timestamp: Date.now() - 12000000, replies: [] }
+    ]
   },
   {
     id: 4,
@@ -45,7 +58,13 @@ const DEMO_POSTS = [
     unit: 'Unit 1507',
     timestamp: Date.now() - 28800000,
     likes: 45,
-    comments: 12
+    comments: 4,
+    commentsList: [
+      { id: 401, author: 'Emily Chen', firstName: 'Emily', unit: 'Unit 1205', text: 'Wow, that sounds amazing! I need to check out the rooftop.', timestamp: Date.now() - 27000000, replies: [] },
+      { id: 402, author: 'Sarah Mitchell', firstName: 'Sarah', unit: 'Unit 1201', text: 'The rooftop is the best feature of this building!', timestamp: Date.now() - 26000000, replies: [] },
+      { id: 403, author: 'Jessica Patel', firstName: 'Jessica', unit: 'Unit 402', text: 'Perfect spot for morning coffee too ☕', timestamp: Date.now() - 25000000, replies: [] },
+      { id: 404, author: 'Marcus Johnson', firstName: 'Marcus', unit: 'Unit 804', text: 'We should organize a rooftop hangout sometime!', timestamp: Date.now() - 24000000, replies: [] }
+    ]
   },
   {
     id: 5,
@@ -55,7 +74,11 @@ const DEMO_POSTS = [
     unit: 'Unit 402',
     timestamp: Date.now() - 43200000,
     likes: 7,
-    comments: 6
+    comments: 2,
+    commentsList: [
+      { id: 501, author: 'Building Staff', firstName: 'Staff', unit: 'Management', text: 'Welcome Jessica! The gym is open 24/7 - just use your key fob to access it.', timestamp: Date.now() - 42000000, replies: [] },
+      { id: 502, author: 'David Kim', firstName: 'David', unit: 'Unit 1507', text: 'Pro tip: it\'s usually empty before 7am if you like a quiet workout!', timestamp: Date.now() - 40000000, replies: [] }
+    ]
   }
 ]
 
