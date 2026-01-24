@@ -17,6 +17,7 @@ import BuildingInfo from './BuildingInfo'
 import Building from './Building'
 import BottomNav from './BottomNav'
 import MobileShell from './MobileShell'
+import EventDetail from './EventDetail'
 import ManagerOnboardingStep1 from './ManagerOnboardingStep1'
 import ManagerOnboardingStep2 from './ManagerOnboardingStep2'
 import ManagerOnboardingStep3 from './ManagerOnboardingStep3'
@@ -28,6 +29,8 @@ function App() {
   const [buildingCode, setBuildingCode] = useState('')
   const [currentScreen, setCurrentScreen] = useState('login')
   const [authError, setAuthError] = useState('')
+  const [selectedEvent, setSelectedEvent] = useState(null)
+  const [previousScreen, setPreviousScreen] = useState('home')
 
   // Community posts state - seed with some example posts
   const [posts, setPosts] = useState([
@@ -173,7 +176,15 @@ function App() {
     }
   }
 
-  const handleNavigation = (featureTitle) => {
+  const handleNavigation = (featureTitle, eventData = null) => {
+    // Handle event detail navigation
+    if (featureTitle === 'EventDetail' && eventData) {
+      setPreviousScreen(currentScreen)
+      setSelectedEvent(eventData)
+      setCurrentScreen('event-detail')
+      return
+    }
+
     // When someone clicks a feature card, navigate to that screen
     if (featureTitle === 'Announcements') {
       setCurrentScreen('announcements')
@@ -202,6 +213,11 @@ function App() {
     } else if (featureTitle === 'Home') {
       setCurrentScreen('home')
     }
+  }
+
+  const handleEventDetailBack = () => {
+    setSelectedEvent(null)
+    setCurrentScreen(previousScreen)
   }
 
   const handleBack = () => {
@@ -238,7 +254,7 @@ function App() {
   const residentScreens = [
     'home', 'announcements', 'packages', 'events', 'neighbors', 'emergency',
     'elevator-booking', 'community', 'bulletin-board', 'settings', 'building-info',
-    'calendar', 'building'
+    'calendar', 'building', 'event-detail'
   ]
   const showBottomNav = residentScreens.includes(currentScreen)
 
@@ -330,6 +346,14 @@ function App() {
     return (
       <MobileShell bottomNav={bottomNav}>
         <CalendarView onNavigate={handleNavigation} />
+      </MobileShell>
+    )
+  }
+
+  if (currentScreen === 'event-detail' && selectedEvent) {
+    return (
+      <MobileShell bottomNav={bottomNav}>
+        <EventDetail event={selectedEvent} onBack={handleEventDetailBack} />
       </MobileShell>
     )
   }

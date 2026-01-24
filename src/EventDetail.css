@@ -1,0 +1,606 @@
+/* ============================================
+   EVENT DETAIL - Premium Light Theme
+   Matches the Oura-inspired design system
+   ============================================ */
+
+.event-detail-container {
+  min-height: 100vh;
+  background: #F5F0E8;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: 100px;
+}
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+
+.event-detail-hero {
+  position: relative;
+  height: 280px;
+  overflow: hidden;
+}
+
+.event-detail-hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.event-detail-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.2) 0%,
+    rgba(0, 0, 0, 0.1) 40%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+}
+
+/* Back Button */
+.event-detail-back-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  padding-top: env(safe-area-inset-top, 0);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.event-detail-back-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+/* Hero Content */
+.event-detail-hero-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.event-detail-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 32px;
+  font-weight: 500;
+  color: white;
+  margin: 0 0 12px 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.02em;
+}
+
+.event-detail-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.event-detail-category {
+  display: inline-flex;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.9);
+  color: #6B7280;
+}
+
+.event-detail-category.social {
+  background: rgba(139, 92, 246, 0.15);
+  color: #7C3AED;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.event-detail-category.maintenance {
+  background: rgba(245, 158, 11, 0.15);
+  color: #B45309;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.event-detail-category.meeting {
+  background: rgba(59, 130, 246, 0.15);
+  color: #2563EB;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.event-detail-datetime {
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   CONTENT SECTION
+   ============================================ */
+
+.event-detail-content {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Cards */
+.event-detail-card {
+  background: #FFFCF7;
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02);
+}
+
+/* Organizer Card */
+.organizer-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.organizer-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #8A8075;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.organizer-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.organizer-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.organizer-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.organizer-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.organizer-role {
+  font-size: 13px;
+  color: #7A7265;
+}
+
+/* ============================================
+   ATTENDANCE
+   ============================================ */
+
+.event-detail-attendance {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 4px;
+}
+
+.attendance-count {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.attendance-avatars {
+  display: flex;
+  align-items: center;
+}
+
+.attendance-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #F5F0E8;
+  margin-left: -12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.attendance-avatar:first-child {
+  margin-left: 0;
+}
+
+.attendance-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #E8E3D9;
+  border: 3px solid #F5F0E8;
+  margin-left: -12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6B6B6B;
+}
+
+/* ============================================
+   RSVP BUTTONS
+   ============================================ */
+
+.event-detail-rsvp {
+  display: flex;
+  gap: 10px;
+}
+
+.rsvp-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 28px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.rsvp-going {
+  background: #FFFCF7;
+  color: #4A4A4A;
+}
+
+.rsvp-going.active {
+  background: #4F46E5;
+  color: white;
+  border-color: #4F46E5;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.rsvp-going:not(.active):hover {
+  background: #F3EEE5;
+}
+
+.rsvp-maybe {
+  background: #FFFCF7;
+  color: #4A4A4A;
+}
+
+.rsvp-maybe.active {
+  background: #1A1A1A;
+  color: white;
+  border-color: #1A1A1A;
+}
+
+.rsvp-maybe:not(.active):hover {
+  background: #F3EEE5;
+}
+
+.rsvp-not-going {
+  background: #FFFCF7;
+  color: #4A4A4A;
+}
+
+.rsvp-not-going.active {
+  background: #6B7280;
+  color: white;
+  border-color: #6B7280;
+}
+
+.rsvp-not-going:not(.active):hover {
+  background: #F3EEE5;
+}
+
+/* ============================================
+   ACKNOWLEDGE BUTTON (Maintenance)
+   ============================================ */
+
+.event-detail-acknowledge {
+  display: flex;
+}
+
+.acknowledge-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  background: #1A1A1A;
+  color: white;
+  border: none;
+  border-radius: 28px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.acknowledge-btn:hover:not(:disabled) {
+  background: #2A2A2A;
+  transform: translateY(-1px);
+}
+
+.acknowledge-btn.acknowledged {
+  background: #059669;
+  cursor: default;
+}
+
+.acknowledge-btn:disabled {
+  opacity: 1;
+}
+
+/* ============================================
+   ADD TO CALENDAR
+   ============================================ */
+
+.add-to-calendar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 12px 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6B6B6B;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.add-to-calendar-btn:hover {
+  color: #4A4A4A;
+}
+
+.add-to-calendar-btn svg {
+  color: #8A8075;
+}
+
+/* ============================================
+   ABOUT CARD
+   ============================================ */
+
+.about-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.about-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #8A8075;
+  margin: 0;
+}
+
+.about-description {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #4A4A4A;
+  margin: 0;
+}
+
+.about-affected {
+  font-size: 13px;
+  color: #B45309;
+  margin: 8px 0 0 0;
+  padding: 10px 14px;
+  background: rgba(245, 158, 11, 0.1);
+  border-radius: 10px;
+}
+
+/* ============================================
+   COMMENTS SECTION
+   ============================================ */
+
+.event-detail-comments {
+  margin-top: 8px;
+}
+
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.comment-item {
+  display: flex;
+  gap: 12px;
+}
+
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.comment-content {
+  flex: 1;
+  min-width: 0;
+  background: #FFFCF7;
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.comment-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.comment-time {
+  font-size: 11px;
+  color: #9CA3AF;
+}
+
+.comment-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #4A4A4A;
+  margin: 0;
+}
+
+/* Comment Input */
+.comment-input-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #FFFCF7;
+  border-radius: 28px;
+  padding: 8px 8px 8px 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.comment-input-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.comment-input-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-input {
+  flex: 1;
+  padding: 10px 0;
+  font-size: 14px;
+  color: #1A1A1A;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.comment-input::placeholder {
+  color: #9CA3AF;
+}
+
+.comment-post-btn {
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #8A8075;
+  background: #F3EEE5;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.comment-post-btn:hover:not(:disabled) {
+  background: #E8E3D9;
+  color: #4A4A4A;
+}
+
+.comment-post-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 480px) {
+  .event-detail-hero {
+    height: 260px;
+  }
+
+  .event-detail-title {
+    font-size: 28px;
+  }
+
+  .event-detail-datetime {
+    font-size: 13px;
+  }
+
+  .event-detail-content {
+    padding: 16px 14px;
+    gap: 14px;
+  }
+
+  .event-detail-card {
+    padding: 16px 18px;
+  }
+
+  .rsvp-btn {
+    padding: 12px 8px;
+    font-size: 13px;
+    gap: 4px;
+  }
+
+  .rsvp-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .attendance-avatar {
+    width: 38px;
+    height: 38px;
+    margin-left: -10px;
+  }
+
+  .attendance-more {
+    width: 38px;
+    height: 38px;
+    margin-left: -10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .event-detail-title {
+    font-size: 24px;
+  }
+
+  .rsvp-btn span {
+    display: none;
+  }
+
+  .rsvp-btn {
+    padding: 14px;
+  }
+}
