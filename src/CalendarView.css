@@ -18,6 +18,31 @@
   gap: 12px;
 }
 
+.calendar-view-header .page-title-light {
+  flex: 1;
+}
+
+/* View Toggle Button */
+.view-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #FFFFFF;
+  border: none;
+  border-radius: 12px;
+  color: #4A4A4A;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.view-toggle-btn:hover {
+  background: #F7F5F2;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
 .calendar-view-container .back-button-glass {
   display: flex;
   align-items: center;
@@ -228,5 +253,208 @@
   .calendar-icon {
     width: 36px;
     height: 36px;
+  }
+}
+
+/* ============================================
+   CALENDAR GRID VIEW
+   ============================================ */
+
+.calendar-grid-container {
+  background: #FFFFFF;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02);
+}
+
+/* Month Navigation */
+.month-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.month-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #F7F5F2;
+  border: none;
+  border-radius: 10px;
+  color: #4A4A4A;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.month-nav-btn:hover {
+  background: #E8E5E0;
+}
+
+.month-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin: 0;
+}
+
+/* Day Headers */
+.calendar-grid-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.day-header {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9CA3AF;
+  padding: 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* Calendar Grid */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 6px 4px;
+  border-radius: 10px;
+  background: transparent;
+  transition: all 0.2s ease;
+  min-height: 48px;
+}
+
+.calendar-day:not(.empty):hover {
+  background: #F7F5F2;
+}
+
+.calendar-day.empty {
+  background: transparent;
+}
+
+.calendar-day.today {
+  background: #1A1A1A;
+}
+
+.calendar-day.today .day-number {
+  color: #FFFFFF;
+}
+
+.calendar-day.has-events:not(.today) {
+  background: #F7F5F2;
+}
+
+.day-number {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1A1A1A;
+  margin-bottom: 4px;
+}
+
+.day-events {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.day-event-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.more-events {
+  font-size: 9px;
+  color: #9CA3AF;
+  font-weight: 500;
+}
+
+/* Month Events List */
+.month-events-list {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.month-events-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin: 0 0 16px 0;
+}
+
+.month-event-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.month-event-item:last-child {
+  border-bottom: none;
+}
+
+.month-event-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.month-event-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.month-event-date {
+  font-size: 12px;
+  color: #9CA3AF;
+}
+
+.month-event-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1A1A1A;
+}
+
+/* Responsive Calendar Grid */
+@media (max-width: 480px) {
+  .calendar-grid-container {
+    padding: 16px;
+  }
+
+  .calendar-day {
+    min-height: 40px;
+    padding: 4px 2px;
+  }
+
+  .day-number {
+    font-size: 12px;
+  }
+
+  .day-event-dot {
+    width: 5px;
+    height: 5px;
+  }
+
+  .day-header {
+    font-size: 10px;
   }
 }
