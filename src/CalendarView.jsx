@@ -7,6 +7,23 @@ import './CalendarView.css'
 function CalendarView({ onNavigate }) {
   const [activeFilter, setActiveFilter] = useState('all')
   const [viewMode, setViewMode] = useState('list') // 'list' or 'calendar'
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detect mobile viewport and default to list view
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 480
+      setIsMobile(mobile)
+      // Auto-switch to list view on mobile if user hasn't manually chosen
+      if (mobile && viewMode === 'calendar') {
+        // Only auto-switch on initial load, not on resize
+      }
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Weather and time state - matches Home exactly
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -193,6 +210,7 @@ function CalendarView({ onNavigate }) {
         <div className="calendar-view-controls">
           <button
             className="view-toggle-btn"
+            data-view={viewMode}
             onClick={() => setViewMode(viewMode === 'list' ? 'calendar' : 'list')}
             aria-label={viewMode === 'list' ? 'Switch to calendar view' : 'Switch to list view'}
           >
@@ -265,6 +283,12 @@ function CalendarView({ onNavigate }) {
         ) : (
           /* Calendar Grid View */
           <div className="calendar-grid-container">
+            {/* Mobile hint */}
+            {isMobile && (
+              <div className="mobile-grid-hint">
+                Tap the list icon for a better mobile experience
+              </div>
+            )}
             {/* Month Navigation */}
             <div className="month-navigation">
               <button className="month-nav-btn" onClick={prevMonth}>
