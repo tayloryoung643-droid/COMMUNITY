@@ -219,7 +219,7 @@
   margin-right: 0;
   box-sizing: border-box;
   position: relative;
-  z-index: 2; /* Ensure content sits above hero fade */
+  /* z-index removed to avoid blocking fixed-position menu overlay */
 }
 
 /* Section Titles - calm and understated */

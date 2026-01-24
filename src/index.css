@@ -485,5 +485,5 @@ p {
   margin-top: var(--hero-content-offset);
   padding-top: 0;
   position: relative;
-  z-index: 2; /* Ensure content sits above hero fade */
+  /* z-index removed to avoid blocking fixed-position menu overlay */
 }
