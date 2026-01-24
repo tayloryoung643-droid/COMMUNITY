@@ -123,7 +123,7 @@
 .calendar-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
 }
 
@@ -149,20 +149,20 @@
 }
 
 .event-group .calendar-card {
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .event-group .calendar-card:last-child {
   margin-bottom: 0;
 }
 
-/* Calendar Card */
+/* Calendar Card - Compact for density */
 .calendar-card {
   position: relative;
   background: #FFFCF7;
   border: none;
-  border-radius: clamp(14px, 3vw, 18px);
-  padding: clamp(14px, 3vw, 18px) clamp(12px, 3vw, 16px);
+  border-radius: clamp(12px, 2.5vw, 16px);
+  padding: clamp(12px, 2.5vw, 14px) clamp(12px, 2.5vw, 14px);
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02);
   cursor: pointer;
@@ -237,8 +237,8 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: clamp(8px, 2vw, 12px);
-  gap: 8px;
+  margin-bottom: clamp(6px, 1.5vw, 8px);
+  gap: 6px;
   flex-wrap: wrap;
 }
 
@@ -283,24 +283,24 @@
 
 .calendar-card-body {
   display: flex;
-  gap: clamp(10px, 2.5vw, 14px);
+  gap: clamp(8px, 2vw, 12px);
 }
 
 .calendar-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: clamp(36px, 8vw, 42px);
-  height: clamp(36px, 8vw, 42px);
+  width: clamp(32px, 7vw, 36px);
+  height: clamp(32px, 7vw, 36px);
   background: #F5F0E8;
-  border-radius: clamp(10px, 2vw, 12px);
+  border-radius: clamp(8px, 1.5vw, 10px);
   color: #8B7355;
   flex-shrink: 0;
 }
 
 .calendar-icon svg {
-  width: clamp(16px, 4vw, 20px);
-  height: clamp(16px, 4vw, 20px);
+  width: clamp(14px, 3.5vw, 18px);
+  height: clamp(14px, 3.5vw, 18px);
 }
 
 .calendar-details {
@@ -309,10 +309,10 @@
 }
 
 .calendar-title {
-  font-size: clamp(14px, 3.5vw, 16px);
+  font-size: clamp(13px, 3vw, 15px);
   font-weight: 500;
   color: #1A1A1A;
-  margin: 0 0 4px 0;
+  margin: 0 0 2px 0;
   line-height: 1.3;
 }
 

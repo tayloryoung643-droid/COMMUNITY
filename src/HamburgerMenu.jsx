@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Menu, X, Bell, Home as HomeIcon, MessageSquare, Calendar, Package, Building2, Settings, LogOut, ChevronRight, Wrench, Users, Wine } from 'lucide-react'
+import { Menu, X, Bell, Home as HomeIcon, MessageSquare, Calendar, Package, Building2, Settings, LogOut, ChevronRight, Wrench, Users, Wine, ClipboardList, CalendarClock } from 'lucide-react'
 import './HamburgerMenu.css'
 
 function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' }) {
@@ -197,6 +197,20 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' 
         >
           <Building2 size={22} />
           <span>Building</span>
+        </button>
+        <button
+          className="global-menu-item"
+          onClick={() => handleMenuItemClick('Bulletin Board')}
+        >
+          <ClipboardList size={22} />
+          <span>Bulletin Board</span>
+        </button>
+        <button
+          className="global-menu-item"
+          onClick={() => handleMenuItemClick('Elevator Booking')}
+        >
+          <CalendarClock size={22} />
+          <span>Book Elevator</span>
         </button>
         <button
           className={`global-menu-item ${activeItem === 'Settings' ? 'active' : ''}`}

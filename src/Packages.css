@@ -78,7 +78,7 @@
   padding: 0 16px 100px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 /* Package cards */
@@ -86,8 +86,8 @@
   position: relative;
   background: #FFFCF7;
   border: none;
-  border-radius: 18px;
-  padding: 18px 16px;
+  border-radius: 14px;
+  padding: 14px 14px;
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02);
 }
@@ -110,29 +110,29 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
-  gap: 12px;
+  margin-bottom: 10px;
+  gap: 10px;
 }
 
 .package-carrier {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .carrier-icon-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   color: white;
   flex-shrink: 0;
 }
 
 .carrier-name {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   color: #1A1A1A;
 }
@@ -140,11 +140,11 @@
 .package-status {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11px;
+  gap: 4px;
+  font-size: 10px;
   font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 20px;
+  padding: 5px 10px;
+  border-radius: 16px;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   white-space: nowrap;
@@ -164,28 +164,28 @@
 .package-details {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .package-detail-item {
   display: flex;
   align-items: baseline;
-  gap: 12px;
+  gap: 10px;
 }
 
 .detail-label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: #8A8075;
-  min-width: 65px;
+  min-width: 60px;
 }
 
 .detail-value {
-  font-size: 13px;
+  font-size: 12px;
   color: #1A1A1A;
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 6px;
 }
 
 .detail-secondary {
