@@ -363,7 +363,7 @@ p {
 .resident-inner-page {
   position: relative;
   min-height: 100vh;
-  background: #FAF9F7;
+  background: #F8F5F0; /* Warmer cream base */
 }
 
 /* Building image - same as Home hero, covers top 44vh */
@@ -383,7 +383,7 @@ p {
   pointer-events: none;
 }
 
-/* Combined overlays - warm amber + gradient fade (exact same as Home) */
+/* Combined overlays - warm amber + gradient fade (warmer tones) */
 .resident-inner-page::after {
   content: "";
   position: absolute;
@@ -395,23 +395,24 @@ p {
   max-height: 420px;
   z-index: 0;
   pointer-events: none;
-  /* Layer 1: Gradient fade (same as hero-gradient-overlay) */
-  /* Layer 2: Warm amber overlay (same as hero-warm-overlay) */
+  /* Layer 1: Gradient fade to warm cream */
+  /* Layer 2: Warm amber overlay - increased warmth */
   background:
     linear-gradient(
       180deg,
       transparent 0%,
-      transparent 55%,
-      rgba(250, 249, 247, 0.15) 65%,
-      rgba(250, 249, 247, 0.4) 75%,
-      rgba(250, 249, 247, 0.7) 85%,
-      rgba(250, 249, 247, 0.9) 93%,
-      #FAF9F7 100%
+      transparent 50%,
+      rgba(248, 245, 240, 0.15) 60%,
+      rgba(248, 245, 240, 0.4) 70%,
+      rgba(248, 245, 240, 0.7) 80%,
+      rgba(248, 245, 240, 0.92) 90%,
+      #F8F5F0 100%
     ),
     linear-gradient(
       180deg,
-      rgba(255, 170, 80, 0.2) 0%,
-      rgba(255, 170, 80, 0.1) 100%
+      rgba(255, 165, 70, 0.28) 0%,
+      rgba(255, 175, 90, 0.18) 50%,
+      rgba(255, 180, 100, 0.08) 100%
     );
 }
 
@@ -508,10 +509,10 @@ p {
   color: rgba(255, 255, 255, 0.8);
 }
 
-/* Page Title - Centered, positioned like "The Paramount" */
+/* Page Title - Centered, moved up for tighter vertical rhythm */
 .inner-page-title-container {
   position: absolute;
-  bottom: 50px;
+  bottom: 65px; /* Moved up ~15px for better balance */
   left: 0;
   right: 0;
   text-align: center;
@@ -521,17 +522,17 @@ p {
 .inner-page-title {
   font-size: 42px;
   font-weight: 400;
-  color: white;
+  color: #1A1A1A; /* Black headlines for inner pages */
   letter-spacing: 2px;
   margin: 0;
-  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+  text-shadow: none; /* No shadow needed for dark text */
   font-family: 'Georgia', 'Times New Roman', serif;
 }
 
-/* Content areas after hero - add proper spacing */
+/* Content areas after hero - tighter spacing for better flow */
 .resident-inner-page main,
 .resident-inner-page .building-content,
 .resident-inner-page .packages-summary,
 .resident-inner-page .community-split-layout {
-  padding-top: 24px;
+  padding-top: 16px; /* Reduced from 24px for tighter vertical rhythm */
 }

@@ -10,12 +10,12 @@
   box-sizing: border-box;
 }
 
-/* Color palette - warm cream whites */
+/* Color palette - warmer cream whites */
 :root {
-  --bg-page: #E8E4DC;
-  --bg-app: #FAF9F7;
+  --bg-page: #E6E2DA;
+  --bg-app: #F8F5F0; /* Warmer cream */
   --bg-card: #FFFFFF;
-  --bg-card-secondary: #F7F5F2;
+  --bg-card-secondary: #F5F2ED; /* Warmer secondary */
   --text-primary: #1A1A1A;
   --text-secondary: #4A4A4A;
   --text-muted: #9CA3AF;
@@ -28,7 +28,7 @@
 .home-page {
   min-height: 100vh;
   width: 100%;
-  background: #F6F3EE;
+  background: #F5F1EA; /* Warmer background */
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   -webkit-font-smoothing: antialiased;
   position: relative;
@@ -42,7 +42,7 @@
     justify-content: center;
     padding: 32px 24px 120px;
     box-sizing: border-box;
-    background: #F6F3EE; /* Warm beige base - ambient-bg sits on top */
+    background: #F5F1EA; /* Warmer beige base */
   }
 }
 
@@ -80,7 +80,7 @@
     opacity: 1;
   }
 
-  /* FADE OVERLAY - clear at top, fades to cream at bottom and sides */
+  /* FADE OVERLAY - clear at top, fades to warm cream at bottom and sides */
   .ambient-bg::before {
     content: "";
     position: absolute;
@@ -91,31 +91,31 @@
 
     /* Multi-layer fade: bottom fade + side vignette + warmth */
     background:
-      /* Bottom fade to cream - starts higher so "Today at The Paramount" is readable */
+      /* Bottom fade to warmer cream */
       linear-gradient(
         to bottom,
         transparent 0%,
         transparent 25%,
-        rgba(246, 243, 238, 0.3) 35%,
-        rgba(246, 243, 238, 0.6) 45%,
-        rgba(246, 243, 238, 0.85) 55%,
-        #F6F3EE 65%
+        rgba(245, 241, 234, 0.3) 35%,
+        rgba(245, 241, 234, 0.6) 45%,
+        rgba(245, 241, 234, 0.85) 55%,
+        #F5F1EA 65%
       ),
       /* Side vignette - soft feathered edges */
       radial-gradient(
         ellipse 85% 80% at 50% 25%,
         transparent 0%,
         transparent 40%,
-        rgba(246, 243, 238, 0.3) 55%,
-        rgba(246, 243, 238, 0.7) 70%,
-        #F6F3EE 85%
+        rgba(245, 241, 234, 0.3) 55%,
+        rgba(245, 241, 234, 0.7) 70%,
+        #F5F1EA 85%
       ),
-      /* Warmth overlay - matches mobile golden hour tones */
+      /* Warmth overlay - enhanced golden hour tones */
       linear-gradient(
         180deg,
-        rgba(255, 170, 80, 0.15) 0%,
-        rgba(255, 170, 80, 0.1) 20%,
-        transparent 40%
+        rgba(255, 165, 70, 0.2) 0%,
+        rgba(255, 175, 90, 0.12) 25%,
+        transparent 45%
       );
   }
 
@@ -275,27 +275,32 @@
   object-position: center;
 }
 
-/* Warm amber overlay - golden hour tones */
+/* Warm amber overlay - enhanced golden hour tones */
 .hero-warm-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(rgba(255, 170, 80, 0.2), rgba(255, 170, 80, 0.1));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 165, 70, 0.28) 0%,
+    rgba(255, 175, 90, 0.2) 50%,
+    rgba(255, 180, 100, 0.12) 100%
+  );
   pointer-events: none;
 }
 
-/* Smooth fade to cream background - 200px gradient zone */
+/* Smooth fade to warm cream background */
 .hero-gradient-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
     transparent 0%,
-    transparent 55%,
-    rgba(250, 249, 247, 0.15) 65%,
-    rgba(250, 249, 247, 0.4) 75%,
-    rgba(250, 249, 247, 0.7) 85%,
-    rgba(250, 249, 247, 0.9) 93%,
-    #FAF9F7 100%
+    transparent 50%,
+    rgba(248, 245, 240, 0.15) 60%,
+    rgba(248, 245, 240, 0.4) 70%,
+    rgba(248, 245, 240, 0.7) 80%,
+    rgba(248, 245, 240, 0.92) 90%,
+    #F8F5F0 100%
   );
   pointer-events: none;
 }
@@ -346,7 +351,7 @@
 /* Building Name - "The" smaller italic, "Paramount" large serif */
 .hero-text-container {
   position: absolute;
-  bottom: 50px;
+  bottom: 65px; /* Moved up ~15px for better balance */
   left: 0;
   right: 0;
   text-align: center;
@@ -385,7 +390,7 @@
 
 .home-page .main-content {
   width: 100%;
-  padding: 24px 16px 32px;
+  padding: 16px 16px 32px; /* Reduced top padding for tighter layout */
   margin: 0;
   margin-left: 0;
   margin-right: 0;
