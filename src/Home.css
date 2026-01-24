@@ -1307,7 +1307,7 @@
   justify-content: center;
 }
 
-/* Desktop: Right side drawer overlay */
+/* Desktop: Left side drawer overlay */
 @media (min-width: 768px) {
   .menu-overlay {
     background: rgba(0, 0, 0, 0.25);
@@ -1317,25 +1317,25 @@
 
   .menu-panel {
     top: 0;
-    left: auto;
-    right: 0;
+    left: 0;
+    right: auto;
     bottom: 0;
     width: 340px;
     max-height: none;
     border-radius: 0;
-    border-top-left-radius: 28px;
-    border-bottom-left-radius: 28px;
+    border-top-right-radius: 28px;
+    border-bottom-right-radius: 28px;
     background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(32px);
     -webkit-backdrop-filter: blur(32px);
-    box-shadow: -8px 0 40px rgba(0, 0, 0, 0.08), -2px 0 8px rgba(0, 0, 0, 0.04);
-    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 8px 0 40px rgba(0, 0, 0, 0.08), 2px 0 8px rgba(0, 0, 0, 0.04);
+    animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  @keyframes slideInRight {
+  @keyframes slideInLeft {
     from {
       opacity: 0;
-      transform: translateX(100%);
+      transform: translateX(-100%);
     }
     to {
       opacity: 1;
