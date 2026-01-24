@@ -1322,14 +1322,16 @@
   }
 
   .menu-panel {
-    position: absolute;
-    top: 16px;
-    left: 16px;
-    right: auto;
-    bottom: auto;
+    position: fixed !important;
+    top: 16px !important;
+    left: 16px !important;
+    right: auto !important;
+    bottom: auto !important;
     width: 280px;
     max-height: calc(100vh - 32px);
     border-radius: 20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
     background: rgba(248, 248, 250, 0.95);
     backdrop-filter: blur(40px);
     -webkit-backdrop-filter: blur(40px);
