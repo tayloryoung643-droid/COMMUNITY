@@ -145,7 +145,7 @@
 .posts-feed {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* Empty Feed */
@@ -176,14 +176,15 @@
   margin: 0;
 }
 
-/* Post Card - Matches Home event-card */
+/* Post Card - Compact to match Home event-card */
 .post-card {
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
   background: #FFFCF7;
   border: none;
   border-radius: 16px;
-  padding: 16px;
+  padding: 14px;
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(120, 100, 70, 0.06), 0 4px 16px rgba(120, 100, 70, 0.03);
 }
@@ -193,38 +194,48 @@
   box-shadow: 0 4px 12px rgba(120, 100, 70, 0.08), 0 8px 24px rgba(120, 100, 70, 0.05);
 }
 
-/* Post Header */
-.post-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 10px;
-  gap: 14px;
-}
-
+/* Post Avatar - Left side icon like Home tiles */
 .post-author {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+  display: contents;
 }
 
 .author-avatar {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: white;
   flex-shrink: 0;
 }
 
-.author-info {
+/* Post Content Area */
+.post-content-wrapper {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+/* Post Header - inline with content */
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.author-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
 }
 
 .author-name {
@@ -234,68 +245,57 @@
 }
 
 .post-meta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  font-size: 13px;
   color: #8A8075;
+  white-space: nowrap;
 }
 
 .meta-dot {
-  opacity: 0.5;
+  display: none;
 }
 
-/* Post Type Badge */
+/* Post Type Badge - smaller, inline */
 .post-type-badge {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 16px;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  display: none; /* Hidden for compact view */
 }
 
-/* Post Content */
+/* Post Content - single line subtitle style */
 .post-content {
-  margin-bottom: 12px;
+  margin: 0;
 }
 
 .post-content p {
-  font-size: 14px;
-  color: #1A1A1A;
-  line-height: 1.5;
+  font-size: 13px;
+  color: #8A8075;
+  line-height: 1.4;
   margin: 0;
   white-space: pre-wrap;
-  /* Limit to 2 lines for density - matches Home rhythm */
+  /* Single line for compact density */
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* Post Actions */
+/* Post Actions - compact inline */
 .post-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  gap: 2px;
+  margin-top: 4px;
 }
 
 .action-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  font-size: 13px;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
   font-weight: 500;
   color: #8A8075;
   background: transparent;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -846,16 +846,12 @@
   }
 
   .post-card {
-    padding: 16px;
+    padding: 14px;
   }
 
-  .post-header {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .post-type-badge {
-    align-self: flex-start;
+  .author-avatar {
+    width: 36px;
+    height: 36px;
   }
 
   .post-type-selector {

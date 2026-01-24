@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { ChevronLeft, Check, HelpCircle, X, CalendarPlus, Send, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
-import HamburgerMenu from './HamburgerMenu'
 import './EventDetail.css'
 
 function EventDetail({ event, onBack, onNavigate }) {
@@ -102,9 +101,6 @@ function EventDetail({ event, onBack, onNavigate }) {
         <button className="inner-page-back-btn" onClick={onBack}>
           <ChevronLeft size={24} />
         </button>
-
-        {/* Hamburger Menu */}
-        <HamburgerMenu onNavigate={onNavigate} currentScreen="event-detail" />
 
         {/* Weather Widget - matches Calendar/Home exactly */}
         <div className="inner-page-weather">
