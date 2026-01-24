@@ -191,7 +191,52 @@ function App() {
   // Shared function to create building and link manager
   const createBuildingAndLinkManager = async (formData) => {
     try {
-      // 1. Insert the building into public.buildings
+      // 1. FIRST: Create the auth account (or sign in if already exists)
+      console.log('[Onboarding] Creating auth account for:', formData.manager.email)
+
+      let authUser = null
+
+      // Try to sign up first
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: formData.manager.email,
+        password: formData.manager.password,
+      })
+
+      if (signUpError) {
+        // Check if user already exists - try signing in instead
+        if (signUpError.message.includes('already registered') ||
+            signUpError.message.includes('already exists') ||
+            signUpError.message.includes('User already registered')) {
+          console.log('[Onboarding] User exists, attempting sign in...')
+
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: formData.manager.email,
+            password: formData.manager.password,
+          })
+
+          if (signInError) {
+            console.error('[Onboarding] Sign in failed:', signInError)
+            return { success: false, error: `Account exists but sign in failed: ${signInError.message}` }
+          }
+
+          authUser = signInData.user
+          console.log('[Onboarding] Signed in existing user:', authUser.id)
+        } else {
+          // Some other signup error
+          console.error('[Onboarding] Sign up failed:', signUpError)
+          return { success: false, error: `Failed to create account: ${signUpError.message}` }
+        }
+      } else {
+        authUser = signUpData.user
+        console.log('[Onboarding] Created new auth user:', authUser.id)
+      }
+
+      if (!authUser) {
+        return { success: false, error: 'Failed to authenticate user' }
+      }
+
+      // 2. Insert the building into public.buildings
+      console.log('[Onboarding] Creating building...')
       const { data: newBuilding, error: buildingError } = await supabase
         .from('buildings')
         .insert({
@@ -200,7 +245,6 @@ function App() {
           total_floors: formData.building.floors,
           total_units: formData.building.units,
           access_code: formData.building.code,
-          // logo_url would need to be uploaded to storage first if we want to support it
         })
         .select()
         .single()
@@ -212,25 +256,55 @@ function App() {
 
       console.log('[Onboarding] Building created:', newBuilding)
 
-      // 2. Update the current user's record with building_id and role='manager'
-      const { error: userError } = await supabase
-        .from('users')
-        .update({
-          building_id: newBuilding.id,
-          role: 'manager',
-          full_name: formData.manager?.name || null,
-        })
-        .eq('id', user.id)
+      // 3. Update the user's record with building_id and role='manager'
+      // Note: A trigger may auto-create the user row on signup, so we use upsert logic
+      console.log('[Onboarding] Linking user to building...')
 
-      if (userError) {
-        console.error('[Onboarding] Failed to update user:', userError)
-        // Optionally: rollback the building creation here
-        return { success: false, error: `Failed to link manager to building: ${userError.message}` }
+      // First try to update existing user record
+      const { data: existingUser, error: fetchError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', authUser.id)
+        .single()
+
+      if (existingUser) {
+        // User row exists, update it
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({
+            building_id: newBuilding.id,
+            role: 'manager',
+            full_name: formData.manager?.name || null,
+            phone: formData.manager?.phone || null,
+          })
+          .eq('id', authUser.id)
+
+        if (updateError) {
+          console.error('[Onboarding] Failed to update user:', updateError)
+          return { success: false, error: `Failed to link manager to building: ${updateError.message}` }
+        }
+      } else {
+        // User row doesn't exist, insert it
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert({
+            id: authUser.id,
+            email: formData.manager.email,
+            building_id: newBuilding.id,
+            role: 'manager',
+            full_name: formData.manager?.name || null,
+            phone: formData.manager?.phone || null,
+          })
+
+        if (insertError) {
+          console.error('[Onboarding] Failed to insert user:', insertError)
+          return { success: false, error: `Failed to create manager profile: ${insertError.message}` }
+        }
       }
 
-      console.log('[Onboarding] User updated with building_id:', newBuilding.id)
+      console.log('[Onboarding] User linked to building:', newBuilding.id)
 
-      return { success: true, building: newBuilding }
+      return { success: true, building: newBuilding, user: authUser }
     } catch (err) {
       console.error('[Onboarding] Unexpected error:', err)
       return { success: false, error: err.message }
