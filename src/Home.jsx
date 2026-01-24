@@ -333,10 +333,9 @@ function Home({ buildingCode, onNavigate }) {
         </div>
       )}
 
-      {/* Dropdown Navigation Menu */}
-      {menuOpen && (
-        <div className="menu-overlay" onClick={() => setMenuOpen(false)}>
-          <div className="menu-panel" onClick={e => e.stopPropagation()}>
+      {/* Dropdown Navigation Menu - Always mounted, visibility controlled by class */}
+      <div className={`menu-overlay ${menuOpen ? 'menu-open' : ''}`} onClick={() => setMenuOpen(false)}>
+        <div className={`menu-panel ${menuOpen ? 'menu-open' : ''}`} onClick={e => e.stopPropagation()}>
             <div className="menu-header">
               <span className="menu-title">The Paramount</span>
               <button
@@ -397,7 +396,6 @@ function Home({ buildingCode, onNavigate }) {
             </nav>
           </div>
         </div>
-      )}
     </div>
   )
 }

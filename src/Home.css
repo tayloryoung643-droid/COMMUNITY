@@ -1165,49 +1165,53 @@
 .menu-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0);
   z-index: 10000;
-  animation: fadeIn 0.2s ease;
+  pointer-events: none;
+  opacity: 0;
+  transition: background 0.25s ease, opacity 0.25s ease;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.menu-overlay.menu-open {
+  background: rgba(0, 0, 0, 0.15);
+  pointer-events: auto;
+  opacity: 1;
 }
 
-/* Base panel - no positioning here, let media queries handle it */
+/* Base panel - always positioned on left, hidden off-canvas */
 .menu-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: auto;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
+  pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
 }
 
-/* Mobile: Slide down from top, full width */
+.menu-panel.menu-open {
+  pointer-events: auto;
+}
+
+/* Mobile: Slide down from top */
 @media (max-width: 767px) {
   .menu-panel {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: auto;
+    width: 100%;
+    max-height: 85vh;
     border-radius: 0;
     border-bottom-left-radius: 24px;
     border-bottom-right-radius: 24px;
-    max-height: 85vh;
-    animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
     transform: translateY(-100%);
+    opacity: 0;
   }
-  to {
-    opacity: 1;
+
+  .menu-panel.menu-open {
     transform: translateY(0);
+    opacity: 1;
   }
 }
 
@@ -1324,22 +1328,17 @@
 
 /* Desktop: Floating dropdown panel in top-left */
 @media (min-width: 768px) {
-  .menu-overlay {
+  .menu-overlay.menu-open {
     background: rgba(0, 0, 0, 0.1);
-    backdrop-filter: none;
   }
 
   .menu-panel {
-    position: fixed !important;
-    top: 16px !important;
-    left: 16px !important;
-    right: auto !important;
-    bottom: auto !important;
+    position: fixed;
+    top: 16px;
+    left: 16px;
     width: 280px;
     max-height: calc(100vh - 32px);
     border-radius: 20px;
-    border-bottom-left-radius: 20px;
-    border-bottom-right-radius: 20px;
     background: rgba(248, 248, 250, 0.95);
     backdrop-filter: blur(40px);
     -webkit-backdrop-filter: blur(40px);
@@ -1347,19 +1346,15 @@
       0 4px 24px rgba(0, 0, 0, 0.08),
       0 8px 48px rgba(0, 0, 0, 0.06),
       0 0 0 1px rgba(0, 0, 0, 0.04);
-    animation: dropdownIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    overflow-y: auto;
+    /* Closed state: off-canvas to the left */
+    transform: translateX(-100%) translateX(-32px);
+    opacity: 0;
   }
 
-  @keyframes dropdownIn {
-    from {
-      opacity: 0;
-      transform: translateY(-12px) scale(0.96);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
+  .menu-panel.menu-open {
+    /* Open state: slide in to position */
+    transform: translateX(0);
+    opacity: 1;
   }
 
   .menu-header {
