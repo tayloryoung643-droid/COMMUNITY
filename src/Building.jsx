@@ -51,7 +51,7 @@ function Building({ onNavigate }) {
     <div className="building-container resident-inner-page">
       {/* Hero Section with Weather and Title */}
       <div className="inner-page-hero">
-        <HamburgerMenu onNavigate={onNavigate} />
+        <HamburgerMenu onNavigate={onNavigate} currentScreen="building" />
         <div className="inner-page-weather">
           <div className="weather-datetime">{formatDay(currentTime)} | {formatTime(currentTime)}</div>
           <div className="weather-temp-row">

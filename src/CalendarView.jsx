@@ -185,7 +185,7 @@ function CalendarView({ onNavigate }) {
       {/* Hero Section with Weather and Title */}
       <div className="inner-page-hero">
         {/* Hamburger Menu */}
-        <HamburgerMenu onNavigate={onNavigate} />
+        <HamburgerMenu onNavigate={onNavigate} currentScreen="calendar" />
 
         {/* Weather Widget - matches Home exactly */}
         <div className="inner-page-weather">

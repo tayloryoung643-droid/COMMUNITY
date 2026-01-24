@@ -104,7 +104,7 @@ function EventDetail({ event, onBack, onNavigate }) {
         </button>
 
         {/* Hamburger Menu */}
-        <HamburgerMenu onNavigate={onNavigate} />
+        <HamburgerMenu onNavigate={onNavigate} currentScreen="event-detail" />
 
         {/* Weather Widget - matches Calendar/Home exactly */}
         <div className="inner-page-weather">

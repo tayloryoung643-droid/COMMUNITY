@@ -366,7 +366,7 @@ function CommunityFeed({ onNavigate }) {
     return (
       <div className="community-feed-container resident-inner-page">
         <div className="inner-page-hero">
-          <HamburgerMenu onNavigate={onNavigate} />
+          <HamburgerMenu onNavigate={onNavigate} currentScreen="community" />
           <div className="inner-page-weather">
             <div className="weather-datetime">{formatDay(currentTime)} | {formatTime(currentTime)}</div>
             <div className="weather-temp-row">
@@ -391,7 +391,7 @@ function CommunityFeed({ onNavigate }) {
     return (
       <div className="community-feed-container resident-inner-page">
         <div className="inner-page-hero">
-          <HamburgerMenu onNavigate={onNavigate} />
+          <HamburgerMenu onNavigate={onNavigate} currentScreen="community" />
           <div className="inner-page-weather">
             <div className="weather-datetime">{formatDay(currentTime)} | {formatTime(currentTime)}</div>
             <div className="weather-temp-row">
@@ -416,7 +416,7 @@ function CommunityFeed({ onNavigate }) {
       {/* Hero Section with Weather and Title */}
       <div className="inner-page-hero">
         {/* Hamburger Menu */}
-        <HamburgerMenu onNavigate={onNavigate} />
+        <HamburgerMenu onNavigate={onNavigate} currentScreen="community" />
 
         {/* Weather Widget - matches Home exactly */}
         <div className="inner-page-weather">

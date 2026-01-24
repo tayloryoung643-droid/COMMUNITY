@@ -117,7 +117,7 @@ function Home({ buildingCode, onNavigate }) {
             <div className="hero-gradient-overlay"></div>
 
             {/* Hamburger Menu & Notification Bell */}
-            <HamburgerMenu onNavigate={onNavigate} unreadMessages={unreadMessages} />
+            <HamburgerMenu onNavigate={onNavigate} unreadMessages={unreadMessages} currentScreen="home" />
 
             {/* Weather Widget - Below top bar */}
             <div className="weather-widget">

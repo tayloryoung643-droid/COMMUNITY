@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Menu, X, Bell, Home as HomeIcon, MessageSquare, Mail, Calendar, Package, Building2, Settings, LogOut, Wrench, Users, Wine } from 'lucide-react'
+import { Menu, X, Bell, Home as HomeIcon, MessageSquare, Calendar, Package, Building2, Settings, LogOut, ChevronRight, Wrench, Users, Wine } from 'lucide-react'
 import './HamburgerMenu.css'
 
-function HamburgerMenu({ onNavigate, unreadMessages = 0 }) {
+function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
 
@@ -69,6 +69,21 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0 }) {
     }
   }
 
+  // Map screen names to menu item identifiers
+  const getActiveItem = () => {
+    const screenMap = {
+      'home': 'Home',
+      'community': 'Community',
+      'calendar': 'Calendar',
+      'packages': 'Packages',
+      'building': 'Building',
+      'settings': 'Settings'
+    }
+    return screenMap[currentScreen] || ''
+  }
+
+  const activeItem = getActiveItem()
+
   // Notifications Panel - rendered via portal to document.body
   const notificationsPanel = notificationsOpen && createPortal(
     <div className="global-notifications-overlay" onClick={() => setNotificationsOpen(false)}>
@@ -122,70 +137,79 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0 }) {
     document.body
   )
 
-  // Menu Overlay - rendered via portal to document.body (separate from panel for proper z-index)
+  // Menu Overlay - rendered via portal to document.body
   const menuOverlay = menuOpen && createPortal(
-    <div className="global-menu-overlay menu-open" onClick={() => setMenuOpen(false)} />,
+    <div className="global-menu-overlay" onClick={() => setMenuOpen(false)} />,
     document.body
   )
 
-  // Menu Panel - rendered via portal to document.body (sibling to overlay, not child)
+  // Menu Panel - rendered via portal to document.body
   const menuPanel = menuOpen && createPortal(
-    <div className="global-menu-panel menu-open" onClick={e => e.stopPropagation()}>
-      <div className="global-menu-header">
-        <span className="global-menu-title">The Paramount</span>
-        <button
-          className="global-menu-close-btn"
-          onClick={() => setMenuOpen(false)}
-          aria-label="Close menu"
-        >
-          <X size={20} />
-        </button>
-      </div>
-
-      {/* User Avatar */}
-      <div className="global-menu-user">
-        <div className="global-menu-avatar">
+    <div className="global-menu-panel" onClick={e => e.stopPropagation()}>
+      {/* Profile Header Row */}
+      <button className="global-menu-profile" onClick={() => handleMenuItemClick('Settings')}>
+        <div className="global-menu-profile-avatar">
           <img
             src="/images/profile-taylor.jpg"
-            alt="Taylor"
+            alt="Profile"
           />
         </div>
-      </div>
+        <div className="global-menu-profile-info">
+          <span className="global-menu-profile-building">The Paramount</span>
+          <span className="global-menu-profile-user">Jonathan Sterling · Apt. 406</span>
+        </div>
+        <ChevronRight size={20} className="global-menu-profile-chevron" />
+      </button>
 
+      {/* Navigation Items */}
       <nav className="global-menu-nav">
-        <button className="global-menu-item" onClick={() => handleMenuItemClick('Home')}>
-          <HomeIcon size={20} />
+        <button
+          className={`global-menu-item ${activeItem === 'Home' ? 'active' : ''}`}
+          onClick={() => handleMenuItemClick('Home')}
+        >
+          <HomeIcon size={22} />
           <span>Home</span>
         </button>
-        <button className="global-menu-item" onClick={() => handleMenuItemClick('Community')}>
-          <MessageSquare size={20} />
+        <button
+          className={`global-menu-item ${activeItem === 'Community' ? 'active' : ''}`}
+          onClick={() => handleMenuItemClick('Community')}
+        >
+          <MessageSquare size={22} />
           <span>Community</span>
         </button>
-        <button className="global-menu-item" onClick={() => handleMenuItemClick('Messages')}>
-          <Mail size={20} />
-          <span>Messages</span>
-          {unreadMessages > 0 && (
-            <span className="global-menu-badge">{unreadMessages}</span>
-          )}
-        </button>
-        <button className="global-menu-item" onClick={() => handleMenuItemClick('Calendar')}>
-          <Calendar size={20} />
+        <button
+          className={`global-menu-item ${activeItem === 'Calendar' ? 'active' : ''}`}
+          onClick={() => handleMenuItemClick('Calendar')}
+        >
+          <Calendar size={22} />
           <span>Calendar</span>
         </button>
-        <button className="global-menu-item" onClick={() => handleMenuItemClick('Packages')}>
-          <Package size={20} />
+        <button
+          className={`global-menu-item ${activeItem === 'Packages' ? 'active' : ''}`}
+          onClick={() => handleMenuItemClick('Packages')}
+        >
+          <Package size={22} />
           <span>Packages</span>
         </button>
-        <button className="global-menu-item" onClick={() => handleMenuItemClick('Building')}>
-          <Building2 size={20} />
+        <button
+          className={`global-menu-item ${activeItem === 'Building' ? 'active' : ''}`}
+          onClick={() => handleMenuItemClick('Building')}
+        >
+          <Building2 size={22} />
           <span>Building</span>
         </button>
-        <button className="global-menu-item" onClick={() => handleMenuItemClick('Settings')}>
-          <Settings size={20} />
+        <button
+          className={`global-menu-item ${activeItem === 'Settings' ? 'active' : ''}`}
+          onClick={() => handleMenuItemClick('Settings')}
+        >
+          <Settings size={22} />
           <span>Settings</span>
         </button>
-        <button className="global-menu-item global-menu-item-logout" onClick={() => handleMenuItemClick('Logout')}>
-          <LogOut size={20} />
+        <button
+          className="global-menu-item global-menu-item-logout"
+          onClick={() => handleMenuItemClick('Logout')}
+        >
+          <LogOut size={22} />
           <span>Log out</span>
         </button>
       </nav>

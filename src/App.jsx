@@ -177,6 +177,12 @@ function App() {
   }
 
   const handleNavigation = (featureTitle, eventData = null) => {
+    // Handle logout
+    if (featureTitle === 'Logout') {
+      handleLogout()
+      return
+    }
+
     // Handle event detail navigation
     if (featureTitle === 'EventDetail' && eventData) {
       setPreviousScreen(currentScreen)
