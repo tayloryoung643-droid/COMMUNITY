@@ -407,24 +407,33 @@
 }
 
 .calendar-day {
-  aspect-ratio: 1;
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%; /* Creates square aspect ratio */
+  border-radius: 10px;
+  background: #F5F2EC;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.calendar-day-inner {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding: 6px 4px;
-  border-radius: 10px;
-  background: transparent;
-  transition: all 0.2s ease;
-  min-height: 48px;
+  justify-content: center;
+  padding: 4px;
 }
 
-.calendar-day:not(.empty):hover {
-  background: #F3EEE5;
+.calendar-day:hover:not(.empty) {
+  background: #E8E3D9;
+  transform: scale(1.02);
 }
 
 .calendar-day.empty {
   background: transparent;
+  cursor: default;
 }
 
 .calendar-day.today {
@@ -433,24 +442,30 @@
 
 .calendar-day.today .day-number {
   color: #FFFFFF;
+  font-weight: 600;
 }
 
 .calendar-day.has-events:not(.today) {
-  background: #F3EEE5;
+  background: #E8E0D4;
+}
+
+.calendar-day.has-events:not(.today):hover {
+  background: #DDD5C8;
 }
 
 .day-number {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: #1A1A1A;
-  margin-bottom: 4px;
+  line-height: 1;
 }
 
 .day-events {
   display: flex;
-  gap: 3px;
+  gap: 2px;
   flex-wrap: wrap;
   justify-content: center;
+  margin-top: 2px;
 }
 
 .day-event-dot {
@@ -460,7 +475,7 @@
 }
 
 .more-events {
-  font-size: 9px;
+  font-size: 8px;
   color: #8A8075;
   font-weight: 500;
 }
@@ -515,15 +530,43 @@
   color: #1A1A1A;
 }
 
+.month-event-item.maintenance {
+  background: rgba(245, 158, 11, 0.06);
+  margin: 0 -12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.month-event-action {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #B45309;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 2px;
+}
+
+/* No events message */
+.no-events-message {
+  padding: 24px 0;
+  text-align: center;
+  color: #8A8075;
+  font-size: 14px;
+}
+
 /* Responsive Calendar Grid */
 @media (max-width: 480px) {
   .calendar-grid-container {
     padding: 16px;
   }
 
-  .calendar-day {
-    min-height: 40px;
-    padding: 4px 2px;
+  .calendar-grid {
+    gap: 3px;
+  }
+
+  .calendar-day-inner {
+    padding: 2px;
   }
 
   .day-number {
@@ -531,11 +574,20 @@
   }
 
   .day-event-dot {
-    width: 5px;
-    height: 5px;
+    width: 4px;
+    height: 4px;
   }
 
   .day-header {
     font-size: 10px;
+    padding: 6px 0;
+  }
+
+  .day-events {
+    margin-top: 1px;
+  }
+
+  .more-events {
+    font-size: 7px;
   }
 }
