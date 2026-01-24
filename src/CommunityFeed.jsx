@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { ArrowLeft, MessageSquare, HelpCircle, Flag, Heart, MessageCircle, Share2, MoreHorizontal, Send, X, Sparkles, Users, Hand, ChevronDown, ChevronUp, Search, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
+import { MessageSquare, HelpCircle, Flag, Heart, MessageCircle, Share2, MoreHorizontal, Send, X, Sparkles, Users, Hand, ChevronDown, ChevronUp, Search, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getPosts, createPost, likePost, unlikePost } from './services/communityPostService'
+import HamburgerMenu from './HamburgerMenu'
 import './CommunityFeed.css'
 
 // Demo posts data - used when in demo mode
@@ -75,7 +76,7 @@ const DEMO_NEIGHBORS = [
   { id: 13, name: "Sophie Taylor", unit: "1004", floor: 10, color: "blue", waved: false }
 ]
 
-function CommunityFeed({ onBack }) {
+function CommunityFeed({ onNavigate }) {
   const { userProfile, isDemoMode } = useAuth()
   const isInDemoMode = isDemoMode || userProfile?.is_demo === true
 
@@ -365,9 +366,7 @@ function CommunityFeed({ onBack }) {
     return (
       <div className="community-feed-container resident-inner-page">
         <div className="inner-page-hero">
-          <button className="inner-page-back-btn" onClick={onBack}>
-            <ArrowLeft size={20} />
-          </button>
+          <HamburgerMenu onNavigate={onNavigate} />
           <div className="inner-page-weather">
             <div className="weather-datetime">{formatDay(currentTime)} | {formatTime(currentTime)}</div>
             <div className="weather-temp-row">
@@ -392,9 +391,7 @@ function CommunityFeed({ onBack }) {
     return (
       <div className="community-feed-container resident-inner-page">
         <div className="inner-page-hero">
-          <button className="inner-page-back-btn" onClick={onBack}>
-            <ArrowLeft size={20} />
-          </button>
+          <HamburgerMenu onNavigate={onNavigate} />
           <div className="inner-page-weather">
             <div className="weather-datetime">{formatDay(currentTime)} | {formatTime(currentTime)}</div>
             <div className="weather-temp-row">
@@ -418,10 +415,8 @@ function CommunityFeed({ onBack }) {
     <div className="community-feed-container resident-inner-page">
       {/* Hero Section with Weather and Title */}
       <div className="inner-page-hero">
-        {/* Back Button */}
-        <button className="inner-page-back-btn" onClick={onBack}>
-          <ArrowLeft size={20} />
-        </button>
+        {/* Hamburger Menu */}
+        <HamburgerMenu onNavigate={onNavigate} />
 
         {/* Weather Widget - matches Home exactly */}
         <div className="inner-page-weather">

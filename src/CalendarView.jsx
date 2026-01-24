@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Calendar, ChevronRight, ChevronLeft, Wrench, Wine, Users, Megaphone, Bell, Clock, List, Grid3X3, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
+import { Calendar, ChevronRight, ChevronLeft, Wrench, Wine, Users, Megaphone, Bell, Clock, List, Grid3X3, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
+import HamburgerMenu from './HamburgerMenu'
 import './CalendarView.css'
 
-function CalendarView({ onBack }) {
+function CalendarView({ onNavigate }) {
   const [activeFilter, setActiveFilter] = useState('all')
   const [viewMode, setViewMode] = useState('list') // 'list' or 'calendar'
 
@@ -235,10 +236,8 @@ function CalendarView({ onBack }) {
     <div className="calendar-view-container resident-inner-page">
       {/* Hero Section with Weather and Title */}
       <div className="inner-page-hero">
-        {/* Back Button */}
-        <button className="inner-page-back-btn" onClick={onBack}>
-          <ArrowLeft size={20} />
-        </button>
+        {/* Hamburger Menu */}
+        <HamburgerMenu onNavigate={onNavigate} />
 
         {/* Weather Widget - matches Home exactly */}
         <div className="inner-page-weather">

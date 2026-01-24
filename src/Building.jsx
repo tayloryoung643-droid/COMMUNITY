@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Calendar, Wrench, ClipboardList, HelpCircle, FileText, User, Settings, Phone, ChevronRight, Home as HomeIcon, MessageSquare, Building2, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
+import { Calendar, Wrench, ClipboardList, HelpCircle, FileText, User, Settings, Phone, ChevronRight, Home as HomeIcon, MessageSquare, Building2, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
+import HamburgerMenu from './HamburgerMenu'
 import './Building.css'
 
-function Building({ onBack, onNavigate }) {
+function Building({ onNavigate }) {
   // Weather and time state - matches Home exactly
   const [currentTime, setCurrentTime] = useState(new Date())
   const weatherData = {
@@ -50,9 +51,7 @@ function Building({ onBack, onNavigate }) {
     <div className="building-container resident-inner-page">
       {/* Hero Section with Weather and Title */}
       <div className="inner-page-hero">
-        <button className="inner-page-back-btn" onClick={onBack}>
-          <ArrowLeft size={20} />
-        </button>
+        <HamburgerMenu onNavigate={onNavigate} />
         <div className="inner-page-weather">
           <div className="weather-datetime">{formatDay(currentTime)} | {formatTime(currentTime)}</div>
           <div className="weather-temp-row">

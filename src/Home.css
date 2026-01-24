@@ -824,6 +824,11 @@
 }
 
 .notification-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding-top: env(safe-area-inset-top, 0);
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -837,7 +842,6 @@
   color: white;
   cursor: pointer;
   transition: all 0.2s ease;
-  position: relative;
 }
 
 .notification-btn:hover {
@@ -1139,13 +1143,10 @@
     border-radius: 0 0 8px 8px;
   }
 
-  /* Desktop top bar adjustments */
-  .hero-top-bar {
-    padding: 20px 24px;
-  }
-
-  .hamburger-btn,
+  /* Desktop notification button */
   .notification-btn {
+    top: 20px;
+    right: 24px;
     width: 48px;
     height: 48px;
     border-radius: 14px;

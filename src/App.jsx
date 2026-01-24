@@ -297,7 +297,7 @@ function App() {
   if (currentScreen === 'community') {
     return (
       <MobileShell bottomNav={bottomNav}>
-        <CommunityFeed onBack={handleBack} posts={posts} onAddPost={handleAddPost} />
+        <CommunityFeed onNavigate={handleNavigation} posts={posts} onAddPost={handleAddPost} />
       </MobileShell>
     )
   }
@@ -329,7 +329,7 @@ function App() {
   if (currentScreen === 'calendar') {
     return (
       <MobileShell bottomNav={bottomNav}>
-        <CalendarView onBack={handleBack} onNavigate={handleNavigation} />
+        <CalendarView onNavigate={handleNavigation} />
       </MobileShell>
     )
   }
@@ -337,7 +337,7 @@ function App() {
   if (currentScreen === 'building') {
     return (
       <MobileShell bottomNav={bottomNav}>
-        <Building onBack={handleBack} onNavigate={handleNavigation} />
+        <Building onNavigate={handleNavigation} />
       </MobileShell>
     )
   }

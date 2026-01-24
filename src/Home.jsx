@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Package, Calendar, Users, ChevronRight, MessageSquare, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon, Home as HomeIcon, Wine, Building2, Wrench, Film, ShoppingBag, Music, Coffee, Dumbbell, TreeDeciduous, PartyPopper, Bell, Sparkles, Heart, Palette, BookOpen, Mic, Menu, Settings, LogOut, Mail } from 'lucide-react'
+import { Package, Calendar, Users, ChevronRight, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon, Wine, Wrench, Film, ShoppingBag, Music, Coffee, Dumbbell, TreeDeciduous, PartyPopper, Bell, Sparkles, Heart, Palette, BookOpen, Mic } from 'lucide-react'
+import HamburgerMenu from './HamburgerMenu'
 import './Home.css'
 
 function Home({ buildingCode, onNavigate }) {
@@ -15,8 +16,6 @@ function Home({ buildingCode, onNavigate }) {
   })
   const [showContactSuccess, setShowContactSuccess] = useState(false)
 
-  // Hamburger menu state
-  const [menuOpen, setMenuOpen] = useState(false)
   const unreadMessages = 2 // Simulated unread count
 
   const subjectOptions = [
@@ -148,22 +147,16 @@ function Home({ buildingCode, onNavigate }) {
             <div className="hero-warm-overlay"></div>
             <div className="hero-gradient-overlay"></div>
 
-            {/* Top Bar - Hamburger Menu & Notification Bell */}
-            <div className="hero-top-bar">
-              <button
-                className="hamburger-btn"
-                onClick={() => setMenuOpen(true)}
-                aria-label="Open menu"
-              >
-                <Menu size={24} />
-              </button>
-              <button className="notification-btn" aria-label="Notifications">
-                <Bell size={22} />
-                {unreadMessages > 0 && (
-                  <span className="notification-badge">{unreadMessages}</span>
-                )}
-              </button>
-            </div>
+            {/* Hamburger Menu - Absolute positioned top-left */}
+            <HamburgerMenu onNavigate={onNavigate} unreadMessages={unreadMessages} />
+
+            {/* Notification Bell - Absolute positioned top-right */}
+            <button className="notification-btn" aria-label="Notifications">
+              <Bell size={22} />
+              {unreadMessages > 0 && (
+                <span className="notification-badge">{unreadMessages}</span>
+              )}
+            </button>
 
             {/* Weather Widget - Below top bar */}
             <div className="weather-widget">
@@ -314,69 +307,6 @@ function Home({ buildingCode, onNavigate }) {
         </div>
       )}
 
-      {/* Dropdown Navigation Menu - Always mounted, visibility controlled by class */}
-      <div className={`menu-overlay ${menuOpen ? 'menu-open' : ''}`} onClick={() => setMenuOpen(false)}>
-        <div className={`menu-panel ${menuOpen ? 'menu-open' : ''}`} onClick={e => e.stopPropagation()}>
-            <div className="menu-header">
-              <span className="menu-title">The Paramount</span>
-              <button
-                className="menu-close-btn"
-                onClick={() => setMenuOpen(false)}
-                aria-label="Close menu"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* User Avatar */}
-            <div className="menu-user">
-              <div className="menu-avatar">
-                <img
-                  src="/images/profile-taylor.jpg"
-                  alt="Taylor"
-                />
-              </div>
-            </div>
-
-            <nav className="menu-nav">
-              <button className="menu-item" onClick={() => { handleFeatureClick('Home'); setMenuOpen(false); }}>
-                <HomeIcon size={20} />
-                <span>Home</span>
-              </button>
-              <button className="menu-item" onClick={() => { handleFeatureClick('Community'); setMenuOpen(false); }}>
-                <MessageSquare size={20} />
-                <span>Community</span>
-              </button>
-              <button className="menu-item" onClick={() => { handleFeatureClick('Messages'); setMenuOpen(false); }}>
-                <Mail size={20} />
-                <span>Messages</span>
-                {unreadMessages > 0 && (
-                  <span className="menu-badge">{unreadMessages}</span>
-                )}
-              </button>
-              <button className="menu-item" onClick={() => { handleFeatureClick('Calendar'); setMenuOpen(false); }}>
-                <Calendar size={20} />
-                <span>Calendar</span>
-              </button>
-              <button className="menu-item" onClick={() => { handleFeatureClick('Packages'); setMenuOpen(false); }}>
-                <Package size={20} />
-                <span>Packages</span>
-              </button>
-              <button className="menu-item" onClick={() => { handleFeatureClick('Building'); setMenuOpen(false); }}>
-                <Building2 size={20} />
-                <span>Building</span>
-              </button>
-              <button className="menu-item" onClick={() => { handleFeatureClick('Settings'); setMenuOpen(false); }}>
-                <Settings size={20} />
-                <span>Settings</span>
-              </button>
-              <button className="menu-item menu-item-logout" onClick={() => { handleFeatureClick('Logout'); setMenuOpen(false); }}>
-                <LogOut size={20} />
-                <span>Log out</span>
-              </button>
-            </nav>
-          </div>
-        </div>
     </div>
   )
 }
