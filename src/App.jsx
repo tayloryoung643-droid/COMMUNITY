@@ -18,6 +18,7 @@ import Building from './Building'
 import BottomNav from './BottomNav'
 import MobileShell from './MobileShell'
 import EventDetail from './EventDetail'
+import PostDetail from './PostDetail'
 import ManagerOnboardingStep1 from './ManagerOnboardingStep1'
 import ManagerOnboardingStep2 from './ManagerOnboardingStep2'
 import ManagerOnboardingStep3 from './ManagerOnboardingStep3'
@@ -30,6 +31,7 @@ function App() {
   const [currentScreen, setCurrentScreen] = useState('login')
   const [authError, setAuthError] = useState('')
   const [selectedEvent, setSelectedEvent] = useState(null)
+  const [selectedPost, setSelectedPost] = useState(null)
   const [previousScreen, setPreviousScreen] = useState('home')
 
   // Community posts state - seed with some example posts
@@ -191,6 +193,14 @@ function App() {
       return
     }
 
+    // Handle post detail navigation
+    if (featureTitle === 'PostDetail' && eventData) {
+      setPreviousScreen(currentScreen)
+      setSelectedPost(eventData)
+      setCurrentScreen('post-detail')
+      return
+    }
+
     // When someone clicks a feature card, navigate to that screen
     if (featureTitle === 'Announcements') {
       setCurrentScreen('announcements')
@@ -223,6 +233,11 @@ function App() {
 
   const handleEventDetailBack = () => {
     setSelectedEvent(null)
+    setCurrentScreen(previousScreen)
+  }
+
+  const handlePostDetailBack = () => {
+    setSelectedPost(null)
     setCurrentScreen(previousScreen)
   }
 
@@ -260,7 +275,7 @@ function App() {
   const residentScreens = [
     'home', 'announcements', 'packages', 'events', 'neighbors', 'emergency',
     'elevator-booking', 'community', 'bulletin-board', 'settings', 'building-info',
-    'calendar', 'building', 'event-detail'
+    'calendar', 'building', 'event-detail', 'post-detail'
   ]
   const showBottomNav = residentScreens.includes(currentScreen)
 
@@ -360,6 +375,14 @@ function App() {
     return (
       <MobileShell bottomNav={bottomNav}>
         <EventDetail event={selectedEvent} onBack={handleEventDetailBack} onNavigate={handleNavigation} />
+      </MobileShell>
+    )
+  }
+
+  if (currentScreen === 'post-detail' && selectedPost) {
+    return (
+      <MobileShell bottomNav={bottomNav}>
+        <PostDetail post={selectedPost} onBack={handlePostDetailBack} onNavigate={handleNavigation} />
       </MobileShell>
     )
   }

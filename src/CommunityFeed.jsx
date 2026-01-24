@@ -632,8 +632,19 @@ function CommunityFeed({ onNavigate }) {
                 const IconComponent = typeConfig.icon
                 const isLiked = likedPosts.has(post.id)
 
+                // Handler to open post detail
+                const handlePostClick = () => {
+                  if (onNavigate) {
+                    onNavigate('PostDetail', post)
+                  }
+                }
+
                 return (
-                  <article key={post.id} className="post-card">
+                  <article
+                    key={post.id}
+                    className="post-card"
+                    onClick={handlePostClick}
+                  >
                     <div className="author-avatar" style={{ background: `linear-gradient(135deg, ${typeConfig.color}, ${typeConfig.color}88)` }}>
                       {post.author.charAt(0)}
                     </div>
