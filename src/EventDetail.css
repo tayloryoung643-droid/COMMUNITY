@@ -1,96 +1,40 @@
 /* ============================================
-   EVENT DETAIL - Premium Light Theme
-   Matches the Oura-inspired design system
+   EVENT DETAIL - Consistent with Calendar
+   Uses shared resident-inner-page styles
    ============================================ */
 
+/* Container inherits from .resident-inner-page in index.css */
 .event-detail-container {
-  min-height: 100vh;
-  background: #F5F0E8;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-  -webkit-font-smoothing: antialiased;
   padding-bottom: 100px;
 }
 
 /* ============================================
-   HERO SECTION
+   CONTENT SECTION
+   Matches Calendar list view spacing
    ============================================ */
 
-.event-detail-hero {
+.event-detail-content {
+  padding: clamp(16px, 4vw, 20px);
+  padding-top: 0;
+  margin-top: var(--hero-content-offset, -24px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 3.5vw, 16px);
   position: relative;
-  height: 280px;
-  overflow: hidden;
+  z-index: 1;
 }
 
-.event-detail-hero-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+/* ============================================
+   META BAR - Category & DateTime
+   ============================================ */
 
-.event-detail-hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.2) 0%,
-    rgba(0, 0, 0, 0.1) 40%,
-    rgba(0, 0, 0, 0.4) 100%
-  );
-}
-
-/* Back Button */
-.event-detail-back-btn {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  padding-top: env(safe-area-inset-top, 0);
-  z-index: 10;
+.event-detail-meta-bar {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 50%;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.event-detail-back-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
-}
-
-/* Hero Content */
-.event-detail-hero-content {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 24px 20px;
+  gap: 8px;
   text-align: center;
-}
-
-.event-detail-title {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 32px;
-  font-weight: 500;
-  color: white;
-  margin: 0 0 12px 0;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  letter-spacing: 0.02em;
-}
-
-.event-detail-meta {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  padding: 0 0 8px 0;
 }
 
 .event-detail-category {
@@ -101,51 +45,43 @@
   border-radius: 20px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: rgba(255, 255, 255, 0.9);
+  background: #FFFCF7;
   color: #6B7280;
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .event-detail-category.social {
-  background: rgba(139, 92, 246, 0.15);
+  background: rgba(139, 92, 246, 0.1);
   color: #7C3AED;
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  border: 1px solid rgba(139, 92, 246, 0.2);
 }
 
 .event-detail-category.maintenance {
-  background: rgba(245, 158, 11, 0.15);
+  background: rgba(245, 158, 11, 0.1);
   color: #B45309;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 .event-detail-category.meeting {
-  background: rgba(59, 130, 246, 0.15);
+  background: rgba(59, 130, 246, 0.1);
   color: #2563EB;
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .event-detail-datetime {
   font-size: 14px;
   font-weight: 500;
-  color: white;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  color: #5A554C;
 }
 
 /* ============================================
-   CONTENT SECTION
+   CARDS - Match Calendar card style
    ============================================ */
 
-.event-detail-content {
-  padding: 20px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* Cards */
 .event-detail-card {
   background: #FFFCF7;
   border-radius: 16px;
-  padding: 18px 20px;
+  padding: clamp(16px, 4vw, 18px) clamp(18px, 4.5vw, 20px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02);
 }
 
@@ -218,12 +154,12 @@
 }
 
 .attendance-avatar {
-  width: 44px;
-  height: 44px;
+  width: clamp(38px, 10vw, 44px);
+  height: clamp(38px, 10vw, 44px);
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid #F5F0E8;
-  margin-left: -12px;
+  margin-left: clamp(-10px, -2.5vw, -12px);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -235,13 +171,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: clamp(38px, 10vw, 44px);
+  height: clamp(38px, 10vw, 44px);
   border-radius: 50%;
   background: #E8E3D9;
   border: 3px solid #F5F0E8;
-  margin-left: -12px;
-  font-size: 13px;
+  margin-left: clamp(-10px, -2.5vw, -12px);
+  font-size: clamp(12px, 3vw, 13px);
   font-weight: 600;
   color: #6B6B6B;
 }
@@ -252,7 +188,7 @@
 
 .event-detail-rsvp {
   display: flex;
-  gap: 10px;
+  gap: clamp(8px, 2vw, 10px);
 }
 
 .rsvp-btn {
@@ -261,8 +197,8 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 14px 12px;
-  font-size: 14px;
+  padding: clamp(12px, 3vw, 14px) clamp(8px, 2vw, 12px);
+  font-size: clamp(13px, 3.5vw, 14px);
   font-weight: 500;
   border-radius: 28px;
   cursor: pointer;
@@ -545,62 +481,46 @@
    ============================================ */
 
 @media (max-width: 480px) {
-  .event-detail-hero {
-    height: 260px;
+  .event-detail-content {
+    padding: clamp(14px, 3.5vw, 16px);
+    gap: clamp(12px, 3vw, 14px);
   }
 
-  .event-detail-title {
-    font-size: 28px;
+  .event-detail-card {
+    padding: clamp(14px, 3.5vw, 16px) clamp(16px, 4vw, 18px);
   }
 
   .event-detail-datetime {
     font-size: 13px;
   }
 
-  .event-detail-content {
-    padding: 16px 14px;
-    gap: 14px;
-  }
-
-  .event-detail-card {
-    padding: 16px 18px;
-  }
-
-  .rsvp-btn {
-    padding: 12px 8px;
-    font-size: 13px;
-    gap: 4px;
-  }
-
   .rsvp-btn svg {
     width: 16px;
     height: 16px;
   }
-
-  .attendance-avatar {
-    width: 38px;
-    height: 38px;
-    margin-left: -10px;
-  }
-
-  .attendance-more {
-    width: 38px;
-    height: 38px;
-    margin-left: -10px;
-    font-size: 12px;
-  }
 }
 
 @media (max-width: 360px) {
-  .event-detail-title {
-    font-size: 24px;
-  }
-
   .rsvp-btn span {
     display: none;
   }
 
   .rsvp-btn {
     padding: 14px;
+  }
+
+  .event-detail-meta-bar {
+    gap: 6px;
+  }
+}
+
+@media (max-width: 320px) {
+  .event-detail-content {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .event-detail-card {
+    padding: 12px 14px;
   }
 }

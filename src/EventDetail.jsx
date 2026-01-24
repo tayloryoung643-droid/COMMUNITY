@@ -1,12 +1,50 @@
-import { useState } from 'react'
-import { ChevronLeft, Check, HelpCircle, X, CalendarPlus, Send } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ChevronLeft, Check, HelpCircle, X, CalendarPlus, Send, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
+import HamburgerMenu from './HamburgerMenu'
 import './EventDetail.css'
 
-function EventDetail({ event, onBack }) {
+function EventDetail({ event, onBack, onNavigate }) {
   const [rsvpStatus, setRsvpStatus] = useState(event?.userRsvp || null)
   const [comments, setComments] = useState(event?.comments || [])
   const [newComment, setNewComment] = useState('')
   const [acknowledged, setAcknowledged] = useState(false)
+
+  // Weather and time state - matches Calendar/Home exactly
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const weatherData = {
+    temp: 58,
+    condition: 'clear',
+    conditionText: 'Mostly Clear'
+  }
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const getWeatherIcon = (condition) => {
+    const hour = currentTime.getHours()
+    const isNight = hour >= 18 || hour < 6
+    if (isNight) return Moon
+    switch (condition) {
+      case 'clear':
+      case 'sunny': return Sun
+      case 'cloudy': return Cloud
+      case 'rainy': return CloudRain
+      case 'snowy': return Snowflake
+      default: return Sun
+    }
+  }
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+  }
+
+  const formatDay = (date) => {
+    return date.toLocaleDateString('en-US', { weekday: 'long' })
+  }
+
+  const WeatherIcon = getWeatherIcon(weatherData.condition)
 
   if (!event) {
     return null
@@ -56,41 +94,48 @@ function EventDetail({ event, onBack }) {
     }
   }
 
-  // Hero image for event (use building image as default)
-  const heroImage = event.heroImage || "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80"
-
   return (
-    <div className="event-detail-container">
-      {/* Hero Section */}
-      <div className="event-detail-hero">
-        <img
-          src={heroImage}
-          alt={event.title}
-          className="event-detail-hero-image"
-        />
-        <div className="event-detail-hero-overlay" />
-
+    <div className="event-detail-container resident-inner-page">
+      {/* Hero Section - matches Calendar exactly */}
+      <div className="inner-page-hero">
         {/* Back Button */}
-        <button className="event-detail-back-btn" onClick={onBack}>
+        <button className="inner-page-back-btn" onClick={onBack}>
           <ChevronLeft size={24} />
         </button>
 
-        {/* Event Title & Info */}
-        <div className="event-detail-hero-content">
-          <h1 className="event-detail-title">{event.title}</h1>
-          <div className="event-detail-meta">
-            <span className={`event-detail-category ${event.category}`}>
-              {event.categoryLabel?.toUpperCase() || event.category?.toUpperCase()}
-            </span>
-            <span className="event-detail-datetime">
-              {formatEventDate(event.date, event.time)}
-            </span>
+        {/* Hamburger Menu */}
+        <HamburgerMenu onNavigate={onNavigate} />
+
+        {/* Weather Widget - matches Calendar/Home exactly */}
+        <div className="inner-page-weather">
+          <div className="weather-datetime">
+            {formatDay(currentTime)} | {formatTime(currentTime)}
           </div>
+          <div className="weather-temp-row">
+            <WeatherIcon size={20} className="weather-icon" />
+            <span className="weather-temp">{weatherData.temp}°</span>
+          </div>
+          <div className="weather-condition">{weatherData.conditionText}</div>
+        </div>
+
+        {/* Event Title - centered like Calendar */}
+        <div className="inner-page-title-container">
+          <h1 className="inner-page-title">{event.title}</h1>
         </div>
       </div>
 
       {/* Content Section */}
       <div className="event-detail-content">
+        {/* Event Meta - Category and Date/Time */}
+        <div className="event-detail-meta-bar">
+          <span className={`event-detail-category ${event.category}`}>
+            {event.categoryLabel?.toUpperCase() || event.category?.toUpperCase()}
+          </span>
+          <span className="event-detail-datetime">
+            {formatEventDate(event.date, event.time)}
+          </span>
+        </div>
+
         {/* Organizer Card */}
         <div className="event-detail-card organizer-card">
           <span className="organizer-label">Organized by</span>

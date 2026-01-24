@@ -353,7 +353,7 @@ function App() {
   if (currentScreen === 'event-detail' && selectedEvent) {
     return (
       <MobileShell bottomNav={bottomNav}>
-        <EventDetail event={selectedEvent} onBack={handleEventDetailBack} />
+        <EventDetail event={selectedEvent} onBack={handleEventDetailBack} onNavigate={handleNavigation} />
       </MobileShell>
     )
   }
