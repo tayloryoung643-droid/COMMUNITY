@@ -21,8 +21,23 @@ import {
   Check
 } from 'lucide-react'
 import './ManagerCommunity.css'
+import { useAuth } from './contexts/AuthContext'
+
+// Demo posts data - only shown for demo accounts
+const DEMO_POSTS = [
+  { id: 'a1', type: 'announcement', title: 'Pool Closed for Maintenance', text: 'The rooftop pool will be closed Jan 15-17 for annual maintenance. Sorry for the inconvenience!', author: 'Property Manager', unit: 'Management', timestamp: Date.now() - 3600000, likes: 5, comments: 2, pinned: true, category: 'maintenance' },
+  { id: 'a2', type: 'announcement', title: 'Package Room Hours Update', text: 'Starting next week, the package room will be accessible 24/7 with your key fob. No more waiting for office hours!', author: 'Property Manager', unit: 'Management', timestamp: Date.now() - 172800000, likes: 12, comments: 4, pinned: false, category: 'general' },
+  { id: 1, type: 'share', text: "Just made fresh banana bread and have extra! Anyone want some? I'm in unit 1201.", author: 'Sarah M.', unit: 'Unit 1201', timestamp: Date.now() - 1800000, likes: 8, comments: 3, pinned: false },
+  { id: 2, type: 'ask', text: 'Does anyone have a ladder I could borrow this weekend? Need to change some light bulbs in the high ceilings.', author: 'Mike T.', unit: 'Unit 805', timestamp: Date.now() - 7200000, likes: 2, comments: 5, pinned: false },
+  { id: 3, type: 'report', text: 'Heads up - the west elevator is making a strange noise again. Might want to avoid it until maintenance checks it out.', author: 'Jennifer K.', unit: 'Unit 1504', timestamp: Date.now() - 14400000, likes: 12, comments: 4, pinned: false },
+  { id: 4, type: 'share', text: "Moving in next week! So excited to be part of this community. Can't wait to meet everyone at the rooftop BBQ!", author: 'Alex R.', unit: 'Unit 802', timestamp: Date.now() - 86400000, likes: 24, comments: 11, pinned: false }
+]
 
 function ManagerCommunity() {
+  // Check if in demo mode
+  const { userProfile, isDemoMode } = useAuth()
+  const isInDemoMode = isDemoMode || userProfile?.is_demo === true
+
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false)
   const [showPostModal, setShowPostModal] = useState(false)
   const [postType, setPostType] = useState('share')
@@ -40,81 +55,8 @@ function ManagerCommunity() {
     sendNotification: true
   })
 
-  // Sample posts data with announcements
-  const [posts, setPosts] = useState([
-    // Announcements from property manager
-    {
-      id: 'a1',
-      type: 'announcement',
-      title: 'Pool Closed for Maintenance',
-      text: 'The rooftop pool will be closed Jan 15-17 for annual maintenance. Sorry for the inconvenience!',
-      author: 'Property Manager',
-      unit: 'Management',
-      timestamp: Date.now() - 3600000, // 1 hour ago
-      likes: 5,
-      comments: 2,
-      pinned: true,
-      category: 'maintenance'
-    },
-    {
-      id: 'a2',
-      type: 'announcement',
-      title: 'Package Room Hours Update',
-      text: 'Starting next week, the package room will be accessible 24/7 with your key fob. No more waiting for office hours!',
-      author: 'Property Manager',
-      unit: 'Management',
-      timestamp: Date.now() - 172800000, // 2 days ago
-      likes: 12,
-      comments: 4,
-      pinned: false,
-      category: 'general'
-    },
-    // Regular resident posts
-    {
-      id: 1,
-      type: 'share',
-      text: "Just made fresh banana bread and have extra! Anyone want some? I'm in unit 1201.",
-      author: 'Sarah M.',
-      unit: 'Unit 1201',
-      timestamp: Date.now() - 1800000, // 30 min ago
-      likes: 8,
-      comments: 3,
-      pinned: false
-    },
-    {
-      id: 2,
-      type: 'ask',
-      text: 'Does anyone have a ladder I could borrow this weekend? Need to change some light bulbs in the high ceilings.',
-      author: 'Mike T.',
-      unit: 'Unit 805',
-      timestamp: Date.now() - 7200000, // 2 hours ago
-      likes: 2,
-      comments: 5,
-      pinned: false
-    },
-    {
-      id: 3,
-      type: 'report',
-      text: 'Heads up - the west elevator is making a strange noise again. Might want to avoid it until maintenance checks it out.',
-      author: 'Jennifer K.',
-      unit: 'Unit 1504',
-      timestamp: Date.now() - 14400000, // 4 hours ago
-      likes: 12,
-      comments: 4,
-      pinned: false
-    },
-    {
-      id: 4,
-      type: 'share',
-      text: "Moving in next week! So excited to be part of this community. Can't wait to meet everyone at the rooftop BBQ!",
-      author: 'Alex R.',
-      unit: 'Unit 802',
-      timestamp: Date.now() - 86400000, // 1 day ago
-      likes: 24,
-      comments: 11,
-      pinned: false
-    }
-  ])
+  // Posts data - demo mode gets demo data, real mode starts empty
+  const [posts, setPosts] = useState(isInDemoMode ? DEMO_POSTS : [])
 
   // Post type configurations
   const postTypes = [

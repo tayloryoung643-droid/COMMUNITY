@@ -22,8 +22,27 @@ import {
   Check
 } from 'lucide-react'
 import './ManagerResidents.css'
+import { useAuth } from './contexts/AuthContext'
+
+// Demo residents data - only shown for demo accounts
+const DEMO_RESIDENTS = [
+  { id: 1, firstName: 'Sarah', lastName: 'Mitchell', unit: '1201', email: 'sarah.mitchell@email.com', phone: '(555) 123-4567', status: 'active', joinDate: '2024-12-15' },
+  { id: 2, firstName: 'Mike', lastName: 'Thompson', unit: '805', email: 'mike.t@email.com', phone: '(555) 234-5678', status: 'active', joinDate: '2024-11-20' },
+  { id: 3, firstName: 'Jessica', lastName: 'Kim', unit: '402', email: 'jkim@email.com', phone: '(555) 345-6789', status: 'active', joinDate: '2024-12-01' },
+  { id: 4, firstName: 'Alex', lastName: 'Rivera', unit: '1104', email: 'alex.rivera@email.com', phone: '(555) 456-7890', status: 'active', joinDate: '2024-10-15' },
+  { id: 5, firstName: 'Chris', lastName: 'Walker', unit: '309', email: 'chris.w@email.com', phone: '(555) 567-8901', status: 'active', joinDate: '2024-11-05' },
+  { id: 6, firstName: 'Emma', lastName: 'Davis', unit: '1507', email: 'emma.davis@email.com', phone: '', status: 'pending', joinDate: null, inviteSent: '2025-01-10' },
+  { id: 7, firstName: 'James', lastName: 'Lee', unit: '203', email: 'jameslee@email.com', phone: '(555) 678-9012', status: 'pending', joinDate: null, inviteSent: '2025-01-12' },
+  { id: 8, firstName: 'Taylor', lastName: 'Young', unit: '612', email: 'taylor.young@email.com', phone: '(555) 789-0123', status: 'active', joinDate: '2024-09-01' },
+  { id: 9, firstName: 'Lisa', lastName: 'Chen', unit: '908', email: 'lisa.chen@email.com', phone: '(555) 890-1234', status: 'active', joinDate: '2024-12-20' },
+  { id: 10, firstName: 'Robert', lastName: 'Martinez', unit: '1102', email: 'r.martinez@email.com', phone: '', status: 'inactive', joinDate: '2024-06-15', inactiveSince: '2024-12-01' }
+]
 
 function ManagerResidents() {
+  // Check if in demo mode
+  const { userProfile, isDemoMode } = useAuth()
+  const isInDemoMode = isDemoMode || userProfile?.is_demo === true
+
   const [searchQuery, setSearchQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState('all')
   const [showInviteModal, setShowInviteModal] = useState(false)
@@ -42,112 +61,8 @@ function ManagerResidents() {
     moveInDate: ''
   })
 
-  // Sample residents data
-  const [residents, setResidents] = useState([
-    {
-      id: 1,
-      firstName: 'Sarah',
-      lastName: 'Mitchell',
-      unit: '1201',
-      email: 'sarah.mitchell@email.com',
-      phone: '(555) 123-4567',
-      status: 'active',
-      joinDate: '2024-12-15'
-    },
-    {
-      id: 2,
-      firstName: 'Mike',
-      lastName: 'Thompson',
-      unit: '805',
-      email: 'mike.t@email.com',
-      phone: '(555) 234-5678',
-      status: 'active',
-      joinDate: '2024-11-20'
-    },
-    {
-      id: 3,
-      firstName: 'Jessica',
-      lastName: 'Kim',
-      unit: '402',
-      email: 'jkim@email.com',
-      phone: '(555) 345-6789',
-      status: 'active',
-      joinDate: '2024-12-01'
-    },
-    {
-      id: 4,
-      firstName: 'Alex',
-      lastName: 'Rivera',
-      unit: '1104',
-      email: 'alex.rivera@email.com',
-      phone: '(555) 456-7890',
-      status: 'active',
-      joinDate: '2024-10-15'
-    },
-    {
-      id: 5,
-      firstName: 'Chris',
-      lastName: 'Walker',
-      unit: '309',
-      email: 'chris.w@email.com',
-      phone: '(555) 567-8901',
-      status: 'active',
-      joinDate: '2024-11-05'
-    },
-    {
-      id: 6,
-      firstName: 'Emma',
-      lastName: 'Davis',
-      unit: '1507',
-      email: 'emma.davis@email.com',
-      phone: '',
-      status: 'pending',
-      joinDate: null,
-      inviteSent: '2025-01-10'
-    },
-    {
-      id: 7,
-      firstName: 'James',
-      lastName: 'Lee',
-      unit: '203',
-      email: 'jameslee@email.com',
-      phone: '(555) 678-9012',
-      status: 'pending',
-      joinDate: null,
-      inviteSent: '2025-01-12'
-    },
-    {
-      id: 8,
-      firstName: 'Taylor',
-      lastName: 'Young',
-      unit: '612',
-      email: 'taylor.young@email.com',
-      phone: '(555) 789-0123',
-      status: 'active',
-      joinDate: '2024-09-01'
-    },
-    {
-      id: 9,
-      firstName: 'Lisa',
-      lastName: 'Chen',
-      unit: '908',
-      email: 'lisa.chen@email.com',
-      phone: '(555) 890-1234',
-      status: 'active',
-      joinDate: '2024-12-20'
-    },
-    {
-      id: 10,
-      firstName: 'Robert',
-      lastName: 'Martinez',
-      unit: '1102',
-      email: 'r.martinez@email.com',
-      phone: '',
-      status: 'inactive',
-      joinDate: '2024-06-15',
-      inactiveSince: '2024-12-01'
-    }
-  ])
+  // Residents data - demo mode gets demo data, real mode starts empty
+  const [residents, setResidents] = useState(isInDemoMode ? DEMO_RESIDENTS : [])
 
   // Available units for invite dropdown
   const availableUnits = [

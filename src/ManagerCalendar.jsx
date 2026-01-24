@@ -22,9 +22,199 @@ import {
   UserCheck,
   Send
 } from 'lucide-react'
+import { useAuth } from './contexts/AuthContext'
 import './ManagerCalendar.css'
 
+// Demo events data
+const DEMO_EVENTS = [
+  {
+    id: 1,
+    date: '2026-01-15',
+    time: '9:00 AM',
+    endTime: '12:00 PM',
+    title: 'Water shut off - Floors 10-15',
+    description: 'Scheduled maintenance on water pipes. Please store water in advance.',
+    category: 'maintenance',
+    categoryLabel: 'Maintenance',
+    icon: Wrench,
+    color: '#f59e0b',
+    location: 'All Units',
+    allowRsvp: false,
+    rsvps: []
+  },
+  {
+    id: 2,
+    date: '2026-01-18',
+    time: '7:00 PM',
+    endTime: '9:00 PM',
+    title: 'Building Town Hall',
+    description: 'Monthly meeting to discuss building updates, financials, and resident concerns.',
+    category: 'meeting',
+    categoryLabel: 'Meeting',
+    icon: Users,
+    color: '#3b82f6',
+    location: 'Party Room',
+    allowRsvp: true,
+    rsvpLimit: 50,
+    rsvps: [
+      { id: 1, name: 'Sarah Mitchell', unit: '1201' },
+      { id: 2, name: 'Mike Thompson', unit: '805' },
+      { id: 3, name: 'Lisa Chen', unit: '908' },
+      { id: 4, name: 'David Park', unit: '1502' },
+      { id: 5, name: 'Emma Davis', unit: '603' }
+    ]
+  },
+  {
+    id: 3,
+    date: '2026-01-20',
+    time: '6:00 PM',
+    endTime: '9:00 PM',
+    title: 'Rooftop BBQ',
+    description: 'Join us for a community BBQ on the rooftop! Burgers and drinks provided.',
+    category: 'social',
+    categoryLabel: 'Social',
+    icon: Wine,
+    color: '#8b5cf6',
+    location: 'Rooftop Terrace',
+    allowRsvp: true,
+    rsvpLimit: 30,
+    rsvps: [
+      { id: 1, name: 'Sarah Mitchell', unit: '1201' },
+      { id: 2, name: 'Jessica Kim', unit: '402' },
+      { id: 3, name: 'Mike Thompson', unit: '805' },
+      { id: 4, name: 'Lisa Chen', unit: '908' },
+      { id: 5, name: 'David Park', unit: '1502' },
+      { id: 6, name: 'Emma Davis', unit: '603' },
+      { id: 7, name: 'James Wilson', unit: '1105' },
+      { id: 8, name: 'Maria Garcia', unit: '709' }
+    ]
+  },
+  {
+    id: 4,
+    date: '2026-01-22',
+    time: '10:00 AM',
+    endTime: '2:00 PM',
+    title: 'Fire alarm testing',
+    description: 'Annual fire alarm system testing. Expect intermittent alarms.',
+    category: 'maintenance',
+    categoryLabel: 'Maintenance',
+    icon: Wrench,
+    color: '#f59e0b',
+    location: 'All Common Areas',
+    allowRsvp: false,
+    rsvps: []
+  },
+  {
+    id: 5,
+    date: '2026-01-25',
+    time: '7:30 PM',
+    endTime: '10:00 PM',
+    title: 'Wine & Cheese Social',
+    description: 'Meet your neighbors over wine and cheese in the party room.',
+    category: 'social',
+    categoryLabel: 'Social',
+    icon: Wine,
+    color: '#8b5cf6',
+    location: 'Party Room',
+    allowRsvp: true,
+    rsvpLimit: 25,
+    rsvps: [
+      { id: 1, name: 'Sarah Mitchell', unit: '1201' },
+      { id: 2, name: 'Jessica Kim', unit: '402' },
+      { id: 3, name: 'Lisa Chen', unit: '908' },
+      { id: 4, name: 'David Park', unit: '1502' },
+      { id: 5, name: 'Emma Davis', unit: '603' },
+      { id: 6, name: 'James Wilson', unit: '1105' },
+      { id: 7, name: 'Maria Garcia', unit: '709' },
+      { id: 8, name: 'Robert Brown', unit: '1401' },
+      { id: 9, name: 'Jennifer Lee', unit: '502' },
+      { id: 10, name: 'Michael Chen', unit: '1008' },
+      { id: 11, name: 'Amanda White', unit: '305' },
+      { id: 12, name: 'Christopher Davis', unit: '1203' },
+      { id: 13, name: 'Nicole Taylor', unit: '806' },
+      { id: 14, name: 'Daniel Martinez', unit: '1104' },
+      { id: 15, name: 'Ashley Johnson', unit: '607' },
+      { id: 16, name: 'Kevin Williams', unit: '903' },
+      { id: 17, name: 'Stephanie Brown', unit: '1302' },
+      { id: 18, name: 'Brandon Lee', unit: '408' }
+    ]
+  },
+  {
+    id: 6,
+    date: '2026-01-28',
+    time: '8:00 AM',
+    endTime: '9:00 AM',
+    title: 'Yoga in the Courtyard',
+    description: 'Free yoga class for all residents. Bring your own mat!',
+    category: 'social',
+    categoryLabel: 'Social',
+    icon: Wine,
+    color: '#8b5cf6',
+    location: 'Courtyard',
+    allowRsvp: true,
+    rsvpLimit: 20,
+    rsvps: [
+      { id: 1, name: 'Lisa Chen', unit: '908' },
+      { id: 2, name: 'Emma Davis', unit: '603' },
+      { id: 3, name: 'Amanda White', unit: '305' },
+      { id: 4, name: 'Nicole Taylor', unit: '806' },
+      { id: 5, name: 'Ashley Johnson', unit: '607' },
+      { id: 6, name: 'Stephanie Brown', unit: '1302' },
+      { id: 7, name: 'Jennifer Lee', unit: '502' },
+      { id: 8, name: 'Maria Garcia', unit: '709' }
+    ]
+  },
+  {
+    id: 7,
+    date: '2026-02-01',
+    time: 'All Day',
+    endTime: '',
+    title: 'Pest control inspection',
+    description: 'Quarterly pest control inspection. Please ensure access to your unit.',
+    category: 'maintenance',
+    categoryLabel: 'Maintenance',
+    icon: Wrench,
+    color: '#f59e0b',
+    location: 'All Units',
+    allowRsvp: false,
+    rsvps: []
+  },
+  {
+    id: 8,
+    date: '2026-02-05',
+    time: '6:00 PM',
+    endTime: '11:00 PM',
+    title: 'Super Bowl Watch Party',
+    description: 'Watch the big game on the big screen in the party room!',
+    category: 'social',
+    categoryLabel: 'Social',
+    icon: Wine,
+    color: '#8b5cf6',
+    location: 'Party Room',
+    allowRsvp: true,
+    rsvpLimit: 40,
+    rsvps: [
+      { id: 1, name: 'Mike Thompson', unit: '805' },
+      { id: 2, name: 'David Park', unit: '1502' },
+      { id: 3, name: 'James Wilson', unit: '1105' },
+      { id: 4, name: 'Robert Brown', unit: '1401' },
+      { id: 5, name: 'Michael Chen', unit: '1008' },
+      { id: 6, name: 'Christopher Davis', unit: '1203' },
+      { id: 7, name: 'Daniel Martinez', unit: '1104' },
+      { id: 8, name: 'Kevin Williams', unit: '903' },
+      { id: 9, name: 'Brandon Lee', unit: '408' },
+      { id: 10, name: 'Sarah Mitchell', unit: '1201' },
+      { id: 11, name: 'Jessica Kim', unit: '402' },
+      { id: 12, name: 'Lisa Chen', unit: '908' }
+    ]
+  }
+]
+
 function ManagerCalendar() {
+  // Demo gate - check if user is in demo mode
+  const { userProfile, isDemoMode } = useAuth()
+  const isInDemoMode = isDemoMode || userProfile?.is_demo === true
+
   const [viewMode, setViewMode] = useState('list') // 'list' or 'month'
   const [activeFilter, setActiveFilter] = useState('all')
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -50,190 +240,8 @@ function ManagerCalendar() {
     allowRsvp: true
   })
 
-  // Events data
-  const [events, setEvents] = useState([
-    {
-      id: 1,
-      date: '2026-01-15',
-      time: '9:00 AM',
-      endTime: '12:00 PM',
-      title: 'Water shut off - Floors 10-15',
-      description: 'Scheduled maintenance on water pipes. Please store water in advance.',
-      category: 'maintenance',
-      categoryLabel: 'Maintenance',
-      icon: Wrench,
-      color: '#f59e0b',
-      location: 'All Units',
-      allowRsvp: false,
-      rsvps: []
-    },
-    {
-      id: 2,
-      date: '2026-01-18',
-      time: '7:00 PM',
-      endTime: '9:00 PM',
-      title: 'Building Town Hall',
-      description: 'Monthly meeting to discuss building updates, financials, and resident concerns.',
-      category: 'meeting',
-      categoryLabel: 'Meeting',
-      icon: Users,
-      color: '#3b82f6',
-      location: 'Party Room',
-      allowRsvp: true,
-      rsvpLimit: 50,
-      rsvps: [
-        { id: 1, name: 'Sarah Mitchell', unit: '1201' },
-        { id: 2, name: 'Mike Thompson', unit: '805' },
-        { id: 3, name: 'Lisa Chen', unit: '908' },
-        { id: 4, name: 'David Park', unit: '1502' },
-        { id: 5, name: 'Emma Davis', unit: '603' }
-      ]
-    },
-    {
-      id: 3,
-      date: '2026-01-20',
-      time: '6:00 PM',
-      endTime: '9:00 PM',
-      title: 'Rooftop BBQ',
-      description: 'Join us for a community BBQ on the rooftop! Burgers and drinks provided.',
-      category: 'social',
-      categoryLabel: 'Social',
-      icon: Wine,
-      color: '#8b5cf6',
-      location: 'Rooftop Terrace',
-      allowRsvp: true,
-      rsvpLimit: 30,
-      rsvps: [
-        { id: 1, name: 'Sarah Mitchell', unit: '1201' },
-        { id: 2, name: 'Jessica Kim', unit: '402' },
-        { id: 3, name: 'Mike Thompson', unit: '805' },
-        { id: 4, name: 'Lisa Chen', unit: '908' },
-        { id: 5, name: 'David Park', unit: '1502' },
-        { id: 6, name: 'Emma Davis', unit: '603' },
-        { id: 7, name: 'James Wilson', unit: '1105' },
-        { id: 8, name: 'Maria Garcia', unit: '709' }
-      ]
-    },
-    {
-      id: 4,
-      date: '2026-01-22',
-      time: '10:00 AM',
-      endTime: '2:00 PM',
-      title: 'Fire alarm testing',
-      description: 'Annual fire alarm system testing. Expect intermittent alarms.',
-      category: 'maintenance',
-      categoryLabel: 'Maintenance',
-      icon: Wrench,
-      color: '#f59e0b',
-      location: 'All Common Areas',
-      allowRsvp: false,
-      rsvps: []
-    },
-    {
-      id: 5,
-      date: '2026-01-25',
-      time: '7:30 PM',
-      endTime: '10:00 PM',
-      title: 'Wine & Cheese Social',
-      description: 'Meet your neighbors over wine and cheese in the party room.',
-      category: 'social',
-      categoryLabel: 'Social',
-      icon: Wine,
-      color: '#8b5cf6',
-      location: 'Party Room',
-      allowRsvp: true,
-      rsvpLimit: 25,
-      rsvps: [
-        { id: 1, name: 'Sarah Mitchell', unit: '1201' },
-        { id: 2, name: 'Jessica Kim', unit: '402' },
-        { id: 3, name: 'Lisa Chen', unit: '908' },
-        { id: 4, name: 'David Park', unit: '1502' },
-        { id: 5, name: 'Emma Davis', unit: '603' },
-        { id: 6, name: 'James Wilson', unit: '1105' },
-        { id: 7, name: 'Maria Garcia', unit: '709' },
-        { id: 8, name: 'Robert Brown', unit: '1401' },
-        { id: 9, name: 'Jennifer Lee', unit: '502' },
-        { id: 10, name: 'Michael Chen', unit: '1008' },
-        { id: 11, name: 'Amanda White', unit: '305' },
-        { id: 12, name: 'Christopher Davis', unit: '1203' },
-        { id: 13, name: 'Nicole Taylor', unit: '806' },
-        { id: 14, name: 'Daniel Martinez', unit: '1104' },
-        { id: 15, name: 'Ashley Johnson', unit: '607' },
-        { id: 16, name: 'Kevin Williams', unit: '903' },
-        { id: 17, name: 'Stephanie Brown', unit: '1302' },
-        { id: 18, name: 'Brandon Lee', unit: '408' }
-      ]
-    },
-    {
-      id: 6,
-      date: '2026-01-28',
-      time: '8:00 AM',
-      endTime: '9:00 AM',
-      title: 'Yoga in the Courtyard',
-      description: 'Free yoga class for all residents. Bring your own mat!',
-      category: 'social',
-      categoryLabel: 'Social',
-      icon: Wine,
-      color: '#8b5cf6',
-      location: 'Courtyard',
-      allowRsvp: true,
-      rsvpLimit: 20,
-      rsvps: [
-        { id: 1, name: 'Lisa Chen', unit: '908' },
-        { id: 2, name: 'Emma Davis', unit: '603' },
-        { id: 3, name: 'Amanda White', unit: '305' },
-        { id: 4, name: 'Nicole Taylor', unit: '806' },
-        { id: 5, name: 'Ashley Johnson', unit: '607' },
-        { id: 6, name: 'Stephanie Brown', unit: '1302' },
-        { id: 7, name: 'Jennifer Lee', unit: '502' },
-        { id: 8, name: 'Maria Garcia', unit: '709' }
-      ]
-    },
-    {
-      id: 7,
-      date: '2026-02-01',
-      time: 'All Day',
-      endTime: '',
-      title: 'Pest control inspection',
-      description: 'Quarterly pest control inspection. Please ensure access to your unit.',
-      category: 'maintenance',
-      categoryLabel: 'Maintenance',
-      icon: Wrench,
-      color: '#f59e0b',
-      location: 'All Units',
-      allowRsvp: false,
-      rsvps: []
-    },
-    {
-      id: 8,
-      date: '2026-02-05',
-      time: '6:00 PM',
-      endTime: '11:00 PM',
-      title: 'Super Bowl Watch Party',
-      description: 'Watch the big game on the big screen in the party room!',
-      category: 'social',
-      categoryLabel: 'Social',
-      icon: Wine,
-      color: '#8b5cf6',
-      location: 'Party Room',
-      allowRsvp: true,
-      rsvpLimit: 40,
-      rsvps: [
-        { id: 1, name: 'Mike Thompson', unit: '805' },
-        { id: 2, name: 'David Park', unit: '1502' },
-        { id: 3, name: 'James Wilson', unit: '1105' },
-        { id: 4, name: 'Robert Brown', unit: '1401' },
-        { id: 5, name: 'Michael Chen', unit: '1008' },
-        { id: 6, name: 'Christopher Davis', unit: '1203' },
-        { id: 7, name: 'Daniel Martinez', unit: '1104' },
-        { id: 8, name: 'Kevin Williams', unit: '903' },
-        { id: 9, name: 'Brandon Lee', unit: '408' },
-        { id: 10, name: 'Sarah Mitchell', unit: '1201' },
-        { id: 11, name: 'Jessica Kim', unit: '402' },
-        { id: 12, name: 'Lisa Chen', unit: '908' }
-      ]
-    }
-  ])
+  // Events data - use demo data for demo users, empty for real users
+  const [events, setEvents] = useState(isInDemoMode ? DEMO_EVENTS : [])
 
   const filters = [
     { id: 'all', label: 'All Events' },

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Building2,
   LayoutDashboard,
@@ -36,9 +36,13 @@ import {
   Home,
   Phone,
   Eye,
-  Trash2
+  Trash2,
+  Loader2,
+  AlertTriangle
 } from 'lucide-react'
 import './ManagerDashboard.css'
+import { useAuth } from './contexts/AuthContext'
+import { loadDashboardData, getIsDemoUser } from './services/managerDashboardService'
 import ManagerMessages from './ManagerMessages'
 import ManagerResidents from './ManagerResidents'
 import ManagerAIAssistant from './ManagerAIAssistant'
@@ -51,8 +55,16 @@ import ManagerFAQ from './ManagerFAQ'
 import ManagerSettings from './ManagerSettings'
 
 function ManagerDashboard({ onLogout, buildingData }) {
+  // Auth context for demo detection and user info
+  const { user, userProfile, isDemoMode } = useAuth()
+
   const [activeNav, setActiveNav] = useState('dashboard')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  // Dashboard data state
+  const [dashboardData, setDashboardData] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState(null)
 
   // Modal states
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false)
@@ -102,23 +114,105 @@ function ManagerDashboard({ onLogout, buildingData }) {
     phone: ''
   })
 
-  // Notifications state
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: 'message', title: 'New message from Sarah Mitchell', subtitle: 'Unit 1201', time: '2 min ago', unread: true, icon: MessageSquare },
-    { id: 2, type: 'package', title: 'Package logged for Unit 805', subtitle: 'Amazon - Large box', time: '15 min ago', unread: true, icon: Package },
-    { id: 3, type: 'elevator', title: 'Alex Rivera requested elevator booking', subtitle: 'Moving out - Jan 20', time: '1 hour ago', unread: true, icon: ArrowUpDown },
-    { id: 4, type: 'event', title: '5 new RSVPs for Wine & Cheese Social', subtitle: 'Total: 18 attendees', time: '2 hours ago', unread: false, icon: Wine },
-    { id: 5, type: 'maintenance', title: 'Maintenance request from Unit 402', subtitle: 'Plumbing issue', time: '3 hours ago', unread: false, icon: Wrench },
-    { id: 6, type: 'resident', title: 'New resident joined', subtitle: 'Sarah from Unit 1201', time: '4 hours ago', unread: false, icon: UserPlus }
-  ])
+  // Notifications state (will be populated from dashboardData)
+  const [notifications, setNotifications] = useState([])
 
-  // Demo building data
-  const building = buildingData || {
-    name: 'The Paramount',
-    code: 'PARA123',
+  // Load dashboard data on mount
+  useEffect(() => {
+    async function fetchDashboardData() {
+      setIsLoading(true)
+      setLoadError(null)
+
+      try {
+        // Determine user ID - use actual user id or demo id
+        const userId = user?.id || userProfile?.id
+
+        // Check if this is demo mode
+        const isDemo = getIsDemoUser(userProfile, isDemoMode)
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[ManagerDashboard] Loading data - isDemo:', isDemo, 'userId:', userId)
+        }
+
+        // For demo users OR if we have buildingData from onboarding, use that
+        // This handles the case where a user just completed onboarding
+        if (isDemo) {
+          const data = await loadDashboardData(userProfile, isDemoMode, userId)
+          setDashboardData(data)
+
+          // Set notifications from demo data
+          const notificationIcons = { message: MessageSquare, package: Package, elevator: ArrowUpDown, event: Wine, maintenance: Wrench, resident: UserPlus }
+          setNotifications(data.notifications?.map(n => ({ ...n, icon: notificationIcons[n.type] || Bell })) || [])
+        } else if (buildingData) {
+          // Real user who just completed onboarding - use the passed buildingData
+          // This is a transitional state before data is in Supabase
+          setDashboardData({
+            building: {
+              id: 'new-building',
+              name: buildingData.name,
+              code: buildingData.code,
+              totalUnits: buildingData.units || 50,
+            },
+            manager: {
+              id: userId,
+              name: buildingData.manager?.name || userProfile?.full_name || 'Property Manager',
+              email: buildingData.manager?.email || userProfile?.email,
+            },
+            stats: {
+              residentsJoined: 0,
+              totalResidents: buildingData.units || 50,
+              packagesPending: 0,
+              packagesOverdue: 0,
+              eventsThisWeek: 0,
+              nextEvent: null,
+              unreadMessages: 0,
+              newMessagesToday: 0,
+            },
+            recentActivity: [],
+            upcomingEvents: [],
+            notifications: [],
+            isLoaded: true,
+            isEmpty: false,
+          })
+          setNotifications([])
+        } else {
+          // Real user - fetch from Supabase
+          const data = await loadDashboardData(userProfile, isDemoMode, userId)
+          setDashboardData(data)
+
+          if (data.error) {
+            setLoadError(data.error)
+          }
+
+          // Set notifications from real data
+          const notificationIcons = { message: MessageSquare, package: Package, elevator: ArrowUpDown, event: Wine, maintenance: Wrench, resident: UserPlus }
+          setNotifications(data.notifications?.map(n => ({ ...n, icon: notificationIcons[n.type] || Bell })) || [])
+        }
+      } catch (error) {
+        console.error('[ManagerDashboard] Error loading dashboard:', error)
+        setLoadError(error.message)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchDashboardData()
+  }, [user, userProfile, isDemoMode, buildingData])
+
+  // Derive building info from dashboard data
+  const building = dashboardData ? {
+    name: dashboardData.building?.name || 'Your Building',
+    code: dashboardData.building?.code || '',
     manager: {
-      name: 'Taylor Young',
-      email: 'taylor@paramount.com'
+      name: dashboardData.manager?.name || userProfile?.full_name || 'Property Manager',
+      email: dashboardData.manager?.email || userProfile?.email || ''
+    }
+  } : {
+    name: buildingData?.name || 'Your Building',
+    code: buildingData?.code || '',
+    manager: {
+      name: buildingData?.manager?.name || userProfile?.full_name || 'Property Manager',
+      email: buildingData?.manager?.email || userProfile?.email || ''
     }
   }
 
@@ -147,13 +241,14 @@ function ManagerDashboard({ onLogout, buildingData }) {
     { id: 'settings', label: 'Settings', icon: Settings }
   ]
 
-  // Stats data with navigation targets
+  // Stats data with navigation targets - derived from dashboardData
+  const statsData = dashboardData?.stats || {}
   const stats = [
     {
       id: 'residents',
       label: 'Residents Joined',
-      value: '34/50',
-      subtitle: '68% onboarded',
+      value: `${statsData.residentsJoined || 0}/${statsData.totalResidents || 50}`,
+      subtitle: statsData.totalResidents ? `${Math.round((statsData.residentsJoined || 0) / statsData.totalResidents * 100)}% onboarded` : 'No residents yet',
       icon: Users,
       color: 'blue',
       navTarget: 'residents'
@@ -161,8 +256,8 @@ function ManagerDashboard({ onLogout, buildingData }) {
     {
       id: 'packages',
       label: 'Packages Pending',
-      value: '12',
-      subtitle: '3 over 48hrs',
+      value: String(statsData.packagesPending || 0),
+      subtitle: statsData.packagesOverdue > 0 ? `${statsData.packagesOverdue} over 48hrs` : 'All on time',
       icon: Package,
       color: 'yellow',
       navTarget: 'packages'
@@ -170,8 +265,8 @@ function ManagerDashboard({ onLogout, buildingData }) {
     {
       id: 'events',
       label: 'Events This Week',
-      value: '3',
-      subtitle: 'Next: Wine Social',
+      value: String(statsData.eventsThisWeek || 0),
+      subtitle: statsData.nextEvent ? `Next: ${statsData.nextEvent}` : 'No upcoming events',
       icon: Calendar,
       color: 'purple',
       navTarget: 'calendar'
@@ -179,112 +274,36 @@ function ManagerDashboard({ onLogout, buildingData }) {
     {
       id: 'messages',
       label: 'Unread Messages',
-      value: '2',
-      subtitle: '1 new today',
+      value: String(statsData.unreadMessages || 0),
+      subtitle: statsData.newMessagesToday > 0 ? `${statsData.newMessagesToday} new today` : 'All caught up',
       icon: MessageSquare,
       color: 'cyan',
       navTarget: 'messages'
     }
   ]
 
-  // Recent activity with navigation
-  const recentActivity = [
-    {
-      id: 1,
-      text: 'Sarah from 1201 joined the app',
-      time: '2 min ago',
-      icon: UserPlus,
-      color: 'green',
-      navTarget: 'residents',
-      detail: 'Sarah Mitchell - Unit 1201'
-    },
-    {
-      id: 2,
-      text: 'New package logged for Unit 805',
-      time: '15 min ago',
-      icon: Package,
-      color: 'blue',
-      navTarget: 'packages',
-      detail: 'Amazon package - Michael Chen'
-    },
-    {
-      id: 3,
-      text: 'Message from Unit 402',
-      time: '1 hour ago',
-      icon: Mail,
-      color: 'purple',
-      navTarget: 'messages',
-      detail: 'Question about parking permit'
-    },
-    {
-      id: 4,
-      text: '5 RSVPs for Wine & Cheese Social',
-      time: '2 hours ago',
-      icon: Wine,
-      color: 'pink',
-      navTarget: 'calendar',
-      detail: 'Total 18 attendees'
-    },
-    {
-      id: 5,
-      text: 'Maintenance request resolved - Unit 1102',
-      time: '3 hours ago',
-      icon: CheckCircle,
-      color: 'green',
-      navTarget: 'messages',
-      detail: 'Plumbing issue fixed'
-    }
-  ]
+  // Map activity types to icons
+  const activityTypeIcons = {
+    resident_joined: UserPlus,
+    package: Package,
+    message: Mail,
+    event_rsvp: Wine,
+    maintenance: CheckCircle,
+    elevator: ArrowUpDown,
+    bulletin: ClipboardList,
+    faq: HelpCircle,
+    profile: User,
+    community: Users,
+  }
 
-  // All activity (for expanded view)
-  const allActivity = [
-    ...recentActivity,
-    {
-      id: 6,
-      text: 'Elevator booking approved - Unit 905',
-      time: '4 hours ago',
-      icon: ArrowUpDown,
-      color: 'cyan',
-      navTarget: 'elevator',
-      detail: 'Moving scheduled for Jan 18'
-    },
-    {
-      id: 7,
-      text: 'New bulletin listing posted',
-      time: '5 hours ago',
-      icon: ClipboardList,
-      color: 'yellow',
-      navTarget: 'bulletin',
-      detail: 'Vintage couch for sale - $200'
-    },
-    {
-      id: 8,
-      text: 'FAQ updated - Parking section',
-      time: '6 hours ago',
-      icon: HelpCircle,
-      color: 'purple',
-      navTarget: 'faq',
-      detail: 'Added guest parking info'
-    },
-    {
-      id: 9,
-      text: 'John from 503 updated profile',
-      time: '7 hours ago',
-      icon: User,
-      color: 'blue',
-      navTarget: 'residents',
-      detail: 'Added emergency contact'
-    },
-    {
-      id: 10,
-      text: 'Community post liked by 12 residents',
-      time: '8 hours ago',
-      icon: Users,
-      color: 'pink',
-      navTarget: 'community',
-      detail: 'Rooftop party photos'
-    }
-  ]
+  // Recent activity with navigation - from dashboardData
+  const recentActivity = (dashboardData?.recentActivity || []).map(item => ({
+    ...item,
+    icon: activityTypeIcons[item.type] || Bell,
+  }))
+
+  // All activity (for expanded view) - for now same as recent, would come from full activity log
+  const allActivity = recentActivity
 
   // Quick actions
   const quickActions = [
@@ -294,33 +313,8 @@ function ManagerDashboard({ onLogout, buildingData }) {
     { id: 'invite', label: 'Invite Resident', icon: UserPlus }
   ]
 
-  // Upcoming events
-  const upcomingEvents = [
-    {
-      id: 1,
-      title: 'Wine & Cheese Social',
-      date: 'Friday, Jan 17',
-      time: '7:00 PM',
-      location: 'Rooftop Lounge',
-      rsvps: 18
-    },
-    {
-      id: 2,
-      title: 'Building Maintenance',
-      date: 'Saturday, Jan 18',
-      time: '9:00 AM - 12:00 PM',
-      location: 'All Common Areas',
-      type: 'maintenance'
-    },
-    {
-      id: 3,
-      title: 'Yoga in the Park',
-      date: 'Sunday, Jan 19',
-      time: '10:00 AM',
-      location: 'Courtyard',
-      rsvps: 8
-    }
-  ]
+  // Upcoming events - from dashboardData
+  const upcomingEvents = dashboardData?.upcomingEvents || []
 
   // Show toast message
   const showToastMessage = (message) => {
@@ -428,6 +422,41 @@ function ManagerDashboard({ onLogout, buildingData }) {
 
   // Render content based on active nav
   const renderContent = () => {
+    // Show loading state
+    if (isLoading) {
+      return (
+        <div className="dashboard-loading">
+          <Loader2 size={48} className="loading-spinner" />
+          <p>Loading your dashboard...</p>
+        </div>
+      )
+    }
+
+    // Show empty state for real users with no building
+    if (dashboardData?.isEmpty && !getIsDemoUser(userProfile, isDemoMode)) {
+      return (
+        <div className="dashboard-empty-state">
+          <div className="empty-state-icon">
+            <Building2 size={64} />
+          </div>
+          <h2>Welcome to Community!</h2>
+          <p>You haven't set up a building yet. Create your building to start managing residents, packages, and events.</p>
+          {loadError && (
+            <div className="empty-state-error">
+              <AlertTriangle size={16} />
+              <span>{loadError}</span>
+            </div>
+          )}
+          <div className="empty-state-actions">
+            <button className="btn-primary" onClick={() => window.location.href = '/'}>
+              <Plus size={18} />
+              Create Your Building
+            </button>
+          </div>
+        </div>
+      )
+    }
+
     if (activeNav === 'messages') {
       return <ManagerMessages />
     }

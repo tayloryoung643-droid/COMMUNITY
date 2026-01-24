@@ -18,9 +18,172 @@ import {
   Box,
   Mail
 } from 'lucide-react'
+import { useAuth } from './contexts/AuthContext'
 import './ManagerPackages.css'
 
+// Demo residents list for dropdown
+const DEMO_RESIDENTS = [
+  { id: 1, name: 'Mike Thompson', unit: '805' },
+  { id: 2, name: 'Sarah Mitchell', unit: '1201' },
+  { id: 3, name: 'Jessica Kim', unit: '402' },
+  { id: 4, name: 'Alex Rivera', unit: '1104' },
+  { id: 5, name: 'Chris Walker', unit: '309' },
+  { id: 6, name: 'Emma Davis', unit: '1507' },
+  { id: 7, name: 'James Lee', unit: '203' },
+  { id: 8, name: 'Taylor Young', unit: '612' },
+  { id: 9, name: 'Lisa Chen', unit: '608' },
+  { id: 10, name: 'Robert Martinez', unit: '1012' },
+  { id: 11, name: 'David Park', unit: '1502' },
+  { id: 12, name: 'Amanda White', unit: '305' }
+]
+
+// Demo packages data
+const DEMO_PACKAGES = [
+  {
+    id: 1,
+    residentName: 'Mike Thompson',
+    unit: '805',
+    carrier: 'ups',
+    size: 'medium',
+    quantity: 1,
+    arrivalDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+    status: 'pending',
+    notes: ''
+  },
+  {
+    id: 2,
+    residentName: 'Sarah Mitchell',
+    unit: '1201',
+    carrier: 'amazon',
+    size: 'large',
+    quantity: 2,
+    arrivalDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    status: 'pending',
+    notes: ''
+  },
+  {
+    id: 3,
+    residentName: 'Jessica Kim',
+    unit: '402',
+    carrier: 'fedex',
+    size: 'medium',
+    quantity: 1,
+    arrivalDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+    status: 'pending',
+    notes: 'Fragile - Handle with care'
+  },
+  {
+    id: 4,
+    residentName: 'Alex Rivera',
+    unit: '1104',
+    carrier: 'usps',
+    size: 'envelope',
+    quantity: 1,
+    arrivalDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+    status: 'pending',
+    notes: ''
+  },
+  {
+    id: 5,
+    residentName: 'Chris Walker',
+    unit: '309',
+    carrier: 'amazon',
+    size: 'small',
+    quantity: 1,
+    arrivalDate: new Date(Date.now() - 6 * 60 * 60 * 1000),
+    status: 'pending',
+    notes: ''
+  },
+  {
+    id: 6,
+    residentName: 'Emma Davis',
+    unit: '1507',
+    carrier: 'ups',
+    size: 'large',
+    quantity: 1,
+    arrivalDate: new Date(Date.now() - 18 * 60 * 60 * 1000),
+    status: 'pending',
+    notes: ''
+  },
+  {
+    id: 7,
+    residentName: 'James Lee',
+    unit: '203',
+    carrier: 'fedex',
+    size: 'medium',
+    quantity: 3,
+    arrivalDate: new Date(Date.now() - 2 * 60 * 60 * 1000),
+    status: 'pending',
+    notes: ''
+  },
+  {
+    id: 8,
+    residentName: 'Taylor Young',
+    unit: '612',
+    carrier: 'amazon',
+    size: 'medium',
+    quantity: 1,
+    arrivalDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+    status: 'picked_up',
+    pickedUpAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
+    notes: ''
+  },
+  {
+    id: 9,
+    residentName: 'Lisa Chen',
+    unit: '608',
+    carrier: 'usps',
+    size: 'envelope',
+    quantity: 2,
+    arrivalDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    status: 'picked_up',
+    pickedUpAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
+    notes: ''
+  },
+  {
+    id: 10,
+    residentName: 'Robert Martinez',
+    unit: '1012',
+    carrier: 'ups',
+    size: 'large',
+    quantity: 1,
+    arrivalDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+    status: 'picked_up',
+    pickedUpAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
+    notes: ''
+  },
+  {
+    id: 11,
+    residentName: 'David Park',
+    unit: '1502',
+    carrier: 'dhl',
+    size: 'xlarge',
+    quantity: 1,
+    arrivalDate: new Date(Date.now() - 4 * 60 * 60 * 1000),
+    status: 'pending',
+    notes: 'Requires signature'
+  },
+  {
+    id: 12,
+    residentName: 'Amanda White',
+    unit: '305',
+    carrier: 'amazon',
+    size: 'small',
+    quantity: 4,
+    arrivalDate: new Date(Date.now() - 30 * 60 * 60 * 1000),
+    status: 'pending',
+    notes: ''
+  }
+]
+
 function ManagerPackages() {
+  // Demo gate - check if user is in demo mode
+  const { userProfile, isDemoMode } = useAuth()
+  const isInDemoMode = isDemoMode || userProfile?.is_demo === true
+
+  // Use demo data for demo users, empty arrays for real users
+  const residents = isInDemoMode ? DEMO_RESIDENTS : []
+
   const [activeFilter, setActiveFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('newest')
@@ -44,22 +207,6 @@ function ManagerPackages() {
     sendNotification: true
   })
 
-  // Residents list for dropdown
-  const residents = [
-    { id: 1, name: 'Mike Thompson', unit: '805' },
-    { id: 2, name: 'Sarah Mitchell', unit: '1201' },
-    { id: 3, name: 'Jessica Kim', unit: '402' },
-    { id: 4, name: 'Alex Rivera', unit: '1104' },
-    { id: 5, name: 'Chris Walker', unit: '309' },
-    { id: 6, name: 'Emma Davis', unit: '1507' },
-    { id: 7, name: 'James Lee', unit: '203' },
-    { id: 8, name: 'Taylor Young', unit: '612' },
-    { id: 9, name: 'Lisa Chen', unit: '608' },
-    { id: 10, name: 'Robert Martinez', unit: '1012' },
-    { id: 11, name: 'David Park', unit: '1502' },
-    { id: 12, name: 'Amanda White', unit: '305' }
-  ]
-
   // Carriers
   const carriers = [
     { id: 'usps', name: 'USPS', color: '#004B87' },
@@ -79,144 +226,8 @@ function ManagerPackages() {
     { id: 'xlarge', name: 'Extra Large', icon: Package }
   ]
 
-  // Packages data
-  const [packages, setPackages] = useState([
-    {
-      id: 1,
-      residentName: 'Mike Thompson',
-      unit: '805',
-      carrier: 'ups',
-      size: 'medium',
-      quantity: 1,
-      arrivalDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-      status: 'pending',
-      notes: ''
-    },
-    {
-      id: 2,
-      residentName: 'Sarah Mitchell',
-      unit: '1201',
-      carrier: 'amazon',
-      size: 'large',
-      quantity: 2,
-      arrivalDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      status: 'pending',
-      notes: ''
-    },
-    {
-      id: 3,
-      residentName: 'Jessica Kim',
-      unit: '402',
-      carrier: 'fedex',
-      size: 'medium',
-      quantity: 1,
-      arrivalDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-      status: 'pending',
-      notes: 'Fragile - Handle with care'
-    },
-    {
-      id: 4,
-      residentName: 'Alex Rivera',
-      unit: '1104',
-      carrier: 'usps',
-      size: 'envelope',
-      quantity: 1,
-      arrivalDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-      status: 'pending',
-      notes: ''
-    },
-    {
-      id: 5,
-      residentName: 'Chris Walker',
-      unit: '309',
-      carrier: 'amazon',
-      size: 'small',
-      quantity: 1,
-      arrivalDate: new Date(Date.now() - 6 * 60 * 60 * 1000),
-      status: 'pending',
-      notes: ''
-    },
-    {
-      id: 6,
-      residentName: 'Emma Davis',
-      unit: '1507',
-      carrier: 'ups',
-      size: 'large',
-      quantity: 1,
-      arrivalDate: new Date(Date.now() - 18 * 60 * 60 * 1000),
-      status: 'pending',
-      notes: ''
-    },
-    {
-      id: 7,
-      residentName: 'James Lee',
-      unit: '203',
-      carrier: 'fedex',
-      size: 'medium',
-      quantity: 3,
-      arrivalDate: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      status: 'pending',
-      notes: ''
-    },
-    {
-      id: 8,
-      residentName: 'Taylor Young',
-      unit: '612',
-      carrier: 'amazon',
-      size: 'medium',
-      quantity: 1,
-      arrivalDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-      status: 'picked_up',
-      pickedUpAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
-      notes: ''
-    },
-    {
-      id: 9,
-      residentName: 'Lisa Chen',
-      unit: '608',
-      carrier: 'usps',
-      size: 'envelope',
-      quantity: 2,
-      arrivalDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      status: 'picked_up',
-      pickedUpAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
-      notes: ''
-    },
-    {
-      id: 10,
-      residentName: 'Robert Martinez',
-      unit: '1012',
-      carrier: 'ups',
-      size: 'large',
-      quantity: 1,
-      arrivalDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-      status: 'picked_up',
-      pickedUpAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
-      notes: ''
-    },
-    {
-      id: 11,
-      residentName: 'David Park',
-      unit: '1502',
-      carrier: 'dhl',
-      size: 'xlarge',
-      quantity: 1,
-      arrivalDate: new Date(Date.now() - 4 * 60 * 60 * 1000),
-      status: 'pending',
-      notes: 'Requires signature'
-    },
-    {
-      id: 12,
-      residentName: 'Amanda White',
-      unit: '305',
-      carrier: 'amazon',
-      size: 'small',
-      quantity: 4,
-      arrivalDate: new Date(Date.now() - 30 * 60 * 60 * 1000),
-      status: 'pending',
-      notes: ''
-    }
-  ])
+  // Packages data - use demo data for demo users, empty for real users
+  const [packages, setPackages] = useState(isInDemoMode ? DEMO_PACKAGES : [])
 
   // Calculate stats
   const pendingPackages = packages.filter(p => p.status === 'pending')
