@@ -290,8 +290,6 @@ function BulletinBoard({ onBack }) {
   if (loading) {
     return (
       <div className="bulletin-board-container resident-inner-page">
-        <div className="bg-orb bg-orb-1"></div>
-        <div className="bg-orb bg-orb-2"></div>
         <header className="bulletin-board-header">
           <button className="back-button-glass" onClick={onBack}>
             <ArrowLeft size={20} />
@@ -310,8 +308,6 @@ function BulletinBoard({ onBack }) {
   if (error) {
     return (
       <div className="bulletin-board-container resident-inner-page">
-        <div className="bg-orb bg-orb-1"></div>
-        <div className="bg-orb bg-orb-2"></div>
         <header className="bulletin-board-header">
           <button className="back-button-glass" onClick={onBack}>
             <ArrowLeft size={20} />
@@ -328,9 +324,6 @@ function BulletinBoard({ onBack }) {
 
   return (
     <div className="bulletin-board-container resident-inner-page">
-      {/* Background orbs */}
-      <div className="bg-orb bg-orb-1"></div>
-      <div className="bg-orb bg-orb-2"></div>
 
       <header className="bulletin-board-header">
         <button className="back-button-glass" onClick={onBack}>

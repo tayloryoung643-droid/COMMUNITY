@@ -55,12 +55,18 @@ function Announcements({ onBack }) {
     }
   }
 
+  // Get type class for styling
+  const getTypeClass = (type) => {
+    switch(type) {
+      case 'Maintenance': return 'maintenance'
+      case 'Safety': return 'alert'
+      case 'General': return 'info'
+      default: return 'info'
+    }
+  }
+
   return (
     <div className="announcements-container resident-inner-page">
-      {/* Background orbs */}
-      <div className="bg-orb bg-orb-1"></div>
-      <div className="bg-orb bg-orb-2"></div>
-
       <header className="announcements-header">
         <button className="back-button-glass" onClick={onBack}>
           <ArrowLeft size={20} />
@@ -79,17 +85,11 @@ function Announcements({ onBack }) {
             >
               <div className="card-accent"></div>
               <div className="announcement-header">
-                <div
-                  className="announcement-icon-wrapper"
-                  style={{ background: getTypeGradient(announcement.type) }}
-                >
-                  <IconComponent size={24} strokeWidth={2} />
+                <div className={`announcement-icon-wrapper ${getTypeClass(announcement.type)}`}>
+                  <IconComponent size={20} strokeWidth={2} />
                 </div>
                 <div className="announcement-meta">
-                  <span
-                    className="announcement-type"
-                    style={{ background: getTypeGradient(announcement.type) }}
-                  >
+                  <span className={`announcement-type ${getTypeClass(announcement.type)}`}>
                     {announcement.type}
                   </span>
                   <span className="announcement-date">

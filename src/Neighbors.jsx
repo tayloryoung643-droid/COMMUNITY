@@ -67,10 +67,6 @@ function Neighbors({ onBack }) {
 
   return (
     <div className="neighbors-container resident-inner-page">
-      {/* Background orbs */}
-      <div className="bg-orb bg-orb-1"></div>
-      <div className="bg-orb bg-orb-2"></div>
-
       <header className="neighbors-header">
         <button className="back-button-glass" onClick={onBack}>
           <ArrowLeft size={20} />
