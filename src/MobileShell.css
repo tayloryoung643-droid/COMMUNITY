@@ -1,0 +1,104 @@
+/* ============================================
+   MOBILE SHELL - Unified layout wrapper
+   Mobile: Full width, no gutters
+   Desktop: Centered phone preview frame
+   ============================================ */
+
+/* Outer wrapper - warm background visible on desktop */
+.mobile-shell-wrapper {
+  min-height: 100dvh;
+  width: 100%;
+  background: #F5F0E8; /* Warm cream base */
+}
+
+/* App surface - the "phone" */
+.mobile-shell-surface {
+  position: relative;
+  min-height: 100dvh;
+  width: 100vw;
+  max-width: none;
+  overflow: hidden;
+  background: transparent;
+}
+
+/* Main content area - reserves space for bottom nav */
+.mobile-shell-content {
+  padding-bottom: 88px; /* Space for fixed nav */
+  min-height: 100dvh;
+}
+
+/* Bottom nav container - fixed to bottom on mobile */
+.mobile-shell-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 9999;
+}
+
+/* ============================================
+   DESKTOP: Phone preview frame (768px+)
+   ============================================ */
+@media (min-width: 768px) {
+  .mobile-shell-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px;
+    min-height: 100vh;
+    /* Subtle warm gradient for desktop background */
+    background:
+      linear-gradient(135deg, #F5F0E8 0%, #EDE8E0 100%);
+  }
+
+  .mobile-shell-surface {
+    position: relative;
+    width: 430px;
+    max-width: 430px;
+    min-height: calc(100vh - 48px);
+    border-radius: 32px;
+    box-shadow:
+      0 25px 50px -12px rgba(0, 0, 0, 0.15),
+      0 0 0 1px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    background: #F5F0E8;
+  }
+
+  .mobile-shell-content {
+    min-height: calc(100vh - 48px);
+    overflow-x: hidden;
+  }
+
+  /* Bottom nav fixed within phone frame */
+  .mobile-shell-nav {
+    position: fixed;
+    width: 430px;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 24px; /* Match wrapper padding */
+    border-radius: 0 0 32px 32px;
+    overflow: hidden;
+  }
+}
+
+/* ============================================
+   LARGE DESKTOP: Slightly larger frame
+   ============================================ */
+@media (min-width: 1200px) {
+  .mobile-shell-wrapper {
+    padding: 32px;
+  }
+
+  .mobile-shell-surface {
+    min-height: calc(100vh - 64px);
+  }
+
+  .mobile-shell-content {
+    min-height: calc(100vh - 64px);
+  }
+
+  .mobile-shell-nav {
+    bottom: 32px; /* Match wrapper padding */
+  }
+}

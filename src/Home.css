@@ -35,14 +35,13 @@
   /* --hero-image is set inline via React for the ambient background */
 }
 
-/* Desktop: flex wrapper to center content column with proper padding */
+/* Desktop: MobileShell handles centering, just set background */
 @media (min-width: 768px) {
   .home-page {
-    display: flex;
-    justify-content: center;
-    padding: 32px 24px 120px;
+    display: block;
+    padding: 0;
     box-sizing: border-box;
-    background: #F3EDE3; /* Noticeably warm - matches mobile */
+    background: transparent; /* Shell provides background */
   }
 }
 
@@ -202,36 +201,26 @@
 }
 
 /* ============================================
-   SINGLE CENTERED APP CONTAINER
-   This is the key to perfect alignment!
+   APP CONTAINER - Now managed by MobileShell
+   Full width on mobile, shell handles constraints
    ============================================ */
 .app-container {
   width: 100%;
-  max-width: 480px; /* Readable size 420-520px */
-  margin: 0 auto;
+  max-width: none; /* No constraints - MobileShell handles this */
+  margin: 0;
   padding: 0;
-  padding-bottom: 80px; /* Space for fixed nav */
-  background: var(--bg-app);
+  padding-bottom: 0; /* MobileShell handles nav spacing */
+  background: transparent;
   min-height: 100vh;
   position: relative;
   z-index: 1;
   box-sizing: border-box;
 }
 
-/* Desktop shadow effect */
-@media (min-width: 520px) {
-  .app-container {
-    box-shadow: 0 0 60px rgba(0, 0, 0, 0.1);
-  }
-}
-
-/* On desktop, make content column transparent - NO vertical panel */
+/* Desktop: content fills the shell frame */
 @media (min-width: 768px) {
-  /* Remove any panel/rectangle behind the column */
   .app-container {
-    background: transparent !important;
-    box-shadow: none;
-    margin: 0; /* Remove auto margin, flex handles centering */
+    background: transparent;
   }
 
   /* Ensure all content wrappers are transparent */
@@ -242,9 +231,6 @@
   .quick-actions-section {
     background: transparent !important;
   }
-
-  /* Only cards should have surfaces (white with shadows) */
-  /* Cards already have their own backgrounds - no changes needed */
 }
 
 /* ============================================
@@ -725,131 +711,9 @@
 }
 
 /* ============================================
-   BOTTOM NAVIGATION - Fixed, always shows all 4 tabs
+   BOTTOM NAVIGATION - Now managed by MobileShell + BottomNav.css
+   Legacy styles removed - see BottomNav.css for current styles
    ============================================ */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  display: flex;
-  overflow: visible;
-  align-items: center;
-  height: 64px;
-  background: white;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  padding: 0;
-  padding-bottom: env(safe-area-inset-bottom, 0);
-  z-index: 1000;
-  box-sizing: border-box;
-}
-
-.nav-tab {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  flex: 1 1 0;
-  min-width: 0;
-  padding: 8px 2px;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 10px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: color 0.15s ease;
-  letter-spacing: 0.01em;
-  overflow: visible;
-}
-
-.nav-tab span {
-  white-space: nowrap;
-  font-size: 10px;
-}
-
-.nav-tab:hover {
-  color: var(--text-secondary);
-}
-
-.nav-tab.active {
-  color: var(--text-primary);
-}
-
-.nav-tab svg {
-  width: 20px;
-  height: 20px;
-  stroke-width: 1.5;
-  flex-shrink: 0;
-}
-
-/* Mobile: Force all 4 nav tabs to be visible */
-@media (max-width: 767px) {
-  #main-bottom-nav,
-  #main-bottom-nav.bottom-nav,
-  .home-page .bottom-nav,
-  .bottom-nav {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    min-width: 100vw !important;
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    justify-content: space-evenly !important;
-    align-items: center !important;
-    height: 64px !important;
-    background: white !important;
-    border-top: 1px solid rgba(0,0,0,0.1) !important;
-    z-index: 99999 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    box-sizing: border-box !important;
-    transform: none !important;
-  }
-
-  #main-bottom-nav .nav-tab,
-  .home-page .bottom-nav .nav-tab,
-  .bottom-nav .nav-tab,
-  .nav-tab {
-    flex: 1 1 0 !important;
-    width: 25% !important;
-    min-width: 0 !important;
-    max-width: 25% !important;
-    padding: 8px 2px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    background: transparent !important;
-    border: none !important;
-  }
-
-  #main-bottom-nav .nav-tab span,
-  .bottom-nav .nav-tab span,
-  .nav-tab span {
-    font-size: 9px !important;
-    display: block !important;
-    visibility: visible !important;
-    white-space: nowrap !important;
-  }
-
-  #main-bottom-nav .nav-tab svg,
-  .bottom-nav .nav-tab svg,
-  .nav-tab svg {
-    width: 20px !important;
-    height: 20px !important;
-    display: block !important;
-    visibility: visible !important;
-  }
-}
 
 /* ============================================
    MODALS - Outside the app container

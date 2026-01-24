@@ -16,6 +16,7 @@ import CalendarView from './CalendarView'
 import BuildingInfo from './BuildingInfo'
 import Building from './Building'
 import BottomNav from './BottomNav'
+import MobileShell from './MobileShell'
 import ManagerOnboardingStep1 from './ManagerOnboardingStep1'
 import ManagerOnboardingStep2 from './ManagerOnboardingStep2'
 import ManagerOnboardingStep3 from './ManagerOnboardingStep3'
@@ -241,112 +242,103 @@ function App() {
   ]
   const showBottomNav = residentScreens.includes(currentScreen)
 
+  // Shared bottom nav for resident screens
+  const bottomNav = <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
+
   // Show different screens based on currentScreen value
   if (currentScreen === 'announcements') {
     return (
-      <>
+      <MobileShell bottomNav={bottomNav}>
         <Announcements onBack={handleBack} />
-        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
-      </>
+      </MobileShell>
     )
   }
 
   if (currentScreen === 'packages') {
     return (
-      <>
+      <MobileShell bottomNav={bottomNav}>
         <Packages onBack={handleBack} />
-        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
-      </>
+      </MobileShell>
     )
   }
 
   if (currentScreen === 'events') {
     return (
-      <>
+      <MobileShell bottomNav={bottomNav}>
         <Events onBack={handleBack} />
-        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
-      </>
+      </MobileShell>
     )
   }
 
   if (currentScreen === 'neighbors') {
     return (
-      <>
+      <MobileShell bottomNav={bottomNav}>
         <Neighbors onBack={handleBack} />
-        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
-      </>
+      </MobileShell>
     )
   }
 
   if (currentScreen === 'emergency') {
     return (
-      <>
+      <MobileShell bottomNav={bottomNav}>
         <Emergency onBack={handleBack} />
-        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
-      </>
+      </MobileShell>
     )
   }
 
   if (currentScreen === 'elevator-booking') {
     return (
-      <>
+      <MobileShell bottomNav={bottomNav}>
         <ElevatorBooking onBack={handleBack} />
-        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
-      </>
+      </MobileShell>
     )
   }
 
   if (currentScreen === 'community') {
     return (
-      <>
+      <MobileShell bottomNav={bottomNav}>
         <CommunityFeed onBack={handleBack} posts={posts} onAddPost={handleAddPost} />
-        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
-      </>
+      </MobileShell>
     )
   }
 
   if (currentScreen === 'bulletin-board') {
     return (
-      <>
+      <MobileShell bottomNav={bottomNav}>
         <BulletinBoard onBack={handleBack} />
-        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
-      </>
+      </MobileShell>
     )
   }
 
   if (currentScreen === 'settings') {
     return (
-      <>
+      <MobileShell bottomNav={bottomNav}>
         <Settings onBack={handleBack} onLogout={handleLogout} onNavigate={handleNavigation} />
-        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
-      </>
+      </MobileShell>
     )
   }
 
   if (currentScreen === 'building-info') {
     return (
-      <>
+      <MobileShell bottomNav={bottomNav}>
         <BuildingInfo onBack={() => setCurrentScreen('settings')} />
-        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
-      </>
+      </MobileShell>
     )
   }
 
   if (currentScreen === 'calendar') {
     return (
-      <>
+      <MobileShell bottomNav={bottomNav}>
         <CalendarView onBack={handleBack} onNavigate={handleNavigation} />
-        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
-      </>
+      </MobileShell>
     )
   }
 
   if (currentScreen === 'building') {
     return (
-      <>
+      <MobileShell bottomNav={bottomNav}>
         <Building onBack={handleBack} onNavigate={handleNavigation} />
-        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
-      </>
+      </MobileShell>
     )
   }
 
@@ -412,10 +404,9 @@ function App() {
 
   if (currentScreen === 'home') {
     return (
-      <>
+      <MobileShell bottomNav={bottomNav}>
         <Home buildingCode={buildingCode} onNavigate={handleNavigation} />
-        <BottomNav currentScreen={currentScreen} onNavigate={handleNavigation} />
-      </>
+      </MobileShell>
     )
   }
 

@@ -1,9 +1,9 @@
 /* ============================================
-   GLOBAL BOTTOM NAV - Persistent across all pages
+   GLOBAL BOTTOM NAV - Managed by MobileShell
    ============================================ */
 
 .global-bottom-nav {
-  position: fixed;
+  position: relative; /* Shell handles fixed positioning */
   bottom: 0;
   left: 0;
   right: 0;
