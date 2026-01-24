@@ -1,14 +1,70 @@
 import { useState } from 'react'
-import { Menu, X, Home as HomeIcon, MessageSquare, Mail, Calendar, Package, Building2, Settings, LogOut } from 'lucide-react'
+import { Menu, X, Bell, Home as HomeIcon, MessageSquare, Mail, Calendar, Package, Building2, Settings, LogOut, Wrench, Users, Wine } from 'lucide-react'
 import './HamburgerMenu.css'
 
 function HamburgerMenu({ onNavigate, unreadMessages = 0 }) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+
+  // Sample notifications data
+  const notifications = [
+    {
+      id: 1,
+      type: 'package',
+      title: 'Package Delivered',
+      message: 'Your Amazon package has arrived at the front desk',
+      time: '10 min ago',
+      unread: true,
+      icon: Package
+    },
+    {
+      id: 2,
+      type: 'event',
+      title: 'Event Reminder',
+      message: 'Wine & Cheese Social starts in 2 hours',
+      time: '1 hour ago',
+      unread: true,
+      icon: Wine
+    },
+    {
+      id: 3,
+      type: 'maintenance',
+      title: 'Maintenance Notice',
+      message: 'Water shut-off scheduled for tomorrow 9am-12pm',
+      time: '3 hours ago',
+      unread: false,
+      icon: Wrench
+    },
+    {
+      id: 4,
+      type: 'community',
+      title: 'New Neighbor',
+      message: 'Emily Chen just moved into Unit 1205',
+      time: 'Yesterday',
+      unread: false,
+      icon: Users
+    }
+  ]
+
+  const unreadCount = notifications.filter(n => n.unread).length
 
   const handleMenuItemClick = (destination) => {
     setMenuOpen(false)
+    setNotificationsOpen(false)
     if (onNavigate) {
       onNavigate(destination)
+    }
+  }
+
+  const handleNotificationClick = (notification) => {
+    setNotificationsOpen(false)
+    // Navigate based on notification type
+    if (notification.type === 'package') {
+      onNavigate && onNavigate('Packages')
+    } else if (notification.type === 'event') {
+      onNavigate && onNavigate('Calendar')
+    } else if (notification.type === 'community') {
+      onNavigate && onNavigate('Community')
     }
   }
 
@@ -17,11 +73,75 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0 }) {
       {/* Hamburger Button - positioned in hero top-left */}
       <button
         className="global-hamburger-btn"
-        onClick={() => setMenuOpen(true)}
+        onClick={() => { setMenuOpen(true); setNotificationsOpen(false); }}
         aria-label="Open menu"
       >
         <Menu size={24} />
       </button>
+
+      {/* Notification Button - positioned in hero top-right */}
+      <button
+        className="global-notification-btn"
+        onClick={() => { setNotificationsOpen(!notificationsOpen); setMenuOpen(false); }}
+        aria-label="Notifications"
+      >
+        <Bell size={22} />
+        {unreadCount > 0 && (
+          <span className="global-notification-badge">{unreadCount}</span>
+        )}
+      </button>
+
+      {/* Notifications Panel */}
+      {notificationsOpen && (
+        <div className="global-notifications-overlay" onClick={() => setNotificationsOpen(false)}>
+          <div className="global-notifications-panel" onClick={e => e.stopPropagation()}>
+            <div className="global-notifications-header">
+              <span className="global-notifications-title">Notifications</span>
+              <button
+                className="global-notifications-close-btn"
+                onClick={() => setNotificationsOpen(false)}
+                aria-label="Close notifications"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="global-notifications-list">
+              {notifications.length === 0 ? (
+                <div className="global-notifications-empty">
+                  <Bell size={32} />
+                  <p>No notifications</p>
+                </div>
+              ) : (
+                notifications.map(notification => {
+                  const IconComponent = notification.icon
+                  return (
+                    <button
+                      key={notification.id}
+                      className={`global-notification-item ${notification.unread ? 'unread' : ''}`}
+                      onClick={() => handleNotificationClick(notification)}
+                    >
+                      <div className={`global-notification-icon ${notification.type}`}>
+                        <IconComponent size={18} />
+                      </div>
+                      <div className="global-notification-content">
+                        <span className="global-notification-item-title">{notification.title}</span>
+                        <span className="global-notification-message">{notification.message}</span>
+                        <span className="global-notification-time">{notification.time}</span>
+                      </div>
+                      {notification.unread && <div className="global-notification-dot" />}
+                    </button>
+                  )
+                })
+              )}
+            </div>
+
+            <button className="global-notifications-view-all" onClick={() => handleMenuItemClick('Messages')}>
+              View All Messages
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Menu Overlay and Panel */}
       <div className={`global-menu-overlay ${menuOpen ? 'menu-open' : ''}`} onClick={() => setMenuOpen(false)}>

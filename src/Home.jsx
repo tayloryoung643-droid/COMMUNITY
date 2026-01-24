@@ -147,16 +147,8 @@ function Home({ buildingCode, onNavigate }) {
             <div className="hero-warm-overlay"></div>
             <div className="hero-gradient-overlay"></div>
 
-            {/* Hamburger Menu - Absolute positioned top-left */}
+            {/* Hamburger Menu & Notification Bell */}
             <HamburgerMenu onNavigate={onNavigate} unreadMessages={unreadMessages} />
-
-            {/* Notification Bell - Absolute positioned top-right */}
-            <button className="notification-btn" aria-label="Notifications">
-              <Bell size={22} />
-              {unreadMessages > 0 && (
-                <span className="notification-badge">{unreadMessages}</span>
-              )}
-            </button>
 
             {/* Weather Widget - Below top bar */}
             <div className="weather-widget">
