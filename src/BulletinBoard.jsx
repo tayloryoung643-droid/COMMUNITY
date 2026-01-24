@@ -289,7 +289,7 @@ function BulletinBoard({ onBack }) {
   // Loading state
   if (loading) {
     return (
-      <div className="bulletin-board-container">
+      <div className="bulletin-board-container resident-inner-page">
         <div className="bg-orb bg-orb-1"></div>
         <div className="bg-orb bg-orb-2"></div>
         <header className="bulletin-board-header">
@@ -309,7 +309,7 @@ function BulletinBoard({ onBack }) {
   // Error state
   if (error) {
     return (
-      <div className="bulletin-board-container">
+      <div className="bulletin-board-container resident-inner-page">
         <div className="bg-orb bg-orb-1"></div>
         <div className="bg-orb bg-orb-2"></div>
         <header className="bulletin-board-header">
@@ -327,7 +327,7 @@ function BulletinBoard({ onBack }) {
   }
 
   return (
-    <div className="bulletin-board-container">
+    <div className="bulletin-board-container resident-inner-page">
       {/* Background orbs */}
       <div className="bg-orb bg-orb-1"></div>
       <div className="bg-orb bg-orb-2"></div>

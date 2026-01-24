@@ -172,7 +172,7 @@ function Events({ onBack }) {
   // Loading state
   if (loading) {
     return (
-      <div className="events-container">
+      <div className="events-container resident-inner-page">
         <div className="bg-orb bg-orb-1"></div>
         <div className="bg-orb bg-orb-2"></div>
         <header className="events-header">
@@ -192,7 +192,7 @@ function Events({ onBack }) {
   // Error state
   if (error) {
     return (
-      <div className="events-container">
+      <div className="events-container resident-inner-page">
         <div className="bg-orb bg-orb-1"></div>
         <div className="bg-orb bg-orb-2"></div>
         <header className="events-header">
@@ -210,7 +210,7 @@ function Events({ onBack }) {
   }
 
   return (
-    <div className="events-container">
+    <div className="events-container resident-inner-page">
       {/* Background orbs */}
       <div className="bg-orb bg-orb-1"></div>
       <div className="bg-orb bg-orb-2"></div>

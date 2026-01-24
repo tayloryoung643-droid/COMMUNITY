@@ -56,7 +56,7 @@ function Announcements({ onBack }) {
   }
 
   return (
-    <div className="announcements-container">
+    <div className="announcements-container resident-inner-page">
       {/* Background orbs */}
       <div className="bg-orb bg-orb-1"></div>
       <div className="bg-orb bg-orb-2"></div>

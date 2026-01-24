@@ -9,7 +9,7 @@ function Building({ onBack, onNavigate }) {
   }
 
   return (
-    <div className="building-container">
+    <div className="building-container resident-inner-page">
       {/* Header */}
       <header className="building-header">
         <button className="back-button-glass" onClick={onBack}>

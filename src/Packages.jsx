@@ -150,7 +150,7 @@ function Packages({ onBack }) {
   // Loading state
   if (loading) {
     return (
-      <div className="packages-container">
+      <div className="packages-container resident-inner-page">
         <div className="bg-orb bg-orb-1"></div>
         <div className="bg-orb bg-orb-2"></div>
         <header className="packages-header">
@@ -176,7 +176,7 @@ function Packages({ onBack }) {
   // Error state
   if (error) {
     return (
-      <div className="packages-container">
+      <div className="packages-container resident-inner-page">
         <div className="bg-orb bg-orb-1"></div>
         <div className="bg-orb bg-orb-2"></div>
         <header className="packages-header">
@@ -200,7 +200,7 @@ function Packages({ onBack }) {
   }
 
   return (
-    <div className="packages-container">
+    <div className="packages-container resident-inner-page">
       {/* Background orbs */}
       <div className="bg-orb bg-orb-1"></div>
       <div className="bg-orb bg-orb-2"></div>

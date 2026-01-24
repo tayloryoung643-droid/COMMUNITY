@@ -151,7 +151,7 @@ function CalendarView({ onBack }) {
   }
 
   return (
-    <div className="calendar-view-container">
+    <div className="calendar-view-container resident-inner-page">
       {/* Background orbs */}
       <div className="bg-orb bg-orb-1"></div>
       <div className="bg-orb bg-orb-2"></div>

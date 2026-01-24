@@ -326,7 +326,7 @@ function CommunityFeed({ onBack }) {
   // Loading state
   if (loading) {
     return (
-      <div className="community-feed-container">
+      <div className="community-feed-container resident-inner-page">
         <div className="bg-orb bg-orb-1"></div>
         <div className="bg-orb bg-orb-2"></div>
         <header className="community-feed-header">
@@ -346,7 +346,7 @@ function CommunityFeed({ onBack }) {
   // Error state
   if (error) {
     return (
-      <div className="community-feed-container">
+      <div className="community-feed-container resident-inner-page">
         <div className="bg-orb bg-orb-1"></div>
         <div className="bg-orb bg-orb-2"></div>
         <header className="community-feed-header">
@@ -364,7 +364,7 @@ function CommunityFeed({ onBack }) {
   }
 
   return (
-    <div className="community-feed-container">
+    <div className="community-feed-container resident-inner-page">
       {/* Background orbs */}
       <div className="bg-orb bg-orb-1"></div>
       <div className="bg-orb bg-orb-2"></div>

@@ -173,7 +173,7 @@ function ElevatorBooking({ onBack }) {
   // Loading state
   if (loading) {
     return (
-      <div className="elevator-booking-container">
+      <div className="elevator-booking-container resident-inner-page">
         <div className="bg-orb bg-orb-1"></div>
         <div className="bg-orb bg-orb-2"></div>
         <header className="elevator-booking-header">
@@ -193,7 +193,7 @@ function ElevatorBooking({ onBack }) {
   // Error state
   if (error) {
     return (
-      <div className="elevator-booking-container">
+      <div className="elevator-booking-container resident-inner-page">
         <div className="bg-orb bg-orb-1"></div>
         <div className="bg-orb bg-orb-2"></div>
         <header className="elevator-booking-header">
@@ -211,7 +211,7 @@ function ElevatorBooking({ onBack }) {
   }
 
   return (
-    <div className="elevator-booking-container">
+    <div className="elevator-booking-container resident-inner-page">
       {/* Background orbs */}
       <div className="bg-orb bg-orb-1"></div>
       <div className="bg-orb bg-orb-2"></div>

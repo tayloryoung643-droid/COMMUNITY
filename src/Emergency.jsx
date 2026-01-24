@@ -72,7 +72,7 @@ function Emergency({ onBack }) {
   }
 
   return (
-    <div className="emergency-container">
+    <div className="emergency-container resident-inner-page">
       {/* Background orbs */}
       <div className="bg-orb bg-orb-1"></div>
       <div className="bg-orb bg-orb-2"></div>

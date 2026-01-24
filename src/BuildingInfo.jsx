@@ -138,7 +138,7 @@ function BuildingInfo({ onBack }) {
   ]
 
   return (
-    <div className="building-info-container">
+    <div className="building-info-container resident-inner-page">
       {/* Background orbs */}
       <div className="bg-orb bg-orb-1"></div>
       <div className="bg-orb bg-orb-2"></div>

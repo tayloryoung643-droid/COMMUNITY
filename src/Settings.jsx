@@ -40,7 +40,7 @@ function Settings({ onBack, onLogout, onNavigate }) {
   }
 
   return (
-    <div className="settings-container">
+    <div className="settings-container resident-inner-page">
       <header className="settings-header">
         <button className="back-button-glass" onClick={onBack}>
           <ArrowLeft size={20} />
