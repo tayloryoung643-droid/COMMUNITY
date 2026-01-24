@@ -54,14 +54,14 @@
 
 /* Sections */
 .building-section {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .building-section .section-title {
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
   color: #1A1A1A;
-  margin: 0 0 10px 0;
+  margin: 0 0 12px 0;
   letter-spacing: -0.01em;
 }
 
@@ -69,35 +69,36 @@
 .quick-actions-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 12px;
 }
 
+/* Quick Action Card - Matches Home today-card style */
 .quick-action-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 18px 12px;
+  gap: 10px;
+  padding: 20px 16px;
   background: #FFFCF7;
   border: none;
-  border-radius: 14px;
+  border-radius: 18px;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 2px 8px rgba(120, 100, 70, 0.06), 0 4px 16px rgba(120, 100, 70, 0.03);
 }
 
 .quick-action-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 12px rgba(120, 100, 70, 0.08), 0 8px 24px rgba(120, 100, 70, 0.05);
 }
 
 .quick-action-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 12px;
 }
 
@@ -119,20 +120,20 @@
   color: #1A1A1A;
 }
 
-/* List Cards */
+/* List Cards - Matches Home action-card style */
 .list-card {
   background: #FFFCF7;
-  border-radius: 14px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 2px 8px rgba(120, 100, 70, 0.06), 0 4px 16px rgba(120, 100, 70, 0.03);
 }
 
 .list-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   width: 100%;
-  padding: 12px 14px;
+  padding: 16px;
   background: transparent;
   border: none;
   border-bottom: 1px solid rgba(0, 0, 0, 0.04);
@@ -146,17 +147,17 @@
 }
 
 .list-item:hover {
-  background: #FAFAFA;
+  background: #F3EEE5;
 }
 
 .list-item-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   background: #F5F0E8;
-  border-radius: 8px;
+  border-radius: 10px;
   color: #8B7355;
   flex-shrink: 0;
 }
@@ -236,25 +237,26 @@
   }
 
   .quick-action-card {
-    padding: 20px 12px;
+    padding: 18px 14px;
+    border-radius: 16px;
   }
 
   .quick-action-icon {
-    width: 46px;
-    height: 46px;
+    width: 40px;
+    height: 40px;
   }
 
   .quick-action-label {
-    font-size: 13px;
+    font-size: 14px;
   }
 
   .list-item {
-    padding: 14px 16px;
+    padding: 16px;
   }
 
   .list-item-icon {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
   }
 
   .list-item-label {
