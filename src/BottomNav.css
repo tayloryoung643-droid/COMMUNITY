@@ -53,6 +53,14 @@
   color: #1A1A1A;
 }
 
+/* Soft pill background behind active icon */
+.global-bottom-nav .nav-tab.active svg {
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  padding: 6px;
+  margin: -6px;
+}
+
 .global-bottom-nav .nav-tab svg {
   width: 22px;
   height: 22px;
