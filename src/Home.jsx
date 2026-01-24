@@ -207,10 +207,7 @@ function Home({ buildingCode, onNavigate }) {
           {/* Today's Community Post */}
           {todayCommunityPost && (
             <button className="today-card community-post-card" onClick={() => handleCommunityPostClick(todayCommunityPost)}>
-              <div
-                className="today-card-icon community-icon"
-                style={{ background: `${getPostTypeBadge(todayCommunityPost.type).color}15` }}
-              >
+              <div className="today-card-icon community-icon">
                 {todayCommunityPost.author.charAt(0)}
               </div>
               <div className="today-card-content">

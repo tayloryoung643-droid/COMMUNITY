@@ -330,6 +330,7 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
+  background: var(--bg-card); /* Match other today cards exactly */
 }
 
 .today-card.community-post-card .today-card-icon {
@@ -400,7 +401,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(139, 92, 246, 0.15);
+  background: #F0EBE3 !important; /* Warm neutral to match other Today icons */
+  color: #7A7265 !important; /* Muted text color */
 }
 
 /* ============================================
