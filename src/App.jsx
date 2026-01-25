@@ -43,6 +43,19 @@ function App() {
   const [selectedBuilding, setSelectedBuilding] = useState(null)
   const [searchedAddress, setSearchedAddress] = useState('')
 
+  // Redirect authenticated users to the correct screen on app load
+  useEffect(() => {
+    // Only redirect if we're done loading, have a real user, not in demo mode, and on login screen
+    if (!loading && user && userProfile && !isDemoMode && currentScreen === 'login') {
+      // Navigate based on user role
+      if (userProfile.role === 'manager') {
+        setCurrentScreen('manager-dashboard')
+      } else {
+        setCurrentScreen('home')
+      }
+    }
+  }, [loading, user, userProfile, isDemoMode, currentScreen])
+
   // Community posts state - seed with some example posts
   const [posts, setPosts] = useState([
     {

@@ -22,6 +22,8 @@ export const AuthProvider = ({ children }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
       if (session?.user) {
+        // Real session exists - disable demo mode
+        setIsDemoMode(false)
         loadUserProfile(session.user.id)
       }
       setLoading(false)
@@ -33,6 +35,8 @@ export const AuthProvider = ({ children }) => {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) {
+        // Real session exists - disable demo mode
+        setIsDemoMode(false)
         loadUserProfile(session.user.id)
       } else {
         setUserProfile(null)
@@ -77,7 +81,8 @@ export const AuthProvider = ({ children }) => {
       }
 
       setUserProfile(profileWithBuilding)
-      setIsDemoMode(profileWithBuilding.is_demo || false)
+      // Note: isDemoMode is only set true by explicit loginAsDemo() call
+      // Real users loaded from DB should never be in demo mode
     } catch (error) {
       console.error('Error loading user profile:', error)
     }
