@@ -83,6 +83,12 @@ export const AuthProvider = ({ children }) => {
       setUserProfile(profileWithBuilding)
       // Note: isDemoMode is only set true by explicit loginAsDemo() call
       // Real users loaded from DB should never be in demo mode
+      console.log('[AuthContext] Profile loaded:', {
+        isDemoMode: false, // Real users are never in demo mode
+        sessionUserId: userId,
+        profileId: profileWithBuilding.id,
+        buildingId: profileWithBuilding.building_id
+      })
     } catch (error) {
       console.error('Error loading user profile:', error)
     }

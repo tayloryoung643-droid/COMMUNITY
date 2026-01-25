@@ -547,6 +547,31 @@ function App() {
     )
   }
 
+  // Debug bar (development only)
+  const DebugBar = import.meta.env.DEV ? (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: '#1e293b',
+      color: '#94a3b8',
+      fontSize: '10px',
+      padding: '4px 8px',
+      zIndex: 9999,
+      fontFamily: 'monospace',
+      display: 'flex',
+      gap: '12px',
+      flexWrap: 'wrap'
+    }}>
+      <span>demo: <b style={{color: isDemoMode ? '#f87171' : '#4ade80'}}>{isDemoMode ? 'YES' : 'NO'}</b></span>
+      <span>screen: <b style={{color: '#60a5fa'}}>{currentScreen}</b></span>
+      <span>session: <b style={{color: '#fbbf24'}}>{user?.id || 'none'}</b></span>
+      <span>profile: <b style={{color: '#a78bfa'}}>{userProfile?.id || 'none'}</b></span>
+      <span>building: <b style={{color: '#2dd4bf'}}>{userProfile?.building_id || 'none'}</b></span>
+    </div>
+  ) : null
+
   // Define which screens are resident screens (should show bottom nav)
   const residentScreens = [
     'home', 'announcements', 'packages', 'events', 'neighbors', 'emergency',
@@ -774,31 +799,40 @@ function App() {
     } : null
 
     return (
-      <ManagerDashboard
-        onLogout={handleLogout}
-        buildingData={buildingData}
-      />
+      <>
+        {DebugBar}
+        <ManagerDashboard
+          onLogout={handleLogout}
+          buildingData={buildingData}
+        />
+      </>
     )
   }
 
   if (currentScreen === 'home') {
     return (
-      <MobileShell bottomNav={bottomNav}>
-        <Home buildingCode={buildingCode} onNavigate={handleNavigation} />
-      </MobileShell>
+      <>
+        {DebugBar}
+        <MobileShell bottomNav={bottomNav}>
+          <Home buildingCode={buildingCode} onNavigate={handleNavigation} />
+        </MobileShell>
+      </>
     )
   }
 
   // Otherwise, show the Login screen
   return (
-    <Login
-      onResidentLogin={handleResidentLogin}
-      onManagerLogin={handleManagerLogin}
-      onRegisterClick={handleRegisterClick}
-      onDemoLogin={handleDemoLogin}
-      onResidentSignupClick={handleResidentSignupClick}
-      authError={authError}
-    />
+    <>
+      {DebugBar}
+      <Login
+        onResidentLogin={handleResidentLogin}
+        onManagerLogin={handleManagerLogin}
+        onRegisterClick={handleRegisterClick}
+        onDemoLogin={handleDemoLogin}
+        onResidentSignupClick={handleResidentSignupClick}
+        authError={authError}
+      />
+    </>
   )
 }
 
