@@ -557,6 +557,68 @@
 }
 
 /* ============================================
+   SIGNUP DIVIDER
+   ============================================ */
+.signup-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 8px 0;
+}
+
+.signup-divider::before,
+.signup-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.signup-divider span {
+  font-size: 12px;
+  color: #9CA3AF;
+  text-transform: lowercase;
+}
+
+/* ============================================
+   FIND BUILDING BUTTON
+   ============================================ */
+.find-building-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #5B8A8A;
+  background: rgba(91, 138, 138, 0.08);
+  border: 1px solid rgba(91, 138, 138, 0.2);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.find-building-btn:hover {
+  background: rgba(91, 138, 138, 0.15);
+  border-color: rgba(91, 138, 138, 0.35);
+  color: #4A7575;
+}
+
+.find-building-btn:hover svg:last-child {
+  transform: translateX(4px);
+}
+
+.find-building-btn svg {
+  transition: transform 0.3s ease;
+}
+
+.find-building-btn svg:first-child {
+  color: #5B8A8A;
+}
+
+/* ============================================
    REGISTER PROMPT
    ============================================ */
 .register-prompt {

@@ -25,6 +25,10 @@ import ManagerOnboardingStep2 from './ManagerOnboardingStep2'
 import ManagerOnboardingStep3 from './ManagerOnboardingStep3'
 import ManagerOnboardingStep4 from './ManagerOnboardingStep4'
 import ManagerDashboard from './ManagerDashboard'
+import ResidentSignupEntry from './ResidentSignupEntry'
+import ResidentAddressSearch from './ResidentAddressSearch'
+import ResidentJoinBuilding from './ResidentJoinBuilding'
+import ResidentCreateBuilding from './ResidentCreateBuilding'
 
 function App() {
   const { user, userProfile, loading, isDemoMode, signIn, signOut, loginAsDemo } = useAuth()
@@ -34,6 +38,10 @@ function App() {
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [selectedPost, setSelectedPost] = useState(null)
   const [previousScreen, setPreviousScreen] = useState('home')
+
+  // Resident signup flow state
+  const [selectedBuilding, setSelectedBuilding] = useState(null)
+  const [searchedAddress, setSearchedAddress] = useState('')
 
   // Community posts state - seed with some example posts
   const [posts, setPosts] = useState([
@@ -142,8 +150,41 @@ function App() {
     }
   }, [onboardingData])
 
-  const handleResidentLogin = (code) => {
+  const handleResidentLogin = (code, building) => {
     setBuildingCode(code)
+    setSelectedBuilding(building)
+    setCurrentScreen('home')
+  }
+
+  // Resident Signup Flow Handlers
+  const handleResidentSignupClick = () => {
+    setCurrentScreen('resident-signup-entry')
+  }
+
+  const handleResidentHaveCode = () => {
+    // Go back to login to enter code
+    setCurrentScreen('login')
+  }
+
+  const handleResidentFindBuilding = () => {
+    setCurrentScreen('resident-address-search')
+  }
+
+  const handleResidentSelectBuilding = (building) => {
+    setSelectedBuilding(building)
+    setCurrentScreen('resident-join-building')
+  }
+
+  const handleResidentCreateBuilding = (address) => {
+    setSearchedAddress(address)
+    setCurrentScreen('resident-create-building')
+  }
+
+  const handleResidentSignupSuccess = (result) => {
+    console.log('[App] Resident signup success:', result)
+    setBuildingCode(result.building?.access_code || '')
+    setSelectedBuilding(result.building)
+    // Navigate to resident home
     setCurrentScreen('home')
   }
 
@@ -615,6 +656,49 @@ function App() {
     )
   }
 
+  // Resident Signup Flow Screens
+  if (currentScreen === 'resident-signup-entry') {
+    return (
+      <ResidentSignupEntry
+        onBack={() => setCurrentScreen('login')}
+        onHaveCode={handleResidentHaveCode}
+        onFindBuilding={handleResidentFindBuilding}
+        onDemoLogin={handleDemoLogin}
+      />
+    )
+  }
+
+  if (currentScreen === 'resident-address-search') {
+    return (
+      <ResidentAddressSearch
+        onBack={() => setCurrentScreen('resident-signup-entry')}
+        onSelectBuilding={handleResidentSelectBuilding}
+        onCreateBuilding={handleResidentCreateBuilding}
+      />
+    )
+  }
+
+  if (currentScreen === 'resident-join-building' && selectedBuilding) {
+    return (
+      <ResidentJoinBuilding
+        building={selectedBuilding}
+        onBack={() => setCurrentScreen('resident-address-search')}
+        onSuccess={handleResidentSignupSuccess}
+      />
+    )
+  }
+
+  if (currentScreen === 'resident-create-building') {
+    return (
+      <ResidentCreateBuilding
+        initialAddress={searchedAddress}
+        onBack={() => setCurrentScreen('resident-address-search')}
+        onSuccess={handleResidentSignupSuccess}
+      />
+    )
+  }
+
+  // Manager Onboarding Flow Screens
   if (currentScreen === 'manager-onboarding-step1') {
     return (
       <ManagerOnboardingStep1
@@ -697,6 +781,7 @@ function App() {
       onManagerLogin={handleManagerLogin}
       onRegisterClick={handleRegisterClick}
       onDemoLogin={handleDemoLogin}
+      onResidentSignupClick={handleResidentSignupClick}
       authError={authError}
     />
   )

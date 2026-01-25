@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Building2, User, Mail, Lock, ArrowRight, Package, Calendar, Headphones, Sparkles } from 'lucide-react'
+import { Building2, User, Mail, Lock, ArrowRight, Package, Calendar, Headphones, Sparkles, Search } from 'lucide-react'
 import { validateBuildingCode } from './services/buildingService'
 import './Login.css'
 
-function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, authError }) {
+function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, onResidentSignupClick, authError }) {
   const [activeTab, setActiveTab] = useState('resident')
   const [buildingCode, setBuildingCode] = useState('')
   const [managerEmail, setManagerEmail] = useState('')
@@ -146,6 +146,16 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
               <button className="login-btn-primary" onClick={handleResidentLogin} disabled={isLoading}>
                 <span>{isLoading ? 'Joining...' : 'Join Building'}</span>
                 {!isLoading && <ArrowRight size={18} />}
+              </button>
+
+              <div className="signup-divider">
+                <span>or</span>
+              </div>
+
+              <button className="find-building-btn" onClick={onResidentSignupClick}>
+                <Search size={16} />
+                <span>Find my building by address</span>
+                <ArrowRight size={16} />
               </button>
 
               <button className="demo-login-btn" onClick={() => onDemoLogin('resident')} disabled={isLoading}>
