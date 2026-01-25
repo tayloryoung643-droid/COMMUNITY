@@ -31,7 +31,7 @@ import ResidentJoinBuilding from './ResidentJoinBuilding'
 import ResidentCreateBuilding from './ResidentCreateBuilding'
 
 function App() {
-  const { user, userProfile, loading, isDemoMode, signIn, signOut, loginAsDemo } = useAuth()
+  const { user, userProfile, loading, isDemoMode, signIn, signOut, loginAsDemo, refreshUserProfile } = useAuth()
   const [buildingCode, setBuildingCode] = useState('')
   const [currentScreen, setCurrentScreen] = useState('login')
   const [authError, setAuthError] = useState('')
@@ -180,10 +180,12 @@ function App() {
     setCurrentScreen('resident-create-building')
   }
 
-  const handleResidentSignupSuccess = (result) => {
+  const handleResidentSignupSuccess = async (result) => {
     console.log('[App] Resident signup success:', result)
     setBuildingCode(result.building?.access_code || '')
     setSelectedBuilding(result.building)
+    // Refresh user profile to ensure it's loaded after signup
+    await refreshUserProfile()
     // Navigate to resident home
     setCurrentScreen('home')
   }

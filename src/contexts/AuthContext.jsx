@@ -148,6 +148,13 @@ export const AuthProvider = ({ children }) => {
     return { data: demoUser, error: null }
   }
 
+  // Force refresh user profile (useful after signup)
+  const refreshUserProfile = async () => {
+    if (user?.id) {
+      await loadUserProfile(user.id)
+    }
+  }
+
   const value = {
     user,
     userProfile,
@@ -157,6 +164,7 @@ export const AuthProvider = ({ children }) => {
     signIn,
     signOut,
     loginAsDemo,
+    refreshUserProfile,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
