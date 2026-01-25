@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Package, Truck, Mail, CheckCircle, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getPackages } from './services/packageService'
+import EmptyState from './components/EmptyState'
 import './Packages.css'
 
 // Demo package data - used when in demo mode
@@ -127,34 +128,43 @@ function Packages({ onBack }) {
   const isInDemoMode = isDemoMode || userProfile?.is_demo === true
 
   useEffect(() => {
-    console.log('Auth state:', { isDemoMode, userProfile, isInDemoMode })
-
     async function loadPackages() {
       if (isInDemoMode) {
-        console.log('Demo mode: using fake packages')
+        console.log('[Packages] MODE: DEMO - packages.length:', DEMO_PACKAGES.length)
         setPackages(DEMO_PACKAGES)
         setLoading(false)
-      } else {
-        console.log('Real mode: fetching packages from Supabase')
-        try {
-          const data = await getPackages(userProfile?.building_id)
-          // Transform Supabase data to match our format
-          const transformedData = data.map(pkg => ({
-            id: pkg.id,
-            carrier: pkg.carrier,
-            icon: pkg.carrier, // Will be mapped by getCarrierIcon
-            gradient: getCarrierGradient(pkg.carrier),
-            dateArrived: pkg.arrival_date,
-            status: pkg.status === 'picked_up' ? 'Picked Up' : 'Ready for Pickup',
-            location: pkg.location || 'Mailroom'
-          }))
-          setPackages(transformedData)
-        } catch (err) {
-          console.error('Error loading packages:', err)
-          setError('Failed to load packages. Please try again.')
-        } finally {
-          setLoading(false)
-        }
+        return
+      }
+
+      // Real mode
+      const buildingId = userProfile?.building_id
+      console.log('[Packages] MODE: REAL - fetching for building:', buildingId)
+
+      if (!buildingId) {
+        console.log('[Packages] No building_id - showing empty state')
+        setPackages([])
+        setLoading(false)
+        return
+      }
+
+      try {
+        const data = await getPackages(buildingId)
+        const transformedData = (data || []).map(pkg => ({
+          id: pkg.id,
+          carrier: pkg.carrier,
+          icon: pkg.carrier,
+          gradient: getCarrierGradient(pkg.carrier),
+          dateArrived: pkg.arrival_date,
+          status: pkg.status === 'picked_up' ? 'Picked Up' : 'Ready for Pickup',
+          location: pkg.location || 'Mailroom'
+        }))
+        setPackages(transformedData)
+        console.log('[Packages] Packages fetched:', transformedData.length)
+      } catch (err) {
+        console.error('[Packages] Error loading packages:', err)
+        setError('Unable to load packages. Please try again.')
+      } finally {
+        setLoading(false)
       }
     }
     loadPackages()
@@ -271,13 +281,11 @@ function Packages({ onBack }) {
 
       <main className="packages-list">
         {packages.length === 0 ? (
-          <div style={{
-            textAlign: 'center',
-            padding: '40px 20px',
-            color: 'rgba(255,255,255,0.6)'
-          }}>
-            No packages found
-          </div>
+          <EmptyState
+            icon="package"
+            title="No packages"
+            subtitle="Your packages will appear here when they arrive"
+          />
         ) : (
           packages.map((pkg, index) => {
             // Get the icon component - handle both demo and real data

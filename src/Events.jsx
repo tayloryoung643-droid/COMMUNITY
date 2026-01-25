@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Calendar, Clock, MapPin, Users, Check, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getEvents, addRSVP, removeRSVP } from './services/eventService'
+import EmptyState from './components/EmptyState'
 import './Events.css'
 
 // Demo event data - used when in demo mode
@@ -120,35 +121,45 @@ function Events({ onBack }) {
   const WeatherIcon = getWeatherIcon(weatherData.condition)
 
   useEffect(() => {
-    console.log('[Events] Demo mode:', isInDemoMode)
-
     async function loadEvents() {
       if (isInDemoMode) {
-        console.log('Demo mode: using fake events')
+        console.log('[Events] MODE: DEMO - events.length:', DEMO_EVENTS.length)
         setEvents(DEMO_EVENTS)
         setLoading(false)
-      } else {
-        console.log('Real mode: fetching events from Supabase')
-        try {
-          const data = await getEvents(userProfile?.building_id)
-          const transformedData = data.map(event => ({
-            id: event.id,
-            title: event.title,
-            date: event.event_date,
-            time: event.event_time,
-            location: event.location,
-            description: event.description,
-            attendees: event.attendee_count || 0,
-            isUpcoming: new Date(event.event_date) >= new Date(),
-            userRSVPd: event.user_rsvpd || false
-          }))
-          setEvents(transformedData)
-        } catch (err) {
-          console.error('Error loading events:', err)
-          setError('Failed to load events. Please try again.')
-        } finally {
-          setLoading(false)
-        }
+        return
+      }
+
+      // Real mode
+      const buildingId = userProfile?.building_id
+      console.log('[Events] MODE: REAL - fetching for building:', buildingId)
+
+      if (!buildingId) {
+        console.log('[Events] No building_id - showing empty state')
+        setEvents([])
+        setLoading(false)
+        return
+      }
+
+      try {
+        const data = await getEvents(buildingId)
+        const transformedData = (data || []).map(event => ({
+          id: event.id,
+          title: event.title,
+          date: event.event_date,
+          time: event.event_time,
+          location: event.location,
+          description: event.description,
+          attendees: event.attendee_count || 0,
+          isUpcoming: new Date(event.event_date) >= new Date(),
+          userRSVPd: event.user_rsvpd || false
+        }))
+        setEvents(transformedData)
+        console.log('[Events] Events fetched:', transformedData.length)
+      } catch (err) {
+        console.error('[Events] Error loading events:', err)
+        setError('Unable to load events. Please try again.')
+      } finally {
+        setLoading(false)
       }
     }
     loadEvents()
@@ -286,9 +297,11 @@ function Events({ onBack }) {
           <h2 className="section-title">Upcoming Events</h2>
           <div className="events-list">
             {upcomingEvents.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 20px', color: 'rgba(255,255,255,0.6)' }}>
-                No upcoming events
-              </div>
+              <EmptyState
+                icon="calendar"
+                title="No upcoming events"
+                subtitle="Check back later for new building events"
+              />
             ) : (
               upcomingEvents.map((event, index) => (
                 <article key={event.id} className={`event-card animate-in delay-${(index % 4) + 2}`}>
@@ -342,9 +355,11 @@ function Events({ onBack }) {
           <h2 className="section-title">Past Events</h2>
           <div className="events-list">
             {pastEvents.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 20px', color: 'rgba(255,255,255,0.6)' }}>
-                No past events
-              </div>
+              <EmptyState
+                icon="calendar"
+                title="No past events"
+                subtitle="Past events will appear here"
+              />
             ) : (
               pastEvents.map((event, index) => (
                 <article key={event.id} className={`event-card past animate-in delay-${(index % 4) + 4}`}>

@@ -3,6 +3,7 @@ import { MessageSquare, HelpCircle, Flag, Heart, MessageCircle, Share2, MoreHori
 import { useAuth } from './contexts/AuthContext'
 import { getPosts, createPost, likePost, unlikePost } from './services/communityPostService'
 import HamburgerMenu from './HamburgerMenu'
+import EmptyState from './components/EmptyState'
 import './CommunityFeed.css'
 
 // Demo posts data - used when in demo mode
@@ -159,46 +160,57 @@ function CommunityFeed({ onNavigate }) {
   const [neighbors, setNeighbors] = useState([])
 
   useEffect(() => {
-    console.log('[CommunityFeed] Demo mode:', isInDemoMode)
-
     // Load neighbors based on mode
     if (isInDemoMode) {
+      console.log('[CommunityFeed] MODE: DEMO - neighbors.length:', DEMO_NEIGHBORS.length)
       setNeighbors(DEMO_NEIGHBORS)
     } else {
-      // For real users, show empty neighbors (or fetch from DB)
+      console.log('[CommunityFeed] MODE: REAL - neighbors will be fetched from DB')
       setNeighbors([])
     }
 
     async function loadPosts() {
       if (isInDemoMode) {
-        console.log('Demo mode: using fake posts')
+        console.log('[CommunityFeed] MODE: DEMO - posts.length:', DEMO_POSTS.length)
         setPosts(DEMO_POSTS)
         setLoading(false)
-      } else {
-        console.log('Real mode: fetching posts from Supabase')
-        try {
-          const data = await getPosts(userProfile?.building_id)
-          const transformedData = data.map(post => ({
-            id: post.id,
-            type: post.type || 'share',
-            text: post.content,
-            author: post.author?.full_name || 'Anonymous',
-            unit: `Unit ${post.author?.unit_number || 'N/A'}`,
-            timestamp: new Date(post.created_at).getTime(),
-            likes: post.like_count || 0,
-            comments: post.comment_count || 0,
-            userLiked: post.user_liked || false
-          }))
-          setPosts(transformedData)
-          // Set liked posts from user's likes
-          const userLikedPosts = new Set(transformedData.filter(p => p.userLiked).map(p => p.id))
-          setLikedPosts(userLikedPosts)
-        } catch (err) {
-          console.error('Error loading posts:', err)
-          setError('Failed to load posts. Please try again.')
-        } finally {
-          setLoading(false)
-        }
+        return
+      }
+
+      // Real mode
+      const buildingId = userProfile?.building_id
+      console.log('[CommunityFeed] MODE: REAL - fetching for building:', buildingId)
+
+      if (!buildingId) {
+        console.log('[CommunityFeed] No building_id - showing empty state')
+        setPosts([])
+        setLoading(false)
+        return
+      }
+
+      try {
+        const data = await getPosts(buildingId)
+        const transformedData = (data || []).map(post => ({
+          id: post.id,
+          type: post.type || 'share',
+          text: post.content,
+          author: post.author?.full_name || 'Anonymous',
+          unit: `Unit ${post.author?.unit_number || 'N/A'}`,
+          timestamp: new Date(post.created_at).getTime(),
+          likes: post.like_count || 0,
+          comments: post.comment_count || 0,
+          userLiked: post.user_liked || false
+        }))
+        setPosts(transformedData)
+        console.log('[CommunityFeed] Posts fetched:', transformedData.length)
+        // Set liked posts from user's likes
+        const userLikedPosts = new Set(transformedData.filter(p => p.userLiked).map(p => p.id))
+        setLikedPosts(userLikedPosts)
+      } catch (err) {
+        console.error('[CommunityFeed] Error loading posts:', err)
+        setError('Unable to load posts. Please try again.')
+      } finally {
+        setLoading(false)
       }
     }
     loadPosts()
@@ -654,11 +666,13 @@ function CommunityFeed({ onNavigate }) {
           {/* Posts Feed */}
           <div className="posts-feed">
             {posts.filter(p => activeFilter === 'all' || p.type === activeFilter).length === 0 ? (
-              <div className="empty-feed">
-                <MessageSquare size={48} />
-                <h3>No posts yet</h3>
-                <p>Be the first to share something with your neighbors!</p>
-              </div>
+              <EmptyState
+                icon="message"
+                title="No posts yet"
+                subtitle="Be the first to share something with your neighbors!"
+                ctaLabel="Create Post"
+                onCta={() => setShowPostModal(true)}
+              />
             ) : (
               posts.filter(p => activeFilter === 'all' || p.type === activeFilter).map((post) => {
                 const typeConfig = getPostTypeConfig(post.type)

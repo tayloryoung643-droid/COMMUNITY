@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Pin, Car, Box, ShoppingBag, Briefcase, Search, Plus, X, Send, MessageCircle, Clock, ChevronRight, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getListings, createListing } from './services/bulletinService'
+import EmptyState from './components/EmptyState'
 import './BulletinBoard.css'
 
 // Demo listings data - used when in demo mode
@@ -209,34 +210,44 @@ function BulletinBoard({ onBack }) {
   ]
 
   useEffect(() => {
-    console.log('[BulletinBoard] Demo mode:', isInDemoMode)
-
     async function loadListings() {
       if (isInDemoMode) {
-        console.log('Demo mode: using fake listings')
+        console.log('[BulletinBoard] MODE: DEMO - listings.length:', DEMO_LISTINGS.length)
         setListings(DEMO_LISTINGS)
         setLoading(false)
-      } else {
-        console.log('Real mode: fetching listings from Supabase')
-        try {
-          const data = await getListings(userProfile?.building_id)
-          const transformedData = data.map(listing => ({
-            id: listing.id,
-            category: listing.category,
-            title: listing.title,
-            details: listing.description,
-            price: listing.price,
-            unit: `Unit ${listing.author?.unit_number || 'Unknown'}`,
-            timestamp: new Date(listing.created_at).getTime(),
-            color: categoryColors[listing.category] || '#6b7280'
-          }))
-          setListings(transformedData)
-        } catch (err) {
-          console.error('Error loading listings:', err)
-          setError('Failed to load listings. Please try again.')
-        } finally {
-          setLoading(false)
-        }
+        return
+      }
+
+      // Real mode
+      const buildingId = userProfile?.building_id
+      console.log('[BulletinBoard] MODE: REAL - fetching for building:', buildingId)
+
+      if (!buildingId) {
+        console.log('[BulletinBoard] No building_id - showing empty state')
+        setListings([])
+        setLoading(false)
+        return
+      }
+
+      try {
+        const data = await getListings(buildingId)
+        const transformedData = (data || []).map(listing => ({
+          id: listing.id,
+          category: listing.category,
+          title: listing.title,
+          details: listing.description,
+          price: listing.price,
+          unit: `Unit ${listing.author?.unit_number || 'Unknown'}`,
+          timestamp: new Date(listing.created_at).getTime(),
+          color: categoryColors[listing.category] || '#6b7280'
+        }))
+        setListings(transformedData)
+        console.log('[BulletinBoard] Listings fetched:', transformedData.length)
+      } catch (err) {
+        console.error('[BulletinBoard] Error loading listings:', err)
+        setError('Unable to load listings. Please try again.')
+      } finally {
+        setLoading(false)
       }
     }
     loadListings()
@@ -424,11 +435,13 @@ function BulletinBoard({ onBack }) {
         {/* Listings */}
         <div className="listings-grid">
           {filteredListings.length === 0 ? (
-            <div className="empty-listings">
-              <Pin size={48} />
-              <h3>No listings yet</h3>
-              <p>Be the first to post in this category!</p>
-            </div>
+            <EmptyState
+              icon="bulletin"
+              title="No listings yet"
+              subtitle="Be the first to post in this category!"
+              ctaLabel="Post Listing"
+              onCta={() => setShowPostModal(true)}
+            />
           ) : (
             filteredListings.map(listing => (
               <article key={listing.id} className="listing-card">
