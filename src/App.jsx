@@ -814,7 +814,7 @@ function App() {
       <>
         {DebugBar}
         <MobileShell bottomNav={bottomNav}>
-          <Home buildingCode={buildingCode} onNavigate={handleNavigation} />
+          <Home buildingCode={buildingCode} onNavigate={handleNavigation} isDemoMode={isDemoMode} userProfile={userProfile} />
         </MobileShell>
       </>
     )

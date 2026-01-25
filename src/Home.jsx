@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react'
 import { Package, Calendar, Users, ChevronRight, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon, HelpCircle, MessageSquare } from 'lucide-react'
 import HamburgerMenu from './HamburgerMenu'
 import { eventsData } from './eventsData'
+import { supabase } from './lib/supabase'
 import './Home.css'
 
-function Home({ buildingCode, onNavigate }) {
+function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
   const floor = "12"
-  const userUnit = "1201"
+  const userUnit = userProfile?.unit_number || "1201"
 
   // Contact Manager modal state
   const [showContactModal, setShowContactModal] = useState(false)
@@ -18,6 +19,88 @@ function Home({ buildingCode, onNavigate }) {
   const [showContactSuccess, setShowContactSuccess] = useState(false)
 
   const unreadMessages = 2 // Simulated unread count
+
+  // Real data state (for non-demo users)
+  const [realPackages, setRealPackages] = useState([])
+  const [realEvents, setRealEvents] = useState([])
+  const [realPosts, setRealPosts] = useState([])
+  const [dataLoading, setDataLoading] = useState(false)
+
+  // Fetch real data for authenticated users
+  useEffect(() => {
+    const fetchRealData = async () => {
+      if (isDemoMode) {
+        console.log('[Home] MODE: DEMO - using hardcoded demo data')
+        return
+      }
+
+      const buildingId = userProfile?.building_id
+      if (!buildingId) {
+        console.log('[Home] MODE: REAL but no building_id - showing empty states')
+        return
+      }
+
+      console.log('[Home] MODE: REAL - fetching data for building:', buildingId)
+      setDataLoading(true)
+
+      try {
+        // Fetch packages for this building
+        const { data: packages, error: packagesError } = await supabase
+          .from('packages')
+          .select('*')
+          .eq('building_id', buildingId)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false })
+          .limit(5)
+
+        if (!packagesError) {
+          setRealPackages(packages || [])
+          console.log('[Home] Packages fetched:', packages?.length || 0)
+        }
+
+        // Fetch events for this building
+        const { data: events, error: eventsError } = await supabase
+          .from('events')
+          .select('*')
+          .eq('building_id', buildingId)
+          .gte('date', new Date().toISOString().split('T')[0])
+          .order('date', { ascending: true })
+          .limit(5)
+
+        if (!eventsError) {
+          setRealEvents(events || [])
+          console.log('[Home] Events fetched:', events?.length || 0)
+        }
+
+        // Fetch community posts for this building
+        const { data: posts, error: postsError } = await supabase
+          .from('posts')
+          .select('*, users(full_name, unit_number)')
+          .eq('building_id', buildingId)
+          .order('created_at', { ascending: false })
+          .limit(5)
+
+        if (!postsError) {
+          setRealPosts(posts || [])
+          console.log('[Home] Posts fetched:', posts?.length || 0)
+        }
+
+        console.log('[Home] Data fetch complete:', {
+          isDemoMode: false,
+          buildingId,
+          packages: packages?.length || 0,
+          events: events?.length || 0,
+          posts: posts?.length || 0
+        })
+      } catch (error) {
+        console.error('[Home] Error fetching data:', error)
+      } finally {
+        setDataLoading(false)
+      }
+    }
+
+    fetchRealData()
+  }, [isDemoMode, userProfile?.building_id])
 
   const subjectOptions = [
     'Maintenance Request',
@@ -84,8 +167,13 @@ function Home({ buildingCode, onNavigate }) {
   // Hero image URL - used in BOTH the hero card AND the ambient background
   const heroImageUrl = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80"
 
-  // Get upcoming events from shared data
-  const upcomingEvents = eventsData
+  // Building name - use real building name for authenticated users
+  const buildingName = isDemoMode
+    ? 'Paramount'
+    : (userProfile?.buildings?.name || userProfile?.building_name || 'Your Building')
+
+  // Get upcoming events - demo data for demo mode, real data for real users
+  const upcomingEvents = isDemoMode ? eventsData : realEvents
 
   // Handler to open event detail
   const handleEventClick = (event) => {
@@ -94,9 +182,8 @@ function Home({ buildingCode, onNavigate }) {
     }
   }
 
-  // Today's community post - prioritize Ask, Help, Borrow, or New Resident posts
-  // Only show posts created today
-  const todayCommunityPost = {
+  // Today's community post - demo data or real data
+  const demoCommunityPost = {
     id: 99,
     type: 'ask',
     text: "Does anyone have a ladder I could borrow this weekend? Need to change some light bulbs in the high ceilings. Happy to return it Sunday evening!",
@@ -111,6 +198,19 @@ function Home({ buildingCode, onNavigate }) {
       { id: 993, author: 'Jennifer K.', firstName: 'Jennifer', unit: 'Unit 1504', text: 'I can help hold it steady if you need a hand!', timestamp: Date.now() - 3600000, replies: [] }
     ]
   }
+
+  // Use demo post for demo mode, first real post for real users
+  const todayCommunityPost = isDemoMode ? demoCommunityPost : (realPosts.length > 0 ? {
+    id: realPosts[0].id,
+    type: realPosts[0].type || 'share',
+    text: realPosts[0].content || realPosts[0].text,
+    author: realPosts[0].users?.full_name || 'Neighbor',
+    unit: realPosts[0].users?.unit_number ? `Unit ${realPosts[0].users.unit_number}` : '',
+    timestamp: new Date(realPosts[0].created_at).getTime(),
+    likes: realPosts[0].likes || 0,
+    comments: realPosts[0].comments_count || 0,
+    commentsList: []
+  } : null)
 
   // Handler to open community post detail
   const handleCommunityPostClick = (post) => {
@@ -170,42 +270,90 @@ function Home({ buildingCode, onNavigate }) {
 
             {/* Building Name - Centered in Hero */}
             <div className="hero-text-container">
-              <span className="hero-the">The</span>
-              <h1 className="hero-building-name">Paramount</h1>
+              {isDemoMode && <span className="hero-the">The</span>}
+              <h1 className="hero-building-name">{buildingName}</h1>
             </div>
           </div>
         </section>
 
         {/* Main Content */}
         <main className="main-content">
-        {/* Today at The Paramount */}
+        {/* Today at Building */}
         <section className="today-section">
-          <h2 className="section-title">Today at The Paramount</h2>
+          <h2 className="section-title">Today at {isDemoMode ? 'The Paramount' : buildingName}</h2>
 
-          <button className="today-card" onClick={() => handleFeatureClick('Packages')}>
-            <div className="today-card-icon package-icon">
-              <Package size={20} />
+          {/* Packages Card - Demo or Real */}
+          {isDemoMode ? (
+            <button className="today-card" onClick={() => handleFeatureClick('Packages')}>
+              <div className="today-card-icon package-icon">
+                <Package size={20} />
+              </div>
+              <div className="today-card-content">
+                <span className="today-card-title">3 deliveries ready for pickup</span>
+                <span className="today-card-subtitle">Today</span>
+              </div>
+              <span className="today-card-time">9:00 AM</span>
+            </button>
+          ) : realPackages.length > 0 ? (
+            <button className="today-card" onClick={() => handleFeatureClick('Packages')}>
+              <div className="today-card-icon package-icon">
+                <Package size={20} />
+              </div>
+              <div className="today-card-content">
+                <span className="today-card-title">{realPackages.length} {realPackages.length === 1 ? 'delivery' : 'deliveries'} ready for pickup</span>
+                <span className="today-card-subtitle">Today</span>
+              </div>
+              <ChevronRight size={20} className="today-card-arrow" />
+            </button>
+          ) : (
+            <div className="today-card empty-state-card">
+              <div className="today-card-icon package-icon" style={{ opacity: 0.5 }}>
+                <Package size={20} />
+              </div>
+              <div className="today-card-content">
+                <span className="today-card-title" style={{ color: '#64748b' }}>No packages yet</span>
+                <span className="today-card-subtitle">Check back later</span>
+              </div>
             </div>
-            <div className="today-card-content">
-              <span className="today-card-title">3 deliveries ready for pickup</span>
-              <span className="today-card-subtitle">Today</span>
-            </div>
-            <span className="today-card-time">9:00 AM</span>
-          </button>
+          )}
 
-          <button className="today-card" onClick={() => handleFeatureClick('Calendar')}>
-            <div className="today-card-icon calendar-icon">
-              <Calendar size={20} />
+          {/* Event Card - Demo or Real */}
+          {isDemoMode ? (
+            <button className="today-card" onClick={() => handleFeatureClick('Calendar')}>
+              <div className="today-card-icon calendar-icon">
+                <Calendar size={20} />
+              </div>
+              <div className="today-card-content">
+                <span className="today-card-title">Rooftop BBQ</span>
+                <span className="today-card-subtitle">Tonight · 6:00 PM</span>
+              </div>
+              <span className="today-card-time">Tonight · 6:00 PM</span>
+            </button>
+          ) : realEvents.length > 0 ? (
+            <button className="today-card" onClick={() => handleEventClick(realEvents[0])}>
+              <div className="today-card-icon calendar-icon">
+                <Calendar size={20} />
+              </div>
+              <div className="today-card-content">
+                <span className="today-card-title">{realEvents[0].title}</span>
+                <span className="today-card-subtitle">{realEvents[0].time || realEvents[0].date}</span>
+              </div>
+              <ChevronRight size={20} className="today-card-arrow" />
+            </button>
+          ) : (
+            <div className="today-card empty-state-card">
+              <div className="today-card-icon calendar-icon" style={{ opacity: 0.5 }}>
+                <Calendar size={20} />
+              </div>
+              <div className="today-card-content">
+                <span className="today-card-title" style={{ color: '#64748b' }}>No upcoming events</span>
+                <span className="today-card-subtitle">Check back later</span>
+              </div>
             </div>
-            <div className="today-card-content">
-              <span className="today-card-title">Rooftop BBQ</span>
-              <span className="today-card-subtitle">Tonight · 6:00 PM</span>
-            </div>
-            <span className="today-card-time">Tonight · 6:00 PM</span>
-          </button>
+          )}
 
-          {/* Today's Community Post */}
-          {todayCommunityPost && (
+          {/* Today's Community Post - Demo or Real */}
+          {todayCommunityPost ? (
             <button className="today-card community-post-card" onClick={() => handleCommunityPostClick(todayCommunityPost)}>
               <div className="today-card-icon community-icon">
                 {todayCommunityPost.author.charAt(0)}
@@ -228,6 +376,16 @@ function Home({ buildingCode, onNavigate }) {
                 </span>
               </div>
             </button>
+          ) : !isDemoMode && (
+            <div className="today-card empty-state-card">
+              <div className="today-card-icon community-icon" style={{ opacity: 0.5 }}>
+                <Users size={20} />
+              </div>
+              <div className="today-card-content">
+                <span className="today-card-title" style={{ color: '#64748b' }}>No community posts yet</span>
+                <span className="today-card-subtitle">Be the first to post!</span>
+              </div>
+            </div>
           )}
         </section>
 
@@ -236,21 +394,29 @@ function Home({ buildingCode, onNavigate }) {
           <h2 className="section-title-secondary">Coming Up</h2>
 
           <div className="events-scroll-container">
-            {upcomingEvents.map((event) => {
-              const IconComponent = event.icon
-              return (
-                <button key={event.id} className="event-card" onClick={() => handleEventClick(event)}>
-                  <div className={`event-card-icon ${event.iconClass}`}>
-                    <IconComponent size={20} />
-                  </div>
-                  <div className="event-card-content">
-                    <span className="event-card-title">{event.title}</span>
-                    <span className="event-card-subtitle">{event.subtitle}</span>
-                  </div>
-                  <ChevronRight size={20} className="event-card-arrow" />
-                </button>
-              )
-            })}
+            {upcomingEvents.length > 0 ? (
+              upcomingEvents.map((event) => {
+                // Demo events have icon components, real events use Calendar icon
+                const IconComponent = event.icon || Calendar
+                return (
+                  <button key={event.id} className="event-card" onClick={() => handleEventClick(event)}>
+                    <div className={`event-card-icon ${event.iconClass || 'calendar-icon'}`}>
+                      <IconComponent size={20} />
+                    </div>
+                    <div className="event-card-content">
+                      <span className="event-card-title">{event.title}</span>
+                      <span className="event-card-subtitle">{event.subtitle || event.date}</span>
+                    </div>
+                    <ChevronRight size={20} className="event-card-arrow" />
+                  </button>
+                )
+              })
+            ) : !isDemoMode && (
+              <div className="empty-events-state">
+                <Calendar size={32} style={{ color: '#64748b', opacity: 0.5 }} />
+                <p style={{ color: '#64748b', margin: '8px 0 0', fontSize: '14px' }}>No upcoming events</p>
+              </div>
+            )}
           </div>
         </section>
 
