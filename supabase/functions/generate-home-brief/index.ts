@@ -17,6 +17,10 @@ interface HomeBrief {
     line1: string
     line2: string | null
   }
+  momentum: {
+    joiners_7d: number
+    line: string | null
+  }
   card_ranking: string[]
   generated_at: string
 }
@@ -108,12 +112,10 @@ serve(async (req) => {
         .eq('building_id', building_id)
         .gte('created_at', last7d),
 
-      // New joiners (from users table)
+      // New joiners count via RPC (aggregated only, no user identifiers)
       supabase
-        .from('users')
-        .select('id, created_at')
-        .eq('building_id', building_id)
-        .gte('created_at', last7d),
+        .rpc('get_building_joiner_counts', { p_building_id: building_id })
+        .single(),
 
       // User's recent engagement (last 30 days)
       supabase
@@ -126,6 +128,10 @@ serve(async (req) => {
         .limit(100)
     ])
 
+    // Extract joiner counts from RPC result (safe fallback if RPC fails)
+    const joiners7d = joinersResult.data?.joiners_last_7d_count || 0
+    const joiners24h = joinersResult.data?.joiners_last_24h_count || 0
+
     // Build activity summary
     const activity = {
       packages_pending: packagesResult.data?.length || 0,
@@ -133,21 +139,30 @@ serve(async (req) => {
       events_this_week: eventsResult.data?.length || 0,
       posts_last_24h: postsResult.data?.length || 0,
       bulletin_items_7d: bulletinResult.data?.length || 0,
-      joiners_last_24h: joinersResult.data?.filter(u => u.created_at >= last24h).length || 0,
-      joiners_last_7d: joinersResult.data?.length || 0
+      joiners_last_24h: joiners24h,
+      joiners_last_7d: joiners7d
     }
 
-    // Generate context lines
+    // Generate context lines (line1 only - momentum handled separately)
     const contextLines = generateContextLines(activity)
+
+    // Generate momentum line (only if joiners > 0)
+    const momentumLine = joiners7d > 0
+      ? `${joiners7d} new resident${joiners7d === 1 ? '' : 's'} joined this week.`
+      : null
 
     // Calculate card ranking based on activity and engagement
     const cardRanking = calculateCardRanking(activity, engagementResult.data || [])
 
-    // Build the brief
+    // Build the brief with momentum object
     const brief: HomeBrief = {
       home_context: {
         line1: contextLines.line1,
         line2: contextLines.line2
+      },
+      momentum: {
+        joiners_7d: joiners7d,
+        line: momentumLine
       },
       card_ranking: cardRanking,
       generated_at: now

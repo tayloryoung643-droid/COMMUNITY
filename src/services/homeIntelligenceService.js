@@ -103,6 +103,7 @@ export async function getTodaysHomeBrief(userId, buildingId) {
 
 /**
  * Get new joiner counts for the building (aggregated only)
+ * Uses get_building_joiner_counts RPC
  * @param {string} buildingId
  * @returns {Object} { joiners_last_24h_count, joiners_last_7d_count }
  */
@@ -113,7 +114,7 @@ export async function getNewJoinersCount(buildingId) {
 
   try {
     const { data, error } = await supabase
-      .rpc('get_new_joiners_count', {
+      .rpc('get_building_joiner_counts', {
         p_building_id: buildingId
       })
 
@@ -281,9 +282,15 @@ export async function getHomeIntelligence({ userId, buildingId, buildingName }) 
 
   if (cachedBrief && cachedBrief.home_context) {
     console.log('[homeIntelligence] Using cached brief')
+    // DEV: Log full brief_json structure for debugging
+    if (import.meta.env.DEV) {
+      console.log('[homeIntelligence] DEV brief_json:', JSON.stringify(cachedBrief, null, 2))
+    }
+    // Use momentum.line for contextLine2 if it exists, otherwise fall back to home_context.line2
+    const contextLine2 = cachedBrief.momentum?.line || cachedBrief.home_context.line2 || null
     return {
       contextLine1: cachedBrief.home_context.line1 || null,
-      contextLine2: cachedBrief.home_context.line2 || null,
+      contextLine2,
       fromCache: true
     }
   }
