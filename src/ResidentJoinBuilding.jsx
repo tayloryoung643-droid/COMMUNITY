@@ -99,7 +99,7 @@ function ResidentJoinBuilding({ building, onBack, onSuccess }) {
             full_name: formData.name,
             unit_number: formData.unitNumber || null,
             role: 'resident',
-            trust_tier: 0, // New residents start at browse-only
+            trust_tier: 1, // All residents get full access
           })
           .eq('id', userId)
 
@@ -120,7 +120,7 @@ function ResidentJoinBuilding({ building, onBack, onSuccess }) {
             full_name: formData.name,
             unit_number: formData.unitNumber || null,
             role: 'resident',
-            trust_tier: 0,
+            trust_tier: 1, // All residents get full access
           })
 
         if (insertError) {

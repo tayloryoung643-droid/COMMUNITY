@@ -133,6 +133,7 @@ export const AuthProvider = ({ children }) => {
       unit_number: role === 'manager' ? null : '612',
       role: role,
       is_demo: true,
+      trust_tier: role === 'manager' ? 2 : 1, // Managers get tier 2, residents get tier 1
       building_id: 'demo-building-id',
       buildings: {
         id: 'demo-building-id',
