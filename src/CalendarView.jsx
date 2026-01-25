@@ -1,13 +1,22 @@
 import { useState, useEffect } from 'react'
 import { Calendar, ChevronRight, ChevronLeft, List, Grid3X3, Sun, Cloud, CloudRain, Snowflake, Moon, AlertCircle } from 'lucide-react'
 import HamburgerMenu from './HamburgerMenu'
+import { useAuth } from './contexts/AuthContext'
 import { eventsData } from './eventsData'
+import { getEvents } from './services/eventService'
+import EmptyState from './components/EmptyState'
 import './CalendarView.css'
 
 function CalendarView({ onNavigate }) {
+  const { userProfile, isDemoMode } = useAuth()
+  const isInDemoMode = isDemoMode || userProfile?.is_demo === true
+
   const [activeFilter, setActiveFilter] = useState('all')
   const [viewMode, setViewMode] = useState('list') // 'list' or 'calendar'
   const [isMobile, setIsMobile] = useState(false)
+  const [calendarItems, setCalendarItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   // Detect mobile viewport and default to list view
   useEffect(() => {
@@ -62,8 +71,54 @@ function CalendarView({ onNavigate }) {
 
   const WeatherIcon = getWeatherIcon(weatherData.condition)
 
-  // Use shared events data
-  const calendarItems = eventsData
+  // Load events based on demo mode
+  useEffect(() => {
+    async function loadCalendarEvents() {
+      if (isInDemoMode) {
+        console.log('[CalendarView] MODE: DEMO - using demo events, count:', eventsData.length)
+        setCalendarItems(eventsData)
+        setLoading(false)
+        return
+      }
+
+      // Real mode - fetch from Supabase
+      const buildingId = userProfile?.building_id
+      console.log('[CalendarView] MODE: REAL - fetching events for building:', buildingId)
+
+      if (!buildingId) {
+        console.log('[CalendarView] No building_id - showing empty state')
+        setCalendarItems([])
+        setLoading(false)
+        return
+      }
+
+      try {
+        const data = await getEvents(buildingId)
+        const transformedData = (data || []).map(event => ({
+          id: event.id,
+          title: event.title,
+          date: event.event_date,
+          time: event.event_time,
+          location: event.location,
+          description: event.description,
+          category: event.category || 'social',
+          color: event.category === 'maintenance' ? '#f59e0b' : '#3b82f6',
+          icon: Calendar,
+          actionRequired: event.action_required || false,
+          affectedUnits: event.affected_units
+        }))
+        setCalendarItems(transformedData)
+        console.log('[CalendarView] Events fetched:', transformedData.length)
+      } catch (err) {
+        console.error('[CalendarView] Error loading events:', err)
+        setError('Unable to load events. Please try again.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadCalendarEvents()
+  }, [isInDemoMode, userProfile])
 
   // Handler to open event detail
   const handleEventClick = (event) => {
@@ -230,10 +285,40 @@ function CalendarView({ onNavigate }) {
           ))}
         </div>
 
-        {viewMode === 'list' ? (
+        {/* Loading State */}
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgba(255,255,255,0.6)' }}>
+            Loading events...
+          </div>
+        )}
+
+        {/* Error State - only show when there's an actual error */}
+        {!loading && error && (
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#ef4444' }}>
+            <AlertCircle size={32} style={{ marginBottom: '12px' }} />
+            <p>{error}</p>
+          </div>
+        )}
+
+        {/* Empty State - show when no error and no data */}
+        {!loading && !error && calendarItems.length === 0 && (
+          <EmptyState
+            icon="calendar"
+            title="No events yet"
+            subtitle="Check back later for upcoming building events"
+          />
+        )}
+
+        {/* Content - only show when we have data */}
+        {!loading && !error && calendarItems.length > 0 && (
+          viewMode === 'list' ? (
           /* List View - Grouped by temporal periods */
           <div className="calendar-list">
-            {groupedEvents.map(group => (
+            {groupedEvents.length === 0 ? (
+              <div className="no-events-message" style={{ textAlign: 'center', padding: '40px 20px', color: 'rgba(255,255,255,0.5)' }}>
+                No {activeFilter === 'all' ? '' : activeFilter + ' '}events found
+              </div>
+            ) : groupedEvents.map(group => (
               <div key={group.title} className="event-group">
                 <div className="event-group-header">
                   <h2 className="event-group-title">{group.title}</h2>
@@ -381,6 +466,7 @@ function CalendarView({ onNavigate }) {
               })()}
             </div>
           </div>
+        )
         )}
       </main>
     </div>

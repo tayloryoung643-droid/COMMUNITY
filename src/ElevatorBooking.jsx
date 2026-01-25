@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Plus, Check, Calendar, Clock, Home, ArrowUpDown, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getBookings, createBooking } from './services/elevatorBookingService'
+import EmptyState from './components/EmptyState'
 import './ElevatorBooking.css'
 
 // Demo reservation data - used when in demo mode
@@ -101,32 +102,42 @@ function ElevatorBooking({ onBack }) {
   const WeatherIcon = getWeatherIcon(weatherData.condition)
 
   useEffect(() => {
-    console.log('[ElevatorBooking] Demo mode:', isInDemoMode)
-
     async function loadBookings() {
       if (isInDemoMode) {
-        console.log('Demo mode: using fake reservations')
+        console.log('[ElevatorBooking] MODE: DEMO - bookings.length:', DEMO_RESERVATIONS.length)
         setReservations(DEMO_RESERVATIONS)
         setLoading(false)
-      } else {
-        console.log('Real mode: fetching bookings from Supabase')
-        try {
-          const data = await getBookings(userProfile?.building_id)
-          const transformedData = data.map(booking => ({
-            id: booking.id,
-            date: booking.booking_date,
-            timeSlot: booking.time_slot,
-            unit: `Unit ${booking.user?.unit_number || 'Unknown'}`,
-            type: booking.moving_type,
-            status: booking.status === 'confirmed' ? 'Confirmed' : 'Pending'
-          }))
-          setReservations(transformedData)
-        } catch (err) {
-          console.error('Error loading bookings:', err)
-          setError('Failed to load bookings. Please try again.')
-        } finally {
-          setLoading(false)
-        }
+        return
+      }
+
+      // Real mode
+      const buildingId = userProfile?.building_id
+      console.log('[ElevatorBooking] MODE: REAL - fetching for building:', buildingId)
+
+      if (!buildingId) {
+        console.log('[ElevatorBooking] No building_id - showing empty state')
+        setReservations([])
+        setLoading(false)
+        return
+      }
+
+      try {
+        const data = await getBookings(buildingId)
+        const transformedData = (data || []).map(booking => ({
+          id: booking.id,
+          date: booking.booking_date,
+          timeSlot: booking.time_slot,
+          unit: `Unit ${booking.user?.unit_number || 'Unknown'}`,
+          type: booking.moving_type,
+          status: booking.status === 'confirmed' ? 'Confirmed' : 'Pending'
+        }))
+        setReservations(transformedData)
+        console.log('[ElevatorBooking] Bookings fetched:', transformedData.length)
+      } catch (err) {
+        console.error('[ElevatorBooking] Error loading bookings:', err)
+        setError('Unable to load bookings. Please try again.')
+      } finally {
+        setLoading(false)
       }
     }
     loadBookings()
@@ -376,9 +387,13 @@ function ElevatorBooking({ onBack }) {
           <h2 className="section-title">Upcoming Reservations</h2>
           <div className="reservations-list">
             {reservations.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 20px', color: 'rgba(255,255,255,0.6)' }}>
-                No upcoming reservations
-              </div>
+              <EmptyState
+                icon="elevator"
+                title="No bookings yet"
+                subtitle="Reserve the elevator for your next move"
+                ctaLabel="Book Elevator"
+                onCta={handleRequestBooking}
+              />
             ) : (
               reservations.map((reservation, index) => (
                 <article key={reservation.id} className={`reservation-card animate-in delay-${(index % 4) + 3}`}>
