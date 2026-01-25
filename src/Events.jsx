@@ -142,22 +142,31 @@ function Events({ onBack }) {
 
       try {
         const data = await getEvents(buildingId)
+        // data will be [] if table is empty - this is SUCCESS, not an error
         const transformedData = (data || []).map(event => ({
           id: event.id,
           title: event.title,
-          date: event.event_date,
+          date: event.start_time?.split('T')[0],
           time: event.event_time,
           location: event.location,
           description: event.description,
           attendees: event.attendee_count || 0,
-          isUpcoming: new Date(event.event_date) >= new Date(),
+          isUpcoming: new Date(event.start_time) >= new Date(),
           userRSVPd: event.user_rsvpd || false
         }))
         setEvents(transformedData)
-        console.log('[Events] Events fetched:', transformedData.length)
+        setError(null) // Clear any previous error
+        console.log('[Events] SUCCESS - events loaded:', transformedData.length)
       } catch (err) {
-        console.error('[Events] Error loading events:', err)
-        setError('Unable to load events. Please try again.')
+        // Only set error for actual failures (network, permission, table doesn't exist)
+        console.error('[Events] ERROR loading events:', {
+          message: err.message,
+          code: err.code,
+          details: err.details,
+          hint: err.hint
+        })
+        setError(`Failed to load events: ${err.message || 'Unknown error'}`)
+        setEvents([]) // Show empty state alongside error
       } finally {
         setLoading(false)
       }

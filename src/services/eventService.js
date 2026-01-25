@@ -1,26 +1,43 @@
 import { supabase } from '../lib/supabase'
 
 export async function getEvents(buildingId) {
+  if (!buildingId) {
+    console.log('[eventService.getEvents] No buildingId provided, returning empty array')
+    return []
+  }
+
   const { data, error } = await supabase
     .from('events')
-    .select('*, organizer:users!organizer_id(*)')
+    .select('*')
     .eq('building_id', buildingId)
-    .order('event_date', { ascending: true })
+    .order('start_time', { ascending: true })
 
-  if (error) throw error
-  return data
+  if (error) {
+    console.error('[eventService.getEvents] Supabase error:', error.code, error.message)
+    throw error
+  }
+
+  console.log('[eventService.getEvents] Success, rows returned:', data?.length || 0)
+  return data || []
 }
 
 export async function getUpcomingEvents(buildingId) {
+  if (!buildingId) {
+    return []
+  }
+
   const { data, error } = await supabase
     .from('events')
-    .select('*, organizer:users!organizer_id(*)')
+    .select('*')
     .eq('building_id', buildingId)
-    .gte('event_date', new Date().toISOString())
-    .order('event_date', { ascending: true })
+    .gte('start_time', new Date().toISOString().split('T')[0])
+    .order('start_time', { ascending: true })
 
-  if (error) throw error
-  return data
+  if (error) {
+    console.error('[eventService.getUpcomingEvents] Supabase error:', error.code, error.message)
+    throw error
+  }
+  return data || []
 }
 
 export async function createEvent(eventData) {

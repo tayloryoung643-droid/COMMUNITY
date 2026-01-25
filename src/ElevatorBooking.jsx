@@ -123,19 +123,28 @@ function ElevatorBooking({ onBack }) {
 
       try {
         const data = await getBookings(buildingId)
+        // data will be [] if table is empty - this is SUCCESS, not an error
         const transformedData = (data || []).map(booking => ({
           id: booking.id,
-          date: booking.booking_date,
+          date: booking.start_time?.split('T')[0],
           timeSlot: booking.time_slot,
-          unit: `Unit ${booking.user?.unit_number || 'Unknown'}`,
+          unit: `Unit ${booking.unit_number || 'Unknown'}`,
           type: booking.moving_type,
           status: booking.status === 'confirmed' ? 'Confirmed' : 'Pending'
         }))
         setReservations(transformedData)
-        console.log('[ElevatorBooking] Bookings fetched:', transformedData.length)
+        setError(null) // Clear any previous error
+        console.log('[ElevatorBooking] SUCCESS - bookings loaded:', transformedData.length)
       } catch (err) {
-        console.error('[ElevatorBooking] Error loading bookings:', err)
-        setError('Unable to load bookings. Please try again.')
+        // Only set error for actual failures (network, permission, table doesn't exist)
+        console.error('[ElevatorBooking] ERROR loading bookings:', {
+          message: err.message,
+          code: err.code,
+          details: err.details,
+          hint: err.hint
+        })
+        setError(`Failed to load bookings: ${err.message || 'Unknown error'}`)
+        setReservations([]) // Show empty state alongside error
       } finally {
         setLoading(false)
       }
@@ -179,7 +188,7 @@ function ElevatorBooking({ onBack }) {
         await createBooking({
           building_id: userProfile.building_id,
           user_id: userProfile.id,
-          booking_date: formData.date,
+          start_time: formData.date,
           time_slot: formData.timeSlot,
           moving_type: formData.movingType,
           status: 'pending'
@@ -188,7 +197,7 @@ function ElevatorBooking({ onBack }) {
         const data = await getBookings(userProfile.building_id)
         const transformedData = data.map(booking => ({
           id: booking.id,
-          date: booking.booking_date,
+          date: booking.start_time?.split('T')[0],
           timeSlot: booking.time_slot,
           unit: `Unit ${booking.user?.unit_number || 'Unknown'}`,
           type: booking.moving_type,
