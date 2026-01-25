@@ -257,19 +257,24 @@ function App() {
       console.log('[Onboarding] Building created:', newBuilding)
 
       // 3. Update the user's record with building_id and role='manager'
-      // Note: A trigger may auto-create the user row on signup, so we use upsert logic
       console.log('[Onboarding] Linking user to building...')
+      console.log('[Onboarding] Auth user ID:', authUser.id)
+      console.log('[Onboarding] Building ID to set:', newBuilding.id)
 
-      // First try to update existing user record
+      // First check if user row exists
       const { data: existingUser, error: fetchError } = await supabase
         .from('users')
-        .select('id')
+        .select('id, email, building_id')
         .eq('id', authUser.id)
         .single()
 
+      console.log('[Onboarding] Fetch existing user result:', { existingUser, fetchError })
+
       if (existingUser) {
         // User row exists, update it
-        const { error: updateError } = await supabase
+        console.log('[Onboarding] User row exists, updating with building_id...')
+
+        const { data: updatedUser, error: updateError } = await supabase
           .from('users')
           .update({
             building_id: newBuilding.id,
@@ -278,14 +283,28 @@ function App() {
             phone: formData.manager?.phone || null,
           })
           .eq('id', authUser.id)
+          .select()
+          .single()
+
+        console.log('[Onboarding] Update result:', { updatedUser, updateError })
 
         if (updateError) {
           console.error('[Onboarding] Failed to update user:', updateError)
           return { success: false, error: `Failed to link manager to building: ${updateError.message}` }
         }
+
+        // Verify the update worked
+        if (!updatedUser || updatedUser.building_id !== newBuilding.id) {
+          console.error('[Onboarding] Update may have been blocked by RLS. Expected building_id:', newBuilding.id, 'Got:', updatedUser?.building_id)
+          return { success: false, error: 'Failed to update user - RLS may be blocking the update. Check Supabase policies.' }
+        }
+
+        console.log('[Onboarding] User successfully updated:', updatedUser)
       } else {
         // User row doesn't exist, insert it
-        const { error: insertError } = await supabase
+        console.log('[Onboarding] User row does not exist, inserting new row...')
+
+        const { data: insertedUser, error: insertError } = await supabase
           .from('users')
           .insert({
             id: authUser.id,
@@ -295,11 +314,17 @@ function App() {
             full_name: formData.manager?.name || null,
             phone: formData.manager?.phone || null,
           })
+          .select()
+          .single()
+
+        console.log('[Onboarding] Insert result:', { insertedUser, insertError })
 
         if (insertError) {
           console.error('[Onboarding] Failed to insert user:', insertError)
           return { success: false, error: `Failed to create manager profile: ${insertError.message}` }
         }
+
+        console.log('[Onboarding] User successfully inserted:', insertedUser)
       }
 
       console.log('[Onboarding] User linked to building:', newBuilding.id)
