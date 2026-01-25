@@ -45,15 +45,39 @@ export const AuthProvider = ({ children }) => {
 
   const loadUserProfile = async (userId) => {
     try {
-      const { data, error } = await supabase
+      // Fetch user profile first (without buildings join to avoid RLS issues)
+      const { data: profile, error: profileError } = await supabase
         .from('users')
-        .select('*, buildings(*)')
+        .select('*')
         .eq('id', userId)
         .single()
 
-      if (error) throw error
-      setUserProfile(data)
-      setIsDemoMode(data.is_demo)
+      if (profileError) {
+        console.error('Error loading user profile:', profileError)
+        return
+      }
+
+      if (!profile) {
+        console.error('No user profile found for:', userId)
+        return
+      }
+
+      // Fetch building separately if user has a building_id
+      let profileWithBuilding = { ...profile }
+      if (profile.building_id) {
+        const { data: building, error: buildingError } = await supabase
+          .from('buildings')
+          .select('*')
+          .eq('id', profile.building_id)
+          .single()
+
+        if (!buildingError && building) {
+          profileWithBuilding.buildings = building
+        }
+      }
+
+      setUserProfile(profileWithBuilding)
+      setIsDemoMode(profileWithBuilding.is_demo || false)
     } catch (error) {
       console.error('Error loading user profile:', error)
     }
