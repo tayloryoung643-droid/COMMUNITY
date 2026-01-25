@@ -124,6 +124,14 @@ function ResidentCreateBuilding({ initialAddress, onBack, onSuccess }) {
       }
 
       console.log('[ResidentCreate] Building created:', newBuilding)
+      console.log('[ResidentCreate] Assigned building to user:', newBuilding.id)
+
+      if (!newBuilding.id) {
+        console.error('[ResidentCreate] Building created but has no ID!')
+        setError('Failed to create building. Please try again.')
+        setIsLoading(false)
+        return
+      }
 
       // 3. Create or update user profile
       const { data: existingUser } = await supabase
@@ -133,7 +141,8 @@ function ResidentCreateBuilding({ initialAddress, onBack, onSuccess }) {
         .single()
 
       if (existingUser) {
-        const { error: updateError } = await supabase
+        console.log('[ResidentCreate] Updating existing user with building_id:', newBuilding.id)
+        const { data: updatedUser, error: updateError } = await supabase
           .from('users')
           .update({
             building_id: newBuilding.id,
@@ -143,6 +152,8 @@ function ResidentCreateBuilding({ initialAddress, onBack, onSuccess }) {
             trust_tier: 1, // First resident gets posting ability
           })
           .eq('id', userId)
+          .select()
+          .single()
 
         if (updateError) {
           console.error('[ResidentCreate] Failed to update user:', updateError)
@@ -150,8 +161,10 @@ function ResidentCreateBuilding({ initialAddress, onBack, onSuccess }) {
           setIsLoading(false)
           return
         }
+        console.log('[ResidentCreate] User updated, building_id is now:', updatedUser?.building_id)
       } else {
-        const { error: insertError } = await supabase
+        console.log('[ResidentCreate] Inserting new user with building_id:', newBuilding.id)
+        const { data: insertedUser, error: insertError } = await supabase
           .from('users')
           .insert({
             id: userId,
@@ -162,6 +175,8 @@ function ResidentCreateBuilding({ initialAddress, onBack, onSuccess }) {
             role: 'resident',
             trust_tier: 1, // First resident gets posting ability
           })
+          .select()
+          .single()
 
         if (insertError) {
           console.error('[ResidentCreate] Failed to insert user:', insertError)
@@ -169,9 +184,10 @@ function ResidentCreateBuilding({ initialAddress, onBack, onSuccess }) {
           setIsLoading(false)
           return
         }
+        console.log('[ResidentCreate] User inserted, building_id is now:', insertedUser?.building_id)
       }
 
-      console.log('[ResidentCreate] User profile created/updated')
+      console.log('[ResidentCreate] User profile created/updated with building_id:', newBuilding.id)
 
       // Success!
       onSuccess({

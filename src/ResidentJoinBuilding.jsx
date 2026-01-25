@@ -90,9 +90,12 @@ function ResidentJoinBuilding({ building, onBack, onSuccess }) {
         .eq('id', userId)
         .single()
 
+      console.log('[ResidentJoin] Assigned building to user:', building.id)
+
       if (existingUser) {
         // Update existing user
-        const { error: updateError } = await supabase
+        console.log('[ResidentJoin] Updating existing user with building_id:', building.id)
+        const { data: updatedUser, error: updateError } = await supabase
           .from('users')
           .update({
             building_id: building.id,
@@ -102,6 +105,8 @@ function ResidentJoinBuilding({ building, onBack, onSuccess }) {
             trust_tier: 1, // All residents get full access
           })
           .eq('id', userId)
+          .select()
+          .single()
 
         if (updateError) {
           console.error('[ResidentJoin] Failed to update user:', updateError)
@@ -109,9 +114,11 @@ function ResidentJoinBuilding({ building, onBack, onSuccess }) {
           setIsLoading(false)
           return
         }
+        console.log('[ResidentJoin] User updated, building_id is now:', updatedUser?.building_id)
       } else {
         // Insert new user
-        const { error: insertError } = await supabase
+        console.log('[ResidentJoin] Inserting new user with building_id:', building.id)
+        const { data: insertedUser, error: insertError } = await supabase
           .from('users')
           .insert({
             id: userId,
@@ -122,6 +129,8 @@ function ResidentJoinBuilding({ building, onBack, onSuccess }) {
             role: 'resident',
             trust_tier: 1, // All residents get full access
           })
+          .select()
+          .single()
 
         if (insertError) {
           console.error('[ResidentJoin] Failed to insert user:', insertError)
@@ -129,9 +138,10 @@ function ResidentJoinBuilding({ building, onBack, onSuccess }) {
           setIsLoading(false)
           return
         }
+        console.log('[ResidentJoin] User inserted, building_id is now:', insertedUser?.building_id)
       }
 
-      console.log('[ResidentJoin] User profile created/updated')
+      console.log('[ResidentJoin] User profile created/updated with building_id:', building.id)
 
       // Success!
       onSuccess({
