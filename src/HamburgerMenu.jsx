@@ -1,51 +1,64 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { Menu, X, Bell, Home as HomeIcon, MessageSquare, Calendar, Package, Building2, Settings, LogOut, ChevronRight, Wrench, Users, Wine, ClipboardList, CalendarClock } from 'lucide-react'
+import { useAuth } from './contexts/AuthContext'
 import './HamburgerMenu.css'
 
+// Demo notifications
+const DEMO_NOTIFICATIONS = [
+  {
+    id: 1,
+    type: 'package',
+    title: 'Package Delivered',
+    message: 'Your Amazon package has arrived at the front desk',
+    time: '10 min ago',
+    unread: true,
+    icon: Package
+  },
+  {
+    id: 2,
+    type: 'event',
+    title: 'Event Reminder',
+    message: 'Wine & Cheese Social starts in 2 hours',
+    time: '1 hour ago',
+    unread: true,
+    icon: Wine
+  },
+  {
+    id: 3,
+    type: 'maintenance',
+    title: 'Maintenance Notice',
+    message: 'Water shut-off scheduled for tomorrow 9am-12pm',
+    time: '3 hours ago',
+    unread: false,
+    icon: Wrench
+  },
+  {
+    id: 4,
+    type: 'community',
+    title: 'New Neighbor',
+    message: 'Emily Chen just moved into Unit 1205',
+    time: 'Yesterday',
+    unread: false,
+    icon: Users
+  }
+]
+
 function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' }) {
+  const { userProfile, isDemoMode } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
 
-  // Sample notifications data
-  const notifications = [
-    {
-      id: 1,
-      type: 'package',
-      title: 'Package Delivered',
-      message: 'Your Amazon package has arrived at the front desk',
-      time: '10 min ago',
-      unread: true,
-      icon: Package
-    },
-    {
-      id: 2,
-      type: 'event',
-      title: 'Event Reminder',
-      message: 'Wine & Cheese Social starts in 2 hours',
-      time: '1 hour ago',
-      unread: true,
-      icon: Wine
-    },
-    {
-      id: 3,
-      type: 'maintenance',
-      title: 'Maintenance Notice',
-      message: 'Water shut-off scheduled for tomorrow 9am-12pm',
-      time: '3 hours ago',
-      unread: false,
-      icon: Wrench
-    },
-    {
-      id: 4,
-      type: 'community',
-      title: 'New Neighbor',
-      message: 'Emily Chen just moved into Unit 1205',
-      time: 'Yesterday',
-      unread: false,
-      icon: Users
+  useEffect(() => {
+    if (isDemoMode) {
+      console.log('[HamburgerMenu] MODE: DEMO - showing demo notifications')
+    } else {
+      console.log('[HamburgerMenu] MODE: REAL - no notifications (empty)')
     }
-  ]
+  }, [isDemoMode])
+
+  // Notifications: demo data for demo mode, empty for real users
+  const notifications = isDemoMode ? DEMO_NOTIFICATIONS : []
 
   const unreadCount = notifications.filter(n => n.unread).length
 
@@ -149,14 +162,35 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' 
       {/* Profile Header Row */}
       <button className="global-menu-profile" onClick={() => handleMenuItemClick('Settings')}>
         <div className="global-menu-profile-avatar">
-          <img
-            src="/images/profile-taylor.jpg"
-            alt="Profile"
-          />
+          {isDemoMode ? (
+            <img src="/images/profile-taylor.jpg" alt="Profile" />
+          ) : (
+            <div style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+              color: 'white',
+              fontSize: '18px',
+              fontWeight: '600',
+              borderRadius: '50%'
+            }}>
+              {(userProfile?.full_name || 'U').charAt(0).toUpperCase()}
+            </div>
+          )}
         </div>
         <div className="global-menu-profile-info">
-          <span className="global-menu-profile-building">The Paramount</span>
-          <span className="global-menu-profile-user">Jonathan Sterling · Apt. 406</span>
+          <span className="global-menu-profile-building">
+            {isDemoMode ? 'The Paramount' : (userProfile?.buildings?.name || 'Your Building')}
+          </span>
+          <span className="global-menu-profile-user">
+            {isDemoMode
+              ? 'Jonathan Sterling · Apt. 406'
+              : `${userProfile?.full_name || 'Resident'}${userProfile?.unit_number ? ` · Apt. ${userProfile.unit_number}` : ''}`
+            }
+          </span>
         </div>
         <ChevronRight size={20} className="global-menu-profile-chevron" />
       </button>

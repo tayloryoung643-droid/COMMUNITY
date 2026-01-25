@@ -152,12 +152,22 @@ function CommunityFeed({ onNavigate }) {
   const [mobileNeighborsExpanded, setMobileNeighborsExpanded] = useState(false)
 
   // Neighbors data and state
-  const currentUserFloor = 12
+  const currentUserFloor = userProfile?.unit_number
+    ? parseInt(userProfile.unit_number.toString().slice(0, -2)) || 1
+    : 12
   const [expandedFloors, setExpandedFloors] = useState([currentUserFloor])
-  const [neighbors, setNeighbors] = useState(DEMO_NEIGHBORS)
+  const [neighbors, setNeighbors] = useState([])
 
   useEffect(() => {
     console.log('[CommunityFeed] Demo mode:', isInDemoMode)
+
+    // Load neighbors based on mode
+    if (isInDemoMode) {
+      setNeighbors(DEMO_NEIGHBORS)
+    } else {
+      // For real users, show empty neighbors (or fetch from DB)
+      setNeighbors([])
+    }
 
     async function loadPosts() {
       if (isInDemoMode) {

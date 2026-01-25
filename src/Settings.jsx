@@ -2,16 +2,29 @@ import { useState } from 'react'
 import { ArrowLeft, Camera, User, Home, Calendar, FileText, Eye, EyeOff, Hand, Bell, Mail, Package, PartyPopper, MessageSquare, LogOut, ChevronRight, AlertTriangle, Phone, HelpCircle } from 'lucide-react'
 import './Settings.css'
 
-function Settings({ onBack, onLogout, onNavigate }) {
-  // Profile state
-  const [profile, setProfile] = useState({
+function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
+  // Demo profile data
+  const demoProfile = {
     displayName: 'Taylor Young',
     unit: '1201',
     floor: '12',
     moveInDate: 'March 2023',
     bio: 'Coffee enthusiast, dog lover, and weekend hiker. Always happy to chat in the elevator!',
     showInDirectory: true
-  })
+  }
+
+  // Real profile data from userProfile
+  const realProfile = {
+    displayName: userProfile?.full_name || '',
+    unit: userProfile?.unit_number || '',
+    floor: userProfile?.unit_number ? userProfile.unit_number.toString().slice(0, -2) || '1' : '',
+    moveInDate: userProfile?.created_at ? new Date(userProfile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '',
+    bio: userProfile?.bio || '',
+    showInDirectory: userProfile?.show_in_directory ?? true
+  }
+
+  // Profile state - use demo or real based on mode
+  const [profile, setProfile] = useState(isDemoMode ? demoProfile : realProfile)
 
   // Privacy state
   const [privacy, setPrivacy] = useState({
@@ -61,7 +74,23 @@ function Settings({ onBack, onLogout, onNavigate }) {
             {/* Profile Photo */}
             <div className="profile-photo-section">
               <div className="profile-photo">
-                <img src="/images/profile-taylor.jpg" alt="Taylor Young" />
+                {isDemoMode ? (
+                  <img src="/images/profile-taylor.jpg" alt="Taylor Young" />
+                ) : (
+                  <div style={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                    color: 'white',
+                    fontSize: '24px',
+                    fontWeight: '600'
+                  }}>
+                    {(userProfile?.full_name || 'U').charAt(0).toUpperCase()}
+                  </div>
+                )}
               </div>
               <button className="change-photo-btn">
                 <Camera size={16} />

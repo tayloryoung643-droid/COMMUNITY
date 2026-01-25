@@ -1,8 +1,28 @@
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Hand, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
+import { ArrowLeft, Hand, Users, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
+import { supabase } from './lib/supabase'
 import './Neighbors.css'
 
-function Neighbors({ onBack }) {
+// Demo neighbor data
+const DEMO_NEIGHBORS = [
+  { id: 1, name: "Sarah Chen", unit: "1201", floor: 12, color: "blue", waved: false },
+  { id: 2, name: "Michael Torres", unit: "1203", floor: 12, color: "purple", waved: false },
+  { id: 3, name: "Emily Rodriguez", unit: "1205", floor: 12, color: "cyan", waved: false },
+  { id: 4, name: "David Kim", unit: "1207", floor: 12, color: "green", waved: false },
+  { id: 5, name: "Jessica Patel", unit: "1102", floor: 11, color: "pink", waved: false },
+  { id: 6, name: "James Wilson", unit: "1104", floor: 11, color: "orange", waved: false },
+  { id: 7, name: "Maria Garcia", unit: "1106", floor: 11, color: "blue", waved: false },
+  { id: 8, name: "Robert Lee", unit: "1301", floor: 13, color: "purple", waved: false },
+  { id: 9, name: "Amanda Brown", unit: "1303", floor: 13, color: "cyan", waved: false },
+  { id: 10, name: "Chris Johnson", unit: "1305", floor: 13, color: "green", waved: false },
+  { id: 11, name: "Lisa Anderson", unit: "1307", floor: 13, color: "pink", waved: false },
+  { id: 12, name: "Daniel Martinez", unit: "1002", floor: 10, color: "orange", waved: false },
+  { id: 13, name: "Sophie Taylor", unit: "1004", floor: 10, color: "blue", waved: false }
+]
+
+const COLORS = ["blue", "purple", "cyan", "green", "pink", "orange"]
+
+function Neighbors({ onBack, isDemoMode, userProfile }) {
   // Weather and time state - matches Home exactly
   const [currentTime, setCurrentTime] = useState(new Date())
   const weatherData = {
@@ -39,31 +59,68 @@ function Neighbors({ onBack }) {
   }
 
   const WeatherIcon = getWeatherIcon(weatherData.condition)
-  // Fake neighbor data - later this will come from a real database
-  const [neighbors, setNeighbors] = useState([
-    // Floor 12 (Current user's floor - shown first)
-    { id: 1, name: "Sarah Chen", unit: "1201", floor: 12, color: "blue", waved: false },
-    { id: 2, name: "Michael Torres", unit: "1203", floor: 12, color: "purple", waved: false },
-    { id: 3, name: "Emily Rodriguez", unit: "1205", floor: 12, color: "cyan", waved: false },
-    { id: 4, name: "David Kim", unit: "1207", floor: 12, color: "green", waved: false },
 
-    // Floor 11
-    { id: 5, name: "Jessica Patel", unit: "1102", floor: 11, color: "pink", waved: false },
-    { id: 6, name: "James Wilson", unit: "1104", floor: 11, color: "orange", waved: false },
-    { id: 7, name: "Maria Garcia", unit: "1106", floor: 11, color: "blue", waved: false },
+  const [neighbors, setNeighbors] = useState([])
+  const [loading, setLoading] = useState(true)
 
-    // Floor 13
-    { id: 8, name: "Robert Lee", unit: "1301", floor: 13, color: "purple", waved: false },
-    { id: 9, name: "Amanda Brown", unit: "1303", floor: 13, color: "cyan", waved: false },
-    { id: 10, name: "Chris Johnson", unit: "1305", floor: 13, color: "green", waved: false },
-    { id: 11, name: "Lisa Anderson", unit: "1307", floor: 13, color: "pink", waved: false },
+  // Get current user's floor from their unit number
+  const currentUserFloor = userProfile?.unit_number
+    ? parseInt(userProfile.unit_number.toString().slice(0, -2)) || 1
+    : 12
 
-    // Floor 10
-    { id: 12, name: "Daniel Martinez", unit: "1002", floor: 10, color: "orange", waved: false },
-    { id: 13, name: "Sophie Taylor", unit: "1004", floor: 10, color: "blue", waved: false }
-  ])
+  // Load neighbors based on mode
+  useEffect(() => {
+    const loadNeighbors = async () => {
+      if (isDemoMode) {
+        console.log('[Neighbors] MODE: DEMO - using demo neighbors')
+        setNeighbors(DEMO_NEIGHBORS)
+        setLoading(false)
+        return
+      }
 
-  const currentUserFloor = 12
+      const buildingId = userProfile?.building_id
+      if (!buildingId) {
+        console.log('[Neighbors] MODE: REAL but no building_id - showing empty')
+        setNeighbors([])
+        setLoading(false)
+        return
+      }
+
+      console.log('[Neighbors] MODE: REAL - fetching neighbors for building:', buildingId)
+
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('id, full_name, unit_number')
+          .eq('building_id', buildingId)
+          .neq('id', userProfile.id) // Exclude current user
+          .order('unit_number', { ascending: true })
+
+        if (error) {
+          console.error('[Neighbors] Error fetching:', error)
+          setNeighbors([])
+        } else {
+          const transformedNeighbors = (data || []).map((user, index) => ({
+            id: user.id,
+            name: user.full_name || 'Neighbor',
+            unit: user.unit_number || 'N/A',
+            floor: user.unit_number ? parseInt(user.unit_number.toString().slice(0, -2)) || 1 : 1,
+            color: COLORS[index % COLORS.length],
+            waved: false
+          }))
+          setNeighbors(transformedNeighbors)
+          console.log('[Neighbors] Fetched:', transformedNeighbors.length, 'neighbors')
+        }
+      } catch (err) {
+        console.error('[Neighbors] Error:', err)
+        setNeighbors([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadNeighbors()
+  }, [isDemoMode, userProfile])
 
   // Get initials from name
   const getInitials = (name) => {
@@ -122,7 +179,18 @@ function Neighbors({ onBack }) {
       </div>
 
       <main className="neighbors-content">
-        {sortedFloors.map((floor, floorIndex) => (
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgba(255,255,255,0.6)' }}>
+            Loading neighbors...
+          </div>
+        ) : neighbors.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgba(255,255,255,0.6)' }}>
+            <Users size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+            <p style={{ fontSize: '16px', marginBottom: '8px' }}>No neighbors yet</p>
+            <p style={{ fontSize: '14px', opacity: 0.7 }}>Invite your neighbors to join!</p>
+          </div>
+        ) : (
+          sortedFloors.map((floor, floorIndex) => (
           <section key={floor} className={`floor-section animate-in delay-${floorIndex + 1}`}>
             <h2 className="floor-title">
               Floor {floor}
@@ -155,7 +223,8 @@ function Neighbors({ onBack }) {
               ))}
             </div>
           </section>
-        ))}
+        ))
+        )}
       </main>
     </div>
   )

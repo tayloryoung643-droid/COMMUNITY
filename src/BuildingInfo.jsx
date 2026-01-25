@@ -2,8 +2,17 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Clock, FileText, Truck, Recycle, CalendarCheck, ChevronDown, ChevronUp, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import './BuildingInfo.css'
 
-function BuildingInfo({ onBack }) {
+function BuildingInfo({ onBack, isDemoMode, userProfile }) {
   const [expandedSections, setExpandedSections] = useState(['hours'])
+
+  // Log which mode we're in
+  useEffect(() => {
+    if (isDemoMode) {
+      console.log('[BuildingInfo] MODE: DEMO - showing demo building info')
+    } else {
+      console.log('[BuildingInfo] MODE: REAL - building:', userProfile?.building_id)
+    }
+  }, [isDemoMode, userProfile])
 
   // Weather and time state - matches Home exactly
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -50,7 +59,8 @@ function BuildingInfo({ onBack }) {
     )
   }
 
-  const sections = [
+  // Demo sections data
+  const demoSections = [
     {
       id: 'hours',
       icon: Clock,
@@ -173,6 +183,29 @@ function BuildingInfo({ onBack }) {
       ]
     }
   ]
+
+  // Empty sections for real users (building info not yet configured)
+  const emptySections = [
+    {
+      id: 'hours',
+      icon: Clock,
+      title: 'Building Hours',
+      content: [
+        { label: 'Info', value: 'Building hours not yet configured' }
+      ]
+    },
+    {
+      id: 'policies',
+      icon: FileText,
+      title: 'Policies',
+      content: [
+        { label: 'Info', value: 'Building policies not yet configured' }
+      ]
+    }
+  ]
+
+  // Use demo sections in demo mode, empty sections for real users
+  const sections = isDemoMode ? demoSections : emptySections
 
   return (
     <div className="building-info-container resident-inner-page">

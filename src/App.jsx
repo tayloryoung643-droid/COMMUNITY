@@ -611,7 +611,7 @@ function App() {
   if (currentScreen === 'neighbors') {
     return (
       <MobileShell bottomNav={bottomNav}>
-        <Neighbors onBack={handleBack} />
+        <Neighbors onBack={handleBack} isDemoMode={isDemoMode} userProfile={userProfile} />
       </MobileShell>
     )
   }
@@ -635,7 +635,7 @@ function App() {
   if (currentScreen === 'community') {
     return (
       <MobileShell bottomNav={bottomNav}>
-        <CommunityFeed onNavigate={handleNavigation} posts={posts} onAddPost={handleAddPost} />
+        <CommunityFeed onNavigate={handleNavigation} posts={posts} onAddPost={handleAddPost} isDemoMode={isDemoMode} userProfile={userProfile} />
       </MobileShell>
     )
   }
@@ -651,7 +651,7 @@ function App() {
   if (currentScreen === 'settings') {
     return (
       <MobileShell bottomNav={bottomNav}>
-        <Settings onBack={handleBack} onLogout={handleLogout} onNavigate={handleNavigation} />
+        <Settings onBack={handleBack} onLogout={handleLogout} onNavigate={handleNavigation} isDemoMode={isDemoMode} userProfile={userProfile} />
       </MobileShell>
     )
   }
@@ -659,7 +659,7 @@ function App() {
   if (currentScreen === 'building-info') {
     return (
       <MobileShell bottomNav={bottomNav}>
-        <BuildingInfo onBack={() => setCurrentScreen('settings')} />
+        <BuildingInfo onBack={() => setCurrentScreen('settings')} isDemoMode={isDemoMode} userProfile={userProfile} />
       </MobileShell>
     )
   }
