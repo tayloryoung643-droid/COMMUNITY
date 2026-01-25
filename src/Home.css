@@ -240,6 +240,35 @@
 }
 
 /* ============================================
+   HOME INTELLIGENCE - Context Lines
+   Subtle helper text under section title
+   ============================================ */
+.home-context-lines {
+  margin: -8px 0 16px 0; /* Pull up slightly, space below before cards */
+  padding: 0;
+}
+
+.context-line {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 0;
+  padding: 0;
+}
+
+.context-line-1 {
+  /* Primary context line */
+}
+
+.context-line-2 {
+  /* Secondary/momentum line - slightly lighter */
+  margin-top: 2px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+/* ============================================
    TODAY SECTION - Primary cards
    ============================================ */
 .today-section {

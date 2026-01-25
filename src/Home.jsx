@@ -3,6 +3,7 @@ import { Package, Calendar, Users, ChevronRight, X, Image, Send, Check, Cloud, S
 import HamburgerMenu from './HamburgerMenu'
 import { eventsData } from './eventsData'
 import { supabase } from './lib/supabase'
+import { getHomeIntelligence, logEngagementEvent } from './services/homeIntelligenceService'
 import './Home.css'
 
 function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
@@ -25,6 +26,10 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
   const [realEvents, setRealEvents] = useState([])
   const [realPosts, setRealPosts] = useState([])
   const [dataLoading, setDataLoading] = useState(false)
+
+  // Home Intelligence state (context lines)
+  const [contextLine1, setContextLine1] = useState(null)
+  const [contextLine2, setContextLine2] = useState(null)
 
   // Fetch real data for authenticated users
   useEffect(() => {
@@ -102,6 +107,67 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
     fetchRealData()
   }, [isDemoMode, userProfile?.building_id])
 
+  // Fetch Home Intelligence data (context lines) for real users
+  useEffect(() => {
+    const fetchHomeIntelligence = async () => {
+      if (isDemoMode) {
+        // Demo mode: show a static context line
+        setContextLine1('3 events this week · 2 packages waiting')
+        setContextLine2(null)
+        return
+      }
+
+      const buildingId = userProfile?.building_id
+      const userId = userProfile?.id
+
+      if (!buildingId || !userId) {
+        setContextLine1(null)
+        setContextLine2(null)
+        return
+      }
+
+      try {
+        const intelligence = await getHomeIntelligence({
+          userId,
+          buildingId,
+          buildingName: userProfile?.buildings?.name || userProfile?.building_name || 'Your Building'
+        })
+
+        setContextLine1(intelligence.contextLine1)
+        setContextLine2(intelligence.contextLine2)
+
+        console.log('[Home] Intelligence loaded:', {
+          line1: intelligence.contextLine1,
+          line2: intelligence.contextLine2,
+          fromCache: intelligence.fromCache
+        })
+      } catch (err) {
+        console.warn('[Home] Failed to load intelligence:', err.message)
+        // Fail silently - context lines are optional enhancement
+        setContextLine1(null)
+        setContextLine2(null)
+      }
+    }
+
+    fetchHomeIntelligence()
+  }, [isDemoMode, userProfile])
+
+  // Log home_view engagement event on mount (for real users)
+  useEffect(() => {
+    if (isDemoMode) return
+
+    const buildingId = userProfile?.building_id
+    const userId = userProfile?.id
+
+    if (buildingId && userId) {
+      logEngagementEvent({
+        userId,
+        buildingId,
+        eventType: 'home_view'
+      })
+    }
+  }, [isDemoMode, userProfile?.building_id, userProfile?.id])
+
   const subjectOptions = [
     'Maintenance Request',
     'Question',
@@ -159,6 +225,23 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
   }
 
   const handleFeatureClick = (featureTitle) => {
+    // Log engagement for real users
+    if (!isDemoMode && userProfile?.id && userProfile?.building_id) {
+      const eventTypeMap = {
+        'Packages': 'package_open',
+        'Calendar': 'event_rsvp',
+        'Community': 'post_open',
+        'Bulletin': 'bulletin_open'
+      }
+      const eventType = eventTypeMap[featureTitle] || 'home_view'
+      logEngagementEvent({
+        userId: userProfile.id,
+        buildingId: userProfile.building_id,
+        eventType,
+        entityType: featureTitle.toLowerCase()
+      })
+    }
+
     if (onNavigate) {
       onNavigate(featureTitle)
     }
@@ -177,6 +260,18 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
 
   // Handler to open event detail
   const handleEventClick = (event) => {
+    // Log engagement for real users
+    if (!isDemoMode && userProfile?.id && userProfile?.building_id) {
+      logEngagementEvent({
+        userId: userProfile.id,
+        buildingId: userProfile.building_id,
+        eventType: 'event_rsvp',
+        entityType: 'event',
+        entityId: event.id,
+        topic: event.category || 'social'
+      })
+    }
+
     if (onNavigate) {
       onNavigate('EventDetail', event)
     }
@@ -214,6 +309,18 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
 
   // Handler to open community post detail
   const handleCommunityPostClick = (post) => {
+    // Log engagement for real users
+    if (!isDemoMode && userProfile?.id && userProfile?.building_id) {
+      logEngagementEvent({
+        userId: userProfile.id,
+        buildingId: userProfile.building_id,
+        eventType: 'post_open',
+        entityType: 'post',
+        entityId: post.id,
+        topic: post.type || 'share'
+      })
+    }
+
     if (onNavigate) {
       onNavigate('PostDetail', post)
     }
@@ -281,6 +388,16 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
         {/* Today at Building */}
         <section className="today-section">
           <h2 className="section-title">Today at {isDemoMode ? 'The Paramount' : buildingName}</h2>
+
+          {/* Home Intelligence Context Lines - subtle helper text */}
+          {contextLine1 && (
+            <div className="home-context-lines">
+              <p className="context-line context-line-1">{contextLine1}</p>
+              {contextLine2 && (
+                <p className="context-line context-line-2">{contextLine2}</p>
+              )}
+            </div>
+          )}
 
           {/* Packages Card - Demo or Real */}
           {isDemoMode ? (
