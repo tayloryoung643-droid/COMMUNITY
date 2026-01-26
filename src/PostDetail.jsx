@@ -151,8 +151,29 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
       setIsSubmitting(false)
     } else {
       // Real mode: save to Supabase
+      console.log('[PostDetail] Attempting to post comment:', {
+        postId: post.id,
+        userId: userProfile?.id,
+        content: commentText
+      })
+
+      if (!userProfile?.id) {
+        console.error('[PostDetail] No user profile available')
+        alert('Please log in to comment.')
+        setIsSubmitting(false)
+        return
+      }
+
+      if (!post?.id) {
+        console.error('[PostDetail] No post ID available')
+        alert('Unable to comment on this post.')
+        setIsSubmitting(false)
+        return
+      }
+
       try {
         const newCommentData = await addComment(post.id, userProfile.id, commentText)
+        console.log('[PostDetail] Comment created successfully:', newCommentData)
 
         const comment = {
           id: newCommentData.id,
@@ -169,7 +190,7 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
         setReplyingTo(null)
       } catch (err) {
         console.error('[PostDetail] Error posting comment:', err)
-        alert('Failed to post comment. Please try again.')
+        alert(`Failed to post comment: ${err.message || 'Please try again.'}`)
       } finally {
         setIsSubmitting(false)
       }
