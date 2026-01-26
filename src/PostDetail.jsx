@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
 import { ChevronLeft, Heart, MessageCircle, Share2, Send, Sun, Cloud, CloudRain, Snowflake, Moon, MessageSquare, HelpCircle, Flag } from 'lucide-react'
+import { addComment, getComments } from './services/communityPostService'
 import './PostDetail.css'
 
-function PostDetail({ post, onBack, onNavigate }) {
+function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
   const [isLiked, setIsLiked] = useState(false)
   const [likeCount, setLikeCount] = useState(post?.likes || 0)
   const [comments, setComments] = useState(post?.commentsList || [])
   const [newComment, setNewComment] = useState('')
   const [replyingTo, setReplyingTo] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Weather and time state - matches other pages exactly
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -21,6 +23,33 @@ function PostDetail({ post, onBack, onNavigate }) {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000)
     return () => clearInterval(timer)
   }, [])
+
+  // Fetch comments from Supabase for real users
+  useEffect(() => {
+    const fetchComments = async () => {
+      if (isDemoMode || !post?.id) return
+
+      try {
+        const data = await getComments(post.id)
+        if (data && data.length > 0) {
+          const transformedComments = data.map(c => ({
+            id: c.id,
+            author: c.author?.full_name || 'Neighbor',
+            firstName: c.author?.full_name?.split(' ')[0] || 'Neighbor',
+            unit: c.author?.unit_number ? `Unit ${c.author.unit_number}` : '',
+            text: c.content,
+            timestamp: new Date(c.created_at).getTime(),
+            replies: []
+          }))
+          setComments(transformedComments)
+        }
+      } catch (err) {
+        console.error('[PostDetail] Error fetching comments:', err)
+      }
+    }
+
+    fetchComments()
+  }, [post?.id, isDemoMode])
 
   const getWeatherIcon = (condition) => {
     const hour = currentTime.getHours()
@@ -86,22 +115,27 @@ function PostDetail({ post, onBack, onNavigate }) {
     setIsLiked(!isLiked)
   }
 
-  const handlePostComment = () => {
-    if (newComment.trim()) {
+  const handlePostComment = async () => {
+    if (!newComment.trim() || isSubmitting) return
+
+    const commentText = newComment.trim()
+    setIsSubmitting(true)
+
+    if (isDemoMode) {
+      // Demo mode: add to local state only
       const comment = {
         id: Date.now(),
         author: 'You',
         firstName: 'You',
         unit: 'Unit 1201',
         avatar: userAvatar,
-        text: newComment.trim(),
+        text: commentText,
         timestamp: Date.now(),
         replies: [],
         parentId: replyingTo
       }
 
       if (replyingTo) {
-        // Add as a reply to existing comment
         setComments(prev => prev.map(c => {
           if (c.id === replyingTo) {
             return { ...c, replies: [...(c.replies || []), comment] }
@@ -109,12 +143,36 @@ function PostDetail({ post, onBack, onNavigate }) {
           return c
         }))
       } else {
-        // Add as new top-level comment
         setComments(prev => [...prev, comment])
       }
 
       setNewComment('')
       setReplyingTo(null)
+      setIsSubmitting(false)
+    } else {
+      // Real mode: save to Supabase
+      try {
+        const newCommentData = await addComment(post.id, userProfile.id, commentText)
+
+        const comment = {
+          id: newCommentData.id,
+          author: userProfile.full_name || 'You',
+          firstName: userProfile.full_name?.split(' ')[0] || 'You',
+          unit: userProfile.unit_number ? `Unit ${userProfile.unit_number}` : '',
+          text: commentText,
+          timestamp: Date.now(),
+          replies: []
+        }
+
+        setComments(prev => [...prev, comment])
+        setNewComment('')
+        setReplyingTo(null)
+      } catch (err) {
+        console.error('[PostDetail] Error posting comment:', err)
+        alert('Failed to post comment. Please try again.')
+      } finally {
+        setIsSubmitting(false)
+      }
     }
   }
 

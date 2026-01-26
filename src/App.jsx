@@ -744,7 +744,7 @@ function App() {
   if (currentScreen === 'post-detail' && selectedPost) {
     return (
       <MobileShell bottomNav={bottomNav}>
-        <PostDetail post={selectedPost} onBack={handlePostDetailBack} onNavigate={handleNavigation} />
+        <PostDetail post={selectedPost} onBack={handlePostDetailBack} onNavigate={handleNavigation} userProfile={userProfile} isDemoMode={isDemoMode} />
       </MobileShell>
     )
   }

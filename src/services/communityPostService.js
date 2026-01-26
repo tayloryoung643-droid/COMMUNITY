@@ -86,7 +86,7 @@ export async function unlikePost(postId, userId) {
 export async function getComments(postId) {
   const { data, error } = await supabase
     .from('post_comments')
-    .select('*, author:users(*)')
+    .select('*, author:user_id(full_name, unit_number)')
     .eq('post_id', postId)
     .order('created_at', { ascending: true })
 
