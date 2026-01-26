@@ -306,6 +306,35 @@ function ManagerResidents() {
       // Add to local pending invites state
       setPendingInvites(prev => [data, ...prev])
 
+      // Send invitation email via API
+      const buildingName = userProfile?.buildings?.name || userProfile?.building_name || 'Your Building'
+      try {
+        const emailResponse = await fetch('/api/send-invite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: inviteForm.email.trim().toLowerCase(),
+            fullName,
+            token,
+            buildingName
+          })
+        })
+
+        const emailResult = await emailResponse.json()
+
+        if (!emailResponse.ok) {
+          console.error('[ManagerResidents] Email send error:', emailResult.error)
+          // Invite was saved, but email failed - notify user
+          alert(`Invite saved, but email failed to send: ${emailResult.error}`)
+        } else {
+          console.log('[ManagerResidents] Invitation email sent:', emailResult.messageId)
+        }
+      } catch (emailErr) {
+        console.error('[ManagerResidents] Email API error:', emailErr)
+        // Invite was saved, but email failed - notify user
+        alert('Invite saved, but failed to send email. You may need to resend later.')
+      }
+
       setShowInviteModal(false)
       setInviteForm({
         firstName: '',
