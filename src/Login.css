@@ -375,6 +375,40 @@
 }
 
 /* ============================================
+   RESIDENT MODE TOGGLE - Sign In / Join
+   ============================================ */
+.resident-mode-toggle {
+  display: flex;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 16px;
+}
+
+.resident-mode-btn {
+  flex: 1;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6B7280;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.resident-mode-btn:hover {
+  color: #4A4A4A;
+}
+
+.resident-mode-btn.active {
+  color: #2D3748;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
    ERROR MESSAGE
    ============================================ */
 .login-error {

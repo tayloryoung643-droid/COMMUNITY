@@ -235,6 +235,18 @@ function App() {
     setCurrentScreen('login')
   }
 
+  const handleResidentEmailLogin = async (email, password) => {
+    setAuthError('')
+    const { data, error } = await signIn(email, password)
+    if (error) {
+      setAuthError(error.message)
+      return { error }
+    }
+    // Navigate to resident home on successful login
+    setCurrentScreen('home')
+    return { data }
+  }
+
   const handleManagerLogin = async (email, password) => {
     setAuthError('')
     const { data, error } = await signIn(email, password)
@@ -868,6 +880,7 @@ function App() {
       {DebugBar}
       <Login
         onResidentLogin={handleResidentLogin}
+        onResidentEmailLogin={handleResidentEmailLogin}
         onManagerLogin={handleManagerLogin}
         onRegisterClick={handleRegisterClick}
         onDemoLogin={handleDemoLogin}

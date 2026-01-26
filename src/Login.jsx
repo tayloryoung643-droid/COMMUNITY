@@ -3,15 +3,36 @@ import { Building2, User, Mail, Lock, ArrowRight, Package, Calendar, Headphones,
 import { validateBuildingCode } from './services/buildingService'
 import './Login.css'
 
-function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, onResidentSignupClick, authError }) {
+function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, onResidentSignupClick, onResidentEmailLogin, authError }) {
   const [activeTab, setActiveTab] = useState('resident')
+  const [residentMode, setResidentMode] = useState('signin') // 'signin' or 'join'
   const [buildingCode, setBuildingCode] = useState('')
+  const [residentEmail, setResidentEmail] = useState('')
+  const [residentPassword, setResidentPassword] = useState('')
   const [managerEmail, setManagerEmail] = useState('')
   const [managerPassword, setManagerPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleResidentLogin = async () => {
+  const handleResidentEmailLogin = async () => {
+    if (!residentEmail.trim()) {
+      setError('Please enter your email')
+      return
+    }
+    if (!residentPassword.trim()) {
+      setError('Please enter your password')
+      return
+    }
+    setError('')
+    setIsLoading(true)
+    const result = await onResidentEmailLogin(residentEmail, residentPassword)
+    setIsLoading(false)
+    if (result?.error) {
+      setError(result.error.message || 'Login failed. Please check your credentials.')
+    }
+  }
+
+  const handleResidentCodeLogin = async () => {
     if (!buildingCode.trim()) {
       setError('Please enter a building code')
       return
@@ -129,34 +150,106 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
           {/* Resident Form */}
           {activeTab === 'resident' && (
             <div className="login-form">
-              <div className="input-group">
-                <div className="input-wrapper">
-                  <Building2 size={18} className="input-icon" />
-                  <input
-                    type="text"
-                    placeholder="Enter your building code"
-                    value={buildingCode}
-                    onChange={(e) => { setBuildingCode(e.target.value.toUpperCase()); clearError() }}
-                    onKeyPress={(e) => e.key === 'Enter' && handleResidentLogin()}
-                  />
-                </div>
-                <span className="input-helper">Get this code from your property manager</span>
+              {/* Resident Sub-toggle */}
+              <div className="resident-mode-toggle">
+                <button
+                  className={`resident-mode-btn ${residentMode === 'signin' ? 'active' : ''}`}
+                  onClick={() => { setResidentMode('signin'); clearError() }}
+                >
+                  Sign In
+                </button>
+                <button
+                  className={`resident-mode-btn ${residentMode === 'join' ? 'active' : ''}`}
+                  onClick={() => { setResidentMode('join'); clearError() }}
+                >
+                  Join Building
+                </button>
               </div>
 
-              <button className="login-btn-primary" onClick={handleResidentLogin} disabled={isLoading}>
-                <span>{isLoading ? 'Joining...' : 'Join Building'}</span>
-                {!isLoading && <ArrowRight size={18} />}
-              </button>
+              {/* Sign In Mode - Email/Password */}
+              {residentMode === 'signin' && (
+                <>
+                  <div className="input-group">
+                    <div className="input-wrapper">
+                      <Mail size={18} className="input-icon" />
+                      <input
+                        type="email"
+                        placeholder="Email address"
+                        value={residentEmail}
+                        onChange={(e) => { setResidentEmail(e.target.value); clearError() }}
+                      />
+                    </div>
+                  </div>
 
-              <div className="signup-divider">
-                <span>or</span>
-              </div>
+                  <div className="input-group">
+                    <div className="input-wrapper">
+                      <Lock size={18} className="input-icon" />
+                      <input
+                        type="password"
+                        placeholder="Password"
+                        value={residentPassword}
+                        onChange={(e) => { setResidentPassword(e.target.value); clearError() }}
+                        onKeyPress={(e) => e.key === 'Enter' && handleResidentEmailLogin()}
+                      />
+                    </div>
+                  </div>
 
-              <button className="find-building-btn" onClick={onResidentSignupClick}>
-                <Search size={16} />
-                <span>Find my building by address</span>
-                <ArrowRight size={16} />
-              </button>
+                  <button className="login-btn-primary" onClick={handleResidentEmailLogin} disabled={isLoading}>
+                    <span>{isLoading ? 'Signing in...' : 'Sign In'}</span>
+                    {!isLoading && <ArrowRight size={18} />}
+                  </button>
+
+                  <div className="register-prompt">
+                    <span>Don't have an account?</span>
+                    <button className="register-link" onClick={() => setResidentMode('join')}>
+                      Join your building
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* Join Mode - Building Code */}
+              {residentMode === 'join' && (
+                <>
+                  <div className="input-group">
+                    <div className="input-wrapper">
+                      <Building2 size={18} className="input-icon" />
+                      <input
+                        type="text"
+                        placeholder="Enter your building code"
+                        value={buildingCode}
+                        onChange={(e) => { setBuildingCode(e.target.value.toUpperCase()); clearError() }}
+                        onKeyPress={(e) => e.key === 'Enter' && handleResidentCodeLogin()}
+                      />
+                    </div>
+                    <span className="input-helper">Get this code from your property manager</span>
+                  </div>
+
+                  <button className="login-btn-primary" onClick={handleResidentCodeLogin} disabled={isLoading}>
+                    <span>{isLoading ? 'Joining...' : 'Join Building'}</span>
+                    {!isLoading && <ArrowRight size={18} />}
+                  </button>
+
+                  <div className="signup-divider">
+                    <span>or</span>
+                  </div>
+
+                  <button className="find-building-btn" onClick={onResidentSignupClick}>
+                    <Search size={16} />
+                    <span>Find my building by address</span>
+                    <ArrowRight size={16} />
+                  </button>
+
+                  <div className="register-prompt">
+                    <span>Already have an account?</span>
+                    <button className="register-link" onClick={() => setResidentMode('signin')}>
+                      Sign in
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </>
+              )}
 
               <button className="demo-login-btn" onClick={() => onDemoLogin('resident')} disabled={isLoading}>
                 <Sparkles size={14} />
