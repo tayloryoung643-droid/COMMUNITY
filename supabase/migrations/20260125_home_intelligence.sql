@@ -139,7 +139,7 @@ BEGIN
     ),
     -- Community posts last 24h
     'posts_last_24h', COALESCE(
-      (SELECT COUNT(*) FROM posts
+      (SELECT COUNT(*) FROM community_posts
        WHERE building_id = p_building_id
        AND created_at >= NOW() - INTERVAL '24 hours'),
       0

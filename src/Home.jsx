@@ -79,8 +79,8 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
 
         // Fetch community posts for this building
         const { data: posts, error: postsError } = await supabase
-          .from('posts')
-          .select('*, users(full_name, unit_number)')
+          .from('community_posts')
+          .select('*, author:user_id(full_name, unit_number)')
           .eq('building_id', buildingId)
           .order('created_at', { ascending: false })
           .limit(5)
@@ -299,8 +299,8 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
     id: realPosts[0].id,
     type: realPosts[0].type || 'share',
     text: realPosts[0].content || realPosts[0].text,
-    author: realPosts[0].users?.full_name || 'Neighbor',
-    unit: realPosts[0].users?.unit_number ? `Unit ${realPosts[0].users.unit_number}` : '',
+    author: realPosts[0].author?.full_name || 'Neighbor',
+    unit: realPosts[0].author?.unit_number ? `Unit ${realPosts[0].author.unit_number}` : '',
     timestamp: new Date(realPosts[0].created_at).getTime(),
     likes: realPosts[0].likes || 0,
     comments: realPosts[0].comments_count || 0,

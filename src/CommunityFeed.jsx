@@ -336,12 +336,14 @@ function CommunityFeed({ onNavigate }) {
     } else {
       // Real mode: save to Supabase
       try {
-        await createPost({
+        console.log('[CommunityFeed] Creating post for building:', userProfile.building_id, 'user:', userProfile.id)
+        const newPost = await createPost({
           building_id: userProfile.building_id,
           user_id: userProfile.id,
           type: postType,
           content: postText.trim()
         })
+        console.log('[CommunityFeed] Post created successfully:', newPost)
         // Reload posts
         const data = await getPosts(userProfile.building_id)
         const transformedData = data.map(post => ({
@@ -356,7 +358,9 @@ function CommunityFeed({ onNavigate }) {
         }))
         setPosts(transformedData)
       } catch (err) {
-        console.error('Error creating post:', err)
+        console.error('[CommunityFeed] Error creating post:', err)
+        setError('Failed to create post. Please try again.')
+        return // Don't close modal on error
       }
     }
 
