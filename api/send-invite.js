@@ -18,11 +18,14 @@ export default async function handler(req, res) {
   const joinUrl = `https://www.communityhq.space/join?token=${token}`;
   const displayName = fullName || 'Neighbor';
 
+  // Get first name for personalization
+  const firstName = displayName.split(' ')[0];
+
   try {
     const { data, error } = await resend.emails.send({
       from: 'Community <noreply@mail.communityhq.space>',
       to: [email],
-      subject: `You're invited to join ${buildingName} on Community`,
+      subject: `Your neighbors at ${buildingName} are waiting`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -30,45 +33,102 @@ export default async function handler(req, res) {
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 32px;">
-            <h1 style="color: #1a1a1a; font-size: 24px; margin: 0;">Welcome to Community</h1>
-          </div>
+        <body style="margin: 0; padding: 0; background-color: #f9f8f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f9f8f6;">
+            <tr>
+              <td align="center" style="padding: 40px 20px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 520px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
 
-          <p style="font-size: 16px; margin-bottom: 16px;">Hi ${displayName},</p>
+                  <!-- Hero Image -->
+                  <tr>
+                    <td style="padding: 0;">
+                      <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1040&h=400&fit=crop&crop=bottom" alt="" width="100%" style="display: block; width: 100%; height: auto; max-height: 200px; object-fit: cover;">
+                    </td>
+                  </tr>
 
-          <p style="font-size: 16px; margin-bottom: 16px;">
-            You've been invited to join <strong>${buildingName}</strong> on Community — the app that connects you with your neighbors.
-          </p>
+                  <!-- Content -->
+                  <tr>
+                    <td style="padding: 40px 36px 32px;">
 
-          <p style="font-size: 16px; margin-bottom: 24px;">
-            With Community, you can:
-          </p>
+                      <!-- Brand -->
+                      <p style="margin: 0 0 24px; font-size: 13px; font-weight: 600; letter-spacing: 0.5px; color: #5B8A8A; text-transform: uppercase;">
+                        Community
+                      </p>
 
-          <ul style="font-size: 16px; margin-bottom: 24px; padding-left: 24px;">
-            <li>Get notified when packages arrive</li>
-            <li>RSVP to building events</li>
-            <li>Connect with neighbors</li>
-            <li>Book shared amenities</li>
-            <li>Stay updated on building news</li>
-          </ul>
+                      <!-- Headline -->
+                      <h1 style="margin: 0 0 24px; font-size: 28px; font-weight: 600; line-height: 1.25; color: #1a1a1a;">
+                        Join your neighbors at ${buildingName}
+                      </h1>
 
-          <div style="text-align: center; margin: 32px 0;">
-            <a href="${joinUrl}" style="background-color: #1a1a1a; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 500; display: inline-block;">
-              Join ${buildingName}
-            </a>
-          </div>
+                      <!-- Opening -->
+                      <p style="margin: 0 0 28px; font-size: 16px; line-height: 1.6; color: #4a4a4a;">
+                        Hi ${firstName}, your building manager has invited you to Community — a private space just for residents of ${buildingName}.
+                      </p>
 
-          <p style="font-size: 14px; color: #666; margin-top: 32px;">
-            Or copy and paste this link into your browser:<br>
-            <a href="${joinUrl}" style="color: #1a1a1a; word-break: break-all;">${joinUrl}</a>
-          </p>
+                      <!-- Value Section -->
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 32px;">
+                        <tr>
+                          <td style="padding: 20px 24px; background-color: #f9f8f6; border-radius: 12px;">
+                            <p style="margin: 0 0 16px; font-size: 15px; line-height: 1.7; color: #3a3a3a;">
+                              <span style="color: #5B8A8A;">✓</span>&nbsp;&nbsp;Never miss a package delivery
+                            </p>
+                            <p style="margin: 0 0 16px; font-size: 15px; line-height: 1.7; color: #3a3a3a;">
+                              <span style="color: #5B8A8A;">✓</span>&nbsp;&nbsp;Know what's happening in your building
+                            </p>
+                            <p style="margin: 0 0 16px; font-size: 15px; line-height: 1.7; color: #3a3a3a;">
+                              <span style="color: #5B8A8A;">✓</span>&nbsp;&nbsp;Book amenities without back-and-forth
+                            </p>
+                            <p style="margin: 0 0 16px; font-size: 15px; line-height: 1.7; color: #3a3a3a;">
+                              <span style="color: #5B8A8A;">✓</span>&nbsp;&nbsp;Connect with neighbors when it matters
+                            </p>
+                            <p style="margin: 0; font-size: 15px; line-height: 1.7; color: #3a3a3a;">
+                              <span style="color: #5B8A8A;">✓</span>&nbsp;&nbsp;Get building updates in one place
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
 
-          <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;">
+                      <!-- CTA -->
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                        <tr>
+                          <td align="center">
+                            <a href="${joinUrl}" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #5B8A8A 0%, #4A7878 100%); color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 10px;">
+                              Join Your Building
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
 
-          <p style="font-size: 12px; color: #999; text-align: center;">
-            This invitation was sent by your building manager. If you didn't expect this email, you can safely ignore it.
-          </p>
+                      <!-- Reassurance -->
+                      <p style="margin: 20px 0 0; font-size: 14px; line-height: 1.5; color: #888; text-align: center;">
+                        You'll create your account and confirm your unit. That's it.
+                      </p>
+
+                    </td>
+                  </tr>
+
+                  <!-- Light Urgency -->
+                  <tr>
+                    <td style="padding: 0 36px 32px;">
+                      <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #666; text-align: center; font-style: italic;">
+                        The earlier you join, the more useful Community becomes for everyone.
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Footer -->
+                  <tr>
+                    <td style="padding: 24px 36px; border-top: 1px solid #eee;">
+                      <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #999; text-align: center;">
+                        If you didn't expect this invite, you can safely ignore this email.
+                      </p>
+                    </td>
+                  </tr>
+
+                </table>
+              </td>
+            </tr>
+          </table>
         </body>
         </html>
       `,
