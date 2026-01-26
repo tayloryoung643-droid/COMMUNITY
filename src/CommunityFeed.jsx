@@ -7,6 +7,9 @@ import EmptyState from './components/EmptyState'
 import './CommunityFeed.css'
 
 // Demo posts data - used when in demo mode
+// Use a module-level variable to persist posts across component remounts
+let demoPostsCache = null
+
 const DEMO_POSTS = [
   {
     id: 1,
@@ -171,8 +174,10 @@ function CommunityFeed({ onNavigate }) {
 
     async function loadPosts() {
       if (isInDemoMode) {
-        console.log('[CommunityFeed] MODE: DEMO - posts.length:', DEMO_POSTS.length)
-        setPosts(DEMO_POSTS)
+        // Use cached demo posts if available (persists new posts across navigation)
+        const postsToUse = demoPostsCache || DEMO_POSTS
+        console.log('[CommunityFeed] MODE: DEMO - posts.length:', postsToUse.length, 'fromCache:', !!demoPostsCache)
+        setPosts(postsToUse)
         setLoading(false)
         return
       }
@@ -312,7 +317,7 @@ function CommunityFeed({ onNavigate }) {
     if (!postText.trim()) return
 
     if (isInDemoMode) {
-      // Demo mode: add to local state only
+      // Demo mode: add to local state and update the cache
       const newPost = {
         id: Date.now(),
         type: postType,
@@ -321,9 +326,13 @@ function CommunityFeed({ onNavigate }) {
         unit: 'Unit 1201',
         timestamp: Date.now(),
         likes: 0,
-        comments: 0
+        comments: 0,
+        commentsList: []
       }
-      setPosts([newPost, ...posts])
+      const updatedPosts = [newPost, ...posts]
+      setPosts(updatedPosts)
+      // Update the cache so posts persist across navigation
+      demoPostsCache = updatedPosts
     } else {
       // Real mode: save to Supabase
       try {

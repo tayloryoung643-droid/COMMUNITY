@@ -529,9 +529,14 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
                 )
               })
             ) : !isDemoMode && (
-              <div className="empty-events-state">
-                <Calendar size={32} style={{ color: '#64748b', opacity: 0.5 }} />
-                <p style={{ color: '#64748b', margin: '8px 0 0', fontSize: '14px' }}>No upcoming events</p>
+              <div className="today-card empty-state-card">
+                <div className="today-card-icon calendar-icon" style={{ opacity: 0.5 }}>
+                  <Calendar size={20} />
+                </div>
+                <div className="today-card-content">
+                  <span className="today-card-title" style={{ color: '#64748b' }}>No upcoming events</span>
+                  <span className="today-card-subtitle">Check back later</span>
+                </div>
               </div>
             )}
           </div>
