@@ -68,13 +68,34 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
           .from('events')
           .select('*')
           .eq('building_id', buildingId)
-          .gte('date', new Date().toISOString().split('T')[0])
-          .order('date', { ascending: true })
+          .gte('start_time', new Date().toISOString())
+          .order('start_time', { ascending: true })
           .limit(5)
 
-        if (!eventsError) {
-          setRealEvents(events || [])
-          console.log('[Home] Events fetched:', events?.length || 0)
+        if (!eventsError && events) {
+          // Transform events to match the expected format
+          const transformedEvents = events.map(event => {
+            const eventDate = event.start_time ? new Date(event.start_time) : null
+            const dateStr = eventDate ? eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''
+            const timeStr = event.event_time || (eventDate ? eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '')
+            const location = event.location || ''
+
+            return {
+              id: event.id,
+              title: event.title,
+              date: dateStr,
+              time: timeStr,
+              location: location,
+              category: event.category || 'social',
+              description: event.description || '',
+              // Create subtitle for Coming Up section display
+              subtitle: [dateStr, timeStr, location].filter(Boolean).join(' · ')
+            }
+          })
+          setRealEvents(transformedEvents)
+          console.log('[Home] Events fetched:', transformedEvents.length)
+        } else if (eventsError) {
+          console.error('[Home] Events fetch error:', eventsError)
         }
 
         // Fetch community posts for this building
