@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 export async function getPosts(buildingId) {
   const { data, error } = await supabase
     .from('community_posts')
-    .select('*, author:users(*)')
+    .select('*, author:author_id(full_name, unit_number)')
     .eq('building_id', buildingId)
     .order('created_at', { ascending: false })
 
@@ -12,9 +12,17 @@ export async function getPosts(buildingId) {
 }
 
 export async function createPost(postData) {
+  // Map user_id to author_id to match table schema
+  const insertData = {
+    building_id: postData.building_id,
+    author_id: postData.user_id,
+    content: postData.content
+    // Note: 'type' column doesn't exist in table, storing in content if needed
+  }
+
   const { data, error } = await supabase
     .from('community_posts')
-    .insert([postData])
+    .insert([insertData])
     .select()
 
   if (error) throw error
@@ -45,9 +53,9 @@ export async function deletePost(postId) {
 export async function getAnnouncements(buildingId) {
   const { data, error } = await supabase
     .from('community_posts')
-    .select('*, author:users(*)')
+    .select('*, author:author_id(full_name, unit_number)')
     .eq('building_id', buildingId)
-    .eq('type', 'announcement')
+    .eq('is_announcement', true)
     .order('created_at', { ascending: false })
 
   if (error) throw error

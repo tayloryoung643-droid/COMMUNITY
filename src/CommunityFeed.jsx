@@ -202,8 +202,8 @@ function CommunityFeed({ onNavigate }) {
           author: post.author?.full_name || 'Anonymous',
           unit: `Unit ${post.author?.unit_number || 'N/A'}`,
           timestamp: new Date(post.created_at).getTime(),
-          likes: post.like_count || 0,
-          comments: post.comment_count || 0,
+          likes: post.likes_count || 0,
+          comments: post.comments_count || 0,
           userLiked: post.user_liked || false
         }))
         setPosts(transformedData)
@@ -353,8 +353,8 @@ function CommunityFeed({ onNavigate }) {
           author: post.author?.full_name || 'Anonymous',
           unit: `Unit ${post.author?.unit_number || 'N/A'}`,
           timestamp: new Date(post.created_at).getTime(),
-          likes: post.like_count || 0,
-          comments: post.comment_count || 0
+          likes: post.likes_count || 0,
+          comments: post.comments_count || 0
         }))
         setPosts(transformedData)
       } catch (err) {
