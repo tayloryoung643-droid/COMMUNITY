@@ -26,7 +26,35 @@ function Join({ onSuccess, onBackToLogin }) {
   // Get token from URL on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const token = params.get('token')
+    const hash = window.location.hash
+    let token = params.get('token')
+
+    // Try to get token from hash if not in search params (mobile edge case)
+    if (!token && hash) {
+      // Handle cases like #/join?token=xxx or #token=xxx
+      const hashContent = hash.replace('#', '')
+      if (hashContent.includes('token=')) {
+        const hashParams = new URLSearchParams(hashContent.includes('?') ? hashContent.split('?')[1] : hashContent)
+        token = hashParams.get('token')
+      }
+    }
+
+    // Also try the full URL in case of weird encoding
+    if (!token) {
+      const fullUrl = window.location.href
+      const tokenMatch = fullUrl.match(/[?&]token=([^&#]+)/)
+      if (tokenMatch) {
+        token = decodeURIComponent(tokenMatch[1])
+      }
+    }
+
+    console.log('[Join] URL parsing:', {
+      href: window.location.href,
+      pathname: window.location.pathname,
+      search: window.location.search,
+      hash: window.location.hash,
+      foundToken: token ? 'yes' : 'no'
+    })
 
     if (!token) {
       setError('No invitation token provided. Please use the link from your invitation email.')

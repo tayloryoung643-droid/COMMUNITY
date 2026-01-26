@@ -143,6 +143,9 @@ export const AuthProvider = ({ children }) => {
   const signOut = async () => {
     try {
       setIsDemoMode(false)
+      // Clear user state immediately to prevent race conditions
+      setUser(null)
+      setUserProfile(null)
       const { error } = await supabase.auth.signOut()
       if (error) throw error
     } catch (error) {

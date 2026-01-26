@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Calendar, Clock, MapPin, Users, Check, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
+import { ArrowLeft, Calendar, Clock, MapPin, Users, Check, Sun, Cloud, CloudRain, Snowflake, Moon, Plus, X } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
-import { getEvents, addRSVP, removeRSVP } from './services/eventService'
+import { getEvents, addRSVP, removeRSVP, createEvent } from './services/eventService'
 import EmptyState from './components/EmptyState'
 import './Events.css'
 
@@ -82,6 +82,17 @@ function Events({ onBack }) {
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // Create event modal state
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [newEvent, setNewEvent] = useState({
+    title: '',
+    date: '',
+    time: '',
+    location: '',
+    description: ''
+  })
 
   // Weather and time state - matches Home exactly
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -223,6 +234,69 @@ function Events({ onBack }) {
     }
   }
 
+  // Handle create event
+  const handleCreateEvent = async (e) => {
+    e.preventDefault()
+    if (!newEvent.title || !newEvent.date || !newEvent.time || !newEvent.location) {
+      return
+    }
+
+    setIsSubmitting(true)
+
+    if (isInDemoMode) {
+      // Demo mode: add to local state
+      const demoEvent = {
+        id: Date.now(),
+        title: newEvent.title,
+        date: newEvent.date,
+        time: newEvent.time,
+        location: newEvent.location,
+        description: newEvent.description,
+        attendees: 0,
+        isUpcoming: new Date(newEvent.date) >= new Date(),
+        userRSVPd: false
+      }
+      setEvents([demoEvent, ...events])
+      setShowCreateModal(false)
+      setNewEvent({ title: '', date: '', time: '', location: '', description: '' })
+      setIsSubmitting(false)
+    } else {
+      // Real mode: save to Supabase
+      try {
+        const eventData = {
+          building_id: userProfile.building_id,
+          title: newEvent.title,
+          description: newEvent.description,
+          location: newEvent.location,
+          start_time: `${newEvent.date}T${newEvent.time}:00`,
+          event_time: newEvent.time,
+          created_by: userProfile.id
+        }
+        const created = await createEvent(eventData)
+        // Add to local state
+        const transformedEvent = {
+          id: created.id,
+          title: created.title,
+          date: created.start_time?.split('T')[0],
+          time: created.event_time,
+          location: created.location,
+          description: created.description,
+          attendees: 0,
+          isUpcoming: new Date(created.start_time) >= new Date(),
+          userRSVPd: false
+        }
+        setEvents([transformedEvent, ...events])
+        setShowCreateModal(false)
+        setNewEvent({ title: '', date: '', time: '', location: '', description: '' })
+      } catch (err) {
+        console.error('Error creating event:', err)
+        alert('Failed to create event. Please try again.')
+      } finally {
+        setIsSubmitting(false)
+      }
+    }
+  }
+
   const upcomingEvents = events.filter(event => event.isUpcoming)
   const pastEvents = events.filter(event => !event.isUpcoming)
 
@@ -298,6 +372,17 @@ function Events({ onBack }) {
         <div className="inner-page-title-container">
           <h1 className="inner-page-title">Events</h1>
         </div>
+      </div>
+
+      {/* Create Event Button */}
+      <div className="create-event-button-container">
+        <button
+          className="create-event-button"
+          onClick={() => setShowCreateModal(true)}
+        >
+          <Plus size={20} />
+          <span>Create Event</span>
+        </button>
       </div>
 
       <main className="events-content">
@@ -402,6 +487,92 @@ function Events({ onBack }) {
           </div>
         </section>
       </main>
+
+      {/* Create Event Modal */}
+      {showCreateModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+          <div className="create-event-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Create Event</h2>
+              <button className="modal-close" onClick={() => setShowCreateModal(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <form onSubmit={handleCreateEvent}>
+              <div className="form-group">
+                <label htmlFor="event-title">Event Title *</label>
+                <input
+                  type="text"
+                  id="event-title"
+                  value={newEvent.title}
+                  onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                  placeholder="Enter event title"
+                  required
+                />
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="event-date">Date *</label>
+                  <input
+                    type="date"
+                    id="event-date"
+                    value={newEvent.date}
+                    onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="event-time">Time *</label>
+                  <input
+                    type="time"
+                    id="event-time"
+                    value={newEvent.time}
+                    onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="form-group">
+                <label htmlFor="event-location">Location *</label>
+                <input
+                  type="text"
+                  id="event-location"
+                  value={newEvent.location}
+                  onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
+                  placeholder="e.g., Rooftop, Community Room"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="event-description">Description</label>
+                <textarea
+                  id="event-description"
+                  value={newEvent.description}
+                  onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                  placeholder="Describe the event..."
+                  rows={3}
+                />
+              </div>
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="cancel-button"
+                  onClick={() => setShowCreateModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="submit-button"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Creating...' : 'Create Event'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

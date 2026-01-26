@@ -48,8 +48,25 @@ function App() {
   useEffect(() => {
     const path = window.location.pathname
     const params = new URLSearchParams(window.location.search)
+    const hash = window.location.hash
 
-    if (path === '/join' && params.get('token')) {
+    // Check for token in query params OR hash (some mobile browsers put params in hash)
+    let token = params.get('token')
+
+    // If token not in search params, check if it's in the hash (mobile edge case)
+    if (!token && hash.includes('token=')) {
+      const hashParams = new URLSearchParams(hash.replace('#', '').replace('/join?', ''))
+      token = hashParams.get('token')
+    }
+
+    // Match /join with or without trailing slash
+    const isJoinPath = path === '/join' || path === '/join/' || path.startsWith('/join?')
+
+    if (isJoinPath && token) {
+      // Ensure token is in the URL for the Join component to read
+      if (!params.get('token')) {
+        window.history.replaceState({}, '', `/join?token=${token}`)
+      }
       setCurrentScreen('join')
     }
   }, [])

@@ -374,8 +374,10 @@ function ManagerCalendar() {
           description: eventForm.description,
           start_time: startTime,
           end_time: endTime,
+          event_time: eventForm.time || null,
           category: eventForm.category,
-          location: eventForm.location
+          location: eventForm.location,
+          created_by: userProfile.id
         })
 
         // Refresh events
