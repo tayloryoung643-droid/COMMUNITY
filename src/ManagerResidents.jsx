@@ -263,19 +263,18 @@ function ManagerResidents() {
     }
 
     // Real mode: insert into Supabase
+    // Get user info from AuthContext (not supabase.auth.getSession which returns null)
+    const inviterUserId = userProfile?.id
+    const buildingId = userProfile?.building_id
+
+    // Check if profile is loaded
+    if (!inviterUserId || !buildingId) {
+      console.error('[ManagerResidents] Profile not loaded yet:', { inviterUserId, buildingId })
+      alert('Please wait for your profile to load and try again.')
+      return
+    }
+
     try {
-      const { data: sessionData } = await supabase.auth.getSession()
-      const authUserId = sessionData?.session?.user?.id
-
-      if (!authUserId) {
-        throw new Error('No authenticated user')
-      }
-
-      const buildingId = userProfile?.building_id
-      if (!buildingId) {
-        throw new Error('No building ID found')
-      }
-
       const token = crypto.randomUUID()
       const fullName = `${inviteForm.firstName} ${inviteForm.lastName}`.trim()
 
@@ -284,7 +283,7 @@ function ManagerResidents() {
         .insert([
           {
             building_id: buildingId,
-            inviter_user_id: authUserId,
+            inviter_user_id: inviterUserId,
             email: inviteForm.email.trim().toLowerCase(),
             full_name: fullName || null,
             unit_number: inviteForm.unit || null,
