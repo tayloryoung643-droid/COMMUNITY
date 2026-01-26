@@ -29,6 +29,7 @@ import ResidentSignupEntry from './ResidentSignupEntry'
 import ResidentAddressSearch from './ResidentAddressSearch'
 import ResidentJoinBuilding from './ResidentJoinBuilding'
 import ResidentCreateBuilding from './ResidentCreateBuilding'
+import Join from './Join'
 
 function App() {
   const { user, userProfile, loading, isDemoMode, signIn, signOut, loginAsDemo, refreshUserProfile } = useAuth()
@@ -43,8 +44,21 @@ function App() {
   const [selectedBuilding, setSelectedBuilding] = useState(null)
   const [searchedAddress, setSearchedAddress] = useState('')
 
+  // Check for /join URL path with token on initial load
+  useEffect(() => {
+    const path = window.location.pathname
+    const params = new URLSearchParams(window.location.search)
+
+    if (path === '/join' && params.get('token')) {
+      setCurrentScreen('join')
+    }
+  }, [])
+
   // Redirect authenticated users to the correct screen on app load
   useEffect(() => {
+    // Don't redirect if we're on the join screen
+    if (currentScreen === 'join') return
+
     // Only redirect if we're done loading, have a real user, not in demo mode, and on login screen
     if (!loading && user && userProfile && !isDemoMode && currentScreen === 'login') {
       // Navigate based on user role
@@ -199,8 +213,26 @@ function App() {
     setSelectedBuilding(result.building)
     // Refresh user profile to ensure it's loaded after signup
     await refreshUserProfile()
-    // Navigate to resident home
+    // Clear URL params and navigate to resident home
+    window.history.replaceState({}, '', '/')
     setCurrentScreen('home')
+  }
+
+  const handleJoinSuccess = async (result) => {
+    console.log('[App] Join via invite success:', result)
+    setBuildingCode(result.building?.access_code || '')
+    setSelectedBuilding(result.building)
+    // Refresh user profile to ensure it's loaded after signup
+    await refreshUserProfile()
+    // Clear URL params and navigate to resident home
+    window.history.replaceState({}, '', '/')
+    setCurrentScreen('home')
+  }
+
+  const handleJoinBackToLogin = () => {
+    // Clear URL params and go to login
+    window.history.replaceState({}, '', '/')
+    setCurrentScreen('login')
   }
 
   const handleManagerLogin = async (email, password) => {
@@ -734,6 +766,16 @@ function App() {
         initialAddress={searchedAddress}
         onBack={() => setCurrentScreen('resident-address-search')}
         onSuccess={handleResidentSignupSuccess}
+      />
+    )
+  }
+
+  // Join via Invite Token
+  if (currentScreen === 'join') {
+    return (
+      <Join
+        onSuccess={handleJoinSuccess}
+        onBackToLogin={handleJoinBackToLogin}
       />
     )
   }
