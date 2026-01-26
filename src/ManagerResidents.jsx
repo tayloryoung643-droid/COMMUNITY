@@ -69,38 +69,70 @@ function ManagerResidents() {
   const [pendingInvites, setPendingInvites] = useState([])
   const [invitesLoading, setInvitesLoading] = useState(false)
 
-  // Fetch pending invites from Supabase on mount (real mode only)
+  // Fetch real residents AND pending invites from Supabase on mount (real mode only)
   useEffect(() => {
     if (isInDemoMode) return
 
-    const fetchPendingInvites = async () => {
+    const fetchResidentsAndInvites = async () => {
       const buildingId = userProfile?.building_id
       if (!buildingId) return
 
       setInvitesLoading(true)
       try {
-        const { data, error } = await supabase
+        // Fetch active residents from users table
+        const { data: activeUsers, error: usersError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('building_id', buildingId)
+          .eq('role', 'resident')
+          .order('created_at', { ascending: false })
+
+        if (usersError) {
+          console.error('[ManagerResidents] Error fetching users:', usersError)
+        } else {
+          console.log('[ManagerResidents] Fetched active residents:', activeUsers?.length || 0)
+          // Transform users to resident display format
+          const transformedUsers = (activeUsers || []).map(user => {
+            const nameParts = (user.full_name || '').split(' ')
+            const firstName = nameParts[0] || 'Unknown'
+            const lastName = nameParts.slice(1).join(' ') || ''
+            return {
+              id: user.id,
+              firstName,
+              lastName,
+              unit: user.unit_number || '',
+              email: user.email || '',
+              phone: user.phone || '',
+              status: 'active',
+              joinDate: user.created_at ? user.created_at.split('T')[0] : null,
+              isFromSupabase: true
+            }
+          })
+          setResidents(transformedUsers)
+        }
+
+        // Fetch pending invites
+        const { data: invites, error: invitesError } = await supabase
           .from('resident_invites')
           .select('*')
           .eq('building_id', buildingId)
           .eq('status', 'pending')
           .order('created_at', { ascending: false })
 
-        if (error) {
-          console.error('[ManagerResidents] Error fetching invites:', error)
-          return
+        if (invitesError) {
+          console.error('[ManagerResidents] Error fetching invites:', invitesError)
+        } else {
+          console.log('[ManagerResidents] Fetched pending invites:', invites?.length || 0)
+          setPendingInvites(invites || [])
         }
-
-        console.log('[ManagerResidents] Fetched pending invites:', data?.length || 0)
-        setPendingInvites(data || [])
       } catch (err) {
-        console.error('[ManagerResidents] Fetch invites error:', err)
+        console.error('[ManagerResidents] Fetch error:', err)
       } finally {
         setInvitesLoading(false)
       }
     }
 
-    fetchPendingInvites()
+    fetchResidentsAndInvites()
   }, [isInDemoMode, userProfile?.building_id])
 
   // Available units for invite dropdown

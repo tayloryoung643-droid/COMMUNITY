@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Calendar,
   Plus,
@@ -23,6 +23,7 @@ import {
   Send
 } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
+import { getEvents, createEvent, updateEvent, deleteEvent as deleteEventFromDb } from './services/eventService'
 import './ManagerCalendar.css'
 
 // Demo events data
@@ -240,8 +241,49 @@ function ManagerCalendar() {
     allowRsvp: true
   })
 
-  // Events data - use demo data for demo users, empty for real users
+  // Events data - use demo data for demo users, fetch from Supabase for real users
   const [events, setEvents] = useState(isInDemoMode ? DEMO_EVENTS : [])
+  const [loading, setLoading] = useState(false)
+
+  // Fetch events from Supabase on mount (real mode only)
+  useEffect(() => {
+    if (isInDemoMode) return
+
+    const fetchEvents = async () => {
+      const buildingId = userProfile?.building_id
+      if (!buildingId) return
+
+      setLoading(true)
+      try {
+        const data = await getEvents(buildingId)
+        const transformedEvents = (data || []).map(event => ({
+          id: event.id,
+          date: event.start_time ? event.start_time.split('T')[0] : event.date,
+          time: event.start_time ? new Date(event.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'All Day',
+          endTime: event.end_time ? new Date(event.end_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
+          title: event.title,
+          description: event.description || '',
+          category: event.category || 'social',
+          categoryLabel: event.category ? event.category.charAt(0).toUpperCase() + event.category.slice(1) : 'Social',
+          icon: event.category === 'maintenance' ? Wrench : event.category === 'meeting' ? Users : Wine,
+          color: event.category === 'maintenance' ? '#f59e0b' : event.category === 'meeting' ? '#3b82f6' : '#8b5cf6',
+          location: event.location || '',
+          allowRsvp: event.allow_rsvp !== false,
+          rsvpLimit: event.rsvp_limit || null,
+          rsvps: [],
+          isFromSupabase: true
+        }))
+        setEvents(transformedEvents)
+        console.log('[ManagerCalendar] Events fetched:', transformedEvents.length)
+      } catch (err) {
+        console.error('[ManagerCalendar] Error fetching events:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchEvents()
+  }, [isInDemoMode, userProfile?.building_id])
 
   const filters = [
     { id: 'all', label: 'All Events' },
@@ -294,33 +336,112 @@ function ManagerCalendar() {
   }
 
   // Handle create event
-  const handleCreateEvent = () => {
+  const handleCreateEvent = async () => {
     const category = categories.find(c => c.id === eventForm.category)
-    const newEvent = {
-      id: Date.now(),
-      date: eventForm.date,
-      time: eventForm.time || 'All Day',
-      endTime: eventForm.endTime,
-      title: eventForm.title,
-      description: eventForm.description,
-      category: eventForm.category,
-      categoryLabel: category.label,
-      icon: category.icon,
-      color: category.color,
-      location: eventForm.location,
-      allowRsvp: eventForm.allowRsvp,
-      rsvpLimit: eventForm.rsvpLimit ? parseInt(eventForm.rsvpLimit) : null,
-      rsvps: []
+
+    if (isInDemoMode) {
+      // Demo mode: local state only
+      const newEvent = {
+        id: Date.now(),
+        date: eventForm.date,
+        time: eventForm.time || 'All Day',
+        endTime: eventForm.endTime,
+        title: eventForm.title,
+        description: eventForm.description,
+        category: eventForm.category,
+        categoryLabel: category.label,
+        icon: category.icon,
+        color: category.color,
+        location: eventForm.location,
+        allowRsvp: eventForm.allowRsvp,
+        rsvpLimit: eventForm.rsvpLimit ? parseInt(eventForm.rsvpLimit) : null,
+        rsvps: []
+      }
+      setEvents(prev => [...prev, newEvent])
+    } else {
+      // Real mode: save to Supabase
+      try {
+        const startTime = eventForm.time
+          ? `${eventForm.date}T${eventForm.time}:00`
+          : `${eventForm.date}T00:00:00`
+        const endTime = eventForm.endTime
+          ? `${eventForm.date}T${eventForm.endTime}:00`
+          : null
+
+        await createEvent({
+          building_id: userProfile.building_id,
+          title: eventForm.title,
+          description: eventForm.description,
+          start_time: startTime,
+          end_time: endTime,
+          category: eventForm.category,
+          location: eventForm.location,
+          allow_rsvp: eventForm.allowRsvp,
+          rsvp_limit: eventForm.rsvpLimit ? parseInt(eventForm.rsvpLimit) : null
+        })
+
+        // Refresh events
+        const data = await getEvents(userProfile.building_id)
+        const transformedEvents = (data || []).map(event => ({
+          id: event.id,
+          date: event.start_time ? event.start_time.split('T')[0] : event.date,
+          time: event.start_time ? new Date(event.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'All Day',
+          endTime: event.end_time ? new Date(event.end_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
+          title: event.title,
+          description: event.description || '',
+          category: event.category || 'social',
+          categoryLabel: event.category ? event.category.charAt(0).toUpperCase() + event.category.slice(1) : 'Social',
+          icon: event.category === 'maintenance' ? Wrench : event.category === 'meeting' ? Users : Wine,
+          color: event.category === 'maintenance' ? '#f59e0b' : event.category === 'meeting' ? '#3b82f6' : '#8b5cf6',
+          location: event.location || '',
+          allowRsvp: event.allow_rsvp !== false,
+          rsvpLimit: event.rsvp_limit || null,
+          rsvps: [],
+          isFromSupabase: true
+        }))
+        setEvents(transformedEvents)
+      } catch (err) {
+        console.error('[ManagerCalendar] Error creating event:', err)
+        alert('Failed to create event. Please try again.')
+        return
+      }
     }
-    setEvents(prev => [...prev, newEvent])
+
     setShowCreateModal(false)
     resetForm()
     showToastMessage('Event created successfully!')
   }
 
   // Handle edit event
-  const handleEditEvent = () => {
+  const handleEditEvent = async () => {
     const category = categories.find(c => c.id === eventForm.category)
+
+    if (!isInDemoMode && selectedEvent.isFromSupabase) {
+      try {
+        const startTime = eventForm.time
+          ? `${eventForm.date}T${eventForm.time}:00`
+          : `${eventForm.date}T00:00:00`
+        const endTime = eventForm.endTime
+          ? `${eventForm.date}T${eventForm.endTime}:00`
+          : null
+
+        await updateEvent(selectedEvent.id, {
+          title: eventForm.title,
+          description: eventForm.description,
+          start_time: startTime,
+          end_time: endTime,
+          category: eventForm.category,
+          location: eventForm.location,
+          allow_rsvp: eventForm.allowRsvp,
+          rsvp_limit: eventForm.rsvpLimit ? parseInt(eventForm.rsvpLimit) : null
+        })
+      } catch (err) {
+        console.error('[ManagerCalendar] Error updating event:', err)
+        alert('Failed to update event. Please try again.')
+        return
+      }
+    }
+
     setEvents(prev => prev.map(event => {
       if (event.id === selectedEvent.id) {
         return {
@@ -348,7 +469,17 @@ function ManagerCalendar() {
   }
 
   // Handle delete event
-  const handleDeleteEvent = () => {
+  const handleDeleteEvent = async () => {
+    if (!isInDemoMode && selectedEvent.isFromSupabase) {
+      try {
+        await deleteEventFromDb(selectedEvent.id)
+      } catch (err) {
+        console.error('[ManagerCalendar] Error deleting event:', err)
+        alert('Failed to delete event. Please try again.')
+        return
+      }
+    }
+
     setEvents(prev => prev.filter(event => event.id !== selectedEvent.id))
     setShowDeleteConfirm(false)
     setSelectedEvent(null)

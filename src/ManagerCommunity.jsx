@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   MessageSquare,
   HelpCircle,
@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import './ManagerCommunity.css'
 import { useAuth } from './contexts/AuthContext'
+import { getPosts, createPost, deletePost } from './services/communityPostService'
 
 // Demo posts data - only shown for demo accounts
 const DEMO_POSTS = [
@@ -55,8 +56,45 @@ function ManagerCommunity() {
     sendNotification: true
   })
 
-  // Posts data - demo mode gets demo data, real mode starts empty
+  // Posts data - demo mode gets demo data, real mode fetches from Supabase
   const [posts, setPosts] = useState(isInDemoMode ? DEMO_POSTS : [])
+  const [loading, setLoading] = useState(false)
+
+  // Fetch posts from Supabase on mount (real mode only)
+  useEffect(() => {
+    if (isInDemoMode) return
+
+    const fetchPosts = async () => {
+      const buildingId = userProfile?.building_id
+      if (!buildingId) return
+
+      setLoading(true)
+      try {
+        const data = await getPosts(buildingId)
+        const transformedPosts = (data || []).map(post => ({
+          id: post.id,
+          type: post.is_announcement ? 'announcement' : 'share',
+          title: post.is_announcement ? post.content.split('\n')[0] : null,
+          text: post.content,
+          author: post.author?.full_name || 'Property Manager',
+          unit: post.author?.unit_number ? `Unit ${post.author.unit_number}` : 'Management',
+          timestamp: new Date(post.created_at).getTime(),
+          likes: post.likes_count || 0,
+          comments: post.comments_count || 0,
+          pinned: post.is_pinned || false,
+          isFromSupabase: true
+        }))
+        setPosts(transformedPosts)
+        console.log('[ManagerCommunity] Posts fetched:', transformedPosts.length)
+      } catch (err) {
+        console.error('[ManagerCommunity] Error fetching posts:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPosts()
+  }, [isInDemoMode, userProfile?.building_id])
 
   // Post type configurations
   const postTypes = [
@@ -115,10 +153,24 @@ function ManagerCommunity() {
   }
 
   // Handle delete post
-  const handleDeletePost = (postId) => {
-    if (window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
-      setPosts(prev => prev.filter(post => post.id !== postId))
+  const handleDeletePost = async (post) => {
+    if (!window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+      setOpenMenuId(null)
+      return
     }
+
+    if (!isInDemoMode && post.isFromSupabase) {
+      try {
+        await deletePost(post.id)
+      } catch (err) {
+        console.error('[ManagerCommunity] Error deleting post:', err)
+        alert('Failed to delete post. Please try again.')
+        setOpenMenuId(null)
+        return
+      }
+    }
+
+    setPosts(prev => prev.filter(p => p.id !== post.id))
     setOpenMenuId(null)
   }
 
@@ -136,24 +188,58 @@ function ManagerCommunity() {
   }
 
   // Handle post announcement
-  const handlePostAnnouncement = () => {
+  const handlePostAnnouncement = async () => {
     if (!announcementForm.title.trim() || !announcementForm.message.trim()) return
 
-    const newAnnouncement = {
-      id: `a${Date.now()}`,
-      type: 'announcement',
-      title: announcementForm.title.trim(),
-      text: announcementForm.message.trim(),
-      author: 'Property Manager',
-      unit: 'Management',
-      timestamp: Date.now(),
-      likes: 0,
-      comments: 0,
-      pinned: false,
-      category: announcementForm.category
+    if (isInDemoMode) {
+      // Demo mode: local state only
+      const newAnnouncement = {
+        id: `a${Date.now()}`,
+        type: 'announcement',
+        title: announcementForm.title.trim(),
+        text: announcementForm.message.trim(),
+        author: 'Property Manager',
+        unit: 'Management',
+        timestamp: Date.now(),
+        likes: 0,
+        comments: 0,
+        pinned: false,
+        category: announcementForm.category
+      }
+      setPosts(prev => [newAnnouncement, ...prev])
+    } else {
+      // Real mode: save to Supabase
+      try {
+        const content = `${announcementForm.title.trim()}\n\n${announcementForm.message.trim()}`
+        await createPost({
+          building_id: userProfile.building_id,
+          user_id: userProfile.id,
+          content,
+          is_announcement: true
+        })
+        // Refresh posts
+        const data = await getPosts(userProfile.building_id)
+        const transformedPosts = (data || []).map(post => ({
+          id: post.id,
+          type: post.is_announcement ? 'announcement' : 'share',
+          title: post.is_announcement ? post.content.split('\n')[0] : null,
+          text: post.content,
+          author: post.author?.full_name || 'Property Manager',
+          unit: post.author?.unit_number ? `Unit ${post.author.unit_number}` : 'Management',
+          timestamp: new Date(post.created_at).getTime(),
+          likes: post.likes_count || 0,
+          comments: post.comments_count || 0,
+          pinned: post.is_pinned || false,
+          isFromSupabase: true
+        }))
+        setPosts(transformedPosts)
+      } catch (err) {
+        console.error('[ManagerCommunity] Error creating announcement:', err)
+        alert('Failed to post announcement. Please try again.')
+        return
+      }
     }
 
-    setPosts(prev => [newAnnouncement, ...prev])
     setShowAnnouncementModal(false)
     setAnnouncementForm({
       title: '',
@@ -168,22 +254,54 @@ function ManagerCommunity() {
   }
 
   // Handle regular post submit
-  const handlePostSubmit = () => {
+  const handlePostSubmit = async () => {
     if (!postText.trim()) return
 
-    const newPost = {
-      id: Date.now(),
-      type: postType,
-      text: postText.trim(),
-      author: 'Property Manager',
-      unit: 'Management',
-      timestamp: Date.now(),
-      likes: 0,
-      comments: 0,
-      pinned: false
+    if (isInDemoMode) {
+      // Demo mode: local state only
+      const newPost = {
+        id: Date.now(),
+        type: postType,
+        text: postText.trim(),
+        author: 'Property Manager',
+        unit: 'Management',
+        timestamp: Date.now(),
+        likes: 0,
+        comments: 0,
+        pinned: false
+      }
+      setPosts(prev => [newPost, ...prev])
+    } else {
+      // Real mode: save to Supabase
+      try {
+        await createPost({
+          building_id: userProfile.building_id,
+          user_id: userProfile.id,
+          content: postText.trim()
+        })
+        // Refresh posts
+        const data = await getPosts(userProfile.building_id)
+        const transformedPosts = (data || []).map(post => ({
+          id: post.id,
+          type: post.is_announcement ? 'announcement' : 'share',
+          title: post.is_announcement ? post.content.split('\n')[0] : null,
+          text: post.content,
+          author: post.author?.full_name || 'Property Manager',
+          unit: post.author?.unit_number ? `Unit ${post.author.unit_number}` : 'Management',
+          timestamp: new Date(post.created_at).getTime(),
+          likes: post.likes_count || 0,
+          comments: post.comments_count || 0,
+          pinned: post.is_pinned || false,
+          isFromSupabase: true
+        }))
+        setPosts(transformedPosts)
+      } catch (err) {
+        console.error('[ManagerCommunity] Error creating post:', err)
+        alert('Failed to post. Please try again.')
+        return
+      }
     }
 
-    setPosts(prev => [newPost, ...prev])
     setShowPostModal(false)
     setPostText('')
   }
@@ -360,7 +478,7 @@ function ManagerCommunity() {
                           <div className="menu-divider" />
                           <button
                             className="menu-item danger"
-                            onClick={() => handleDeletePost(post.id)}
+                            onClick={() => handleDeletePost(post)}
                           >
                             <Trash2 size={16} />
                             <span>Delete Post</span>
