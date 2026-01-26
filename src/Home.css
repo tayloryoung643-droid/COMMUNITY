@@ -323,6 +323,20 @@
   color: #6B7280;
 }
 
+.today-card-icon.welcome-icon {
+  background: linear-gradient(135deg, #F0E6FF 0%, #E6F0FF 100%);
+  color: #8B5CF6;
+}
+
+.today-card.welcome-card {
+  background: linear-gradient(135deg, #FEFCFF 0%, #FCFEFF 100%);
+  border: 1px solid rgba(139, 92, 246, 0.15);
+}
+
+.today-card.welcome-card:hover {
+  border-color: rgba(139, 92, 246, 0.25);
+}
+
 .today-card-content {
   flex: 1;
   min-width: 0;

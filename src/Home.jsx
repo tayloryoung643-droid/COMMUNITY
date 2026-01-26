@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Package, Calendar, Users, ChevronRight, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon, HelpCircle, MessageSquare } from 'lucide-react'
+import { Package, Calendar, Users, ChevronRight, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon, HelpCircle, MessageSquare, UserPlus, Sparkles } from 'lucide-react'
 import HamburgerMenu from './HamburgerMenu'
 import { eventsData } from './eventsData'
 import { supabase } from './lib/supabase'
@@ -25,6 +25,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
   const [realPackages, setRealPackages] = useState([])
   const [realEvents, setRealEvents] = useState([])
   const [realPosts, setRealPosts] = useState([])
+  const [newJoiners, setNewJoiners] = useState([])
   const [dataLoading, setDataLoading] = useState(false)
 
   // Home Intelligence state (context lines)
@@ -98,17 +99,35 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
           console.error('[Home] Events fetch error:', eventsError)
         }
 
-        // Fetch community posts for this building
+        // Fetch community posts for this building (get more for activity feed)
         const { data: posts, error: postsError } = await supabase
           .from('community_posts')
           .select('*, author:author_id(full_name, unit_number)')
           .eq('building_id', buildingId)
           .order('created_at', { ascending: false })
-          .limit(5)
+          .limit(10)
 
         if (!postsError) {
           setRealPosts(posts || [])
           console.log('[Home] Posts fetched:', posts?.length || 0)
+        }
+
+        // Fetch new joiners (users who joined in the last 7 days)
+        const sevenDaysAgo = new Date()
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+        const { data: joiners, error: joinersError } = await supabase
+          .from('users')
+          .select('id, full_name, unit_number, created_at')
+          .eq('building_id', buildingId)
+          .eq('role', 'resident')
+          .gte('created_at', sevenDaysAgo.toISOString())
+          .order('created_at', { ascending: false })
+          .limit(5)
+
+        if (!joinersError) {
+          setNewJoiners(joiners || [])
+          console.log('[Home] New joiners fetched:', joiners?.length || 0)
         }
 
         console.log('[Home] Data fetch complete:', {
@@ -116,6 +135,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
           buildingId,
           packages: packages?.length || 0,
           events: events?.length || 0,
+          joiners: joiners?.length || 0,
           posts: posts?.length || 0
         })
       } catch (error) {
@@ -298,35 +318,45 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
     }
   }
 
-  // Today's community post - demo data or real data
-  const demoCommunityPost = {
-    id: 99,
-    type: 'ask',
-    text: "Does anyone have a ladder I could borrow this weekend? Need to change some light bulbs in the high ceilings. Happy to return it Sunday evening!",
-    author: 'Mike T.',
-    unit: 'Unit 805',
-    timestamp: Date.now() - 7200000, // 2 hours ago (today)
-    likes: 2,
-    comments: 3,
-    commentsList: [
-      { id: 991, author: 'Sarah M.', firstName: 'Sarah', unit: 'Unit 1201', text: 'I have a 6ft ladder you can borrow! DM me to arrange pickup.', timestamp: Date.now() - 6000000, replies: [] },
-      { id: 992, author: 'Building Staff', firstName: 'Staff', unit: 'Management', text: 'We also have a ladder in the maintenance closet - ask the front desk!', timestamp: Date.now() - 5400000, replies: [] },
-      { id: 993, author: 'Jennifer K.', firstName: 'Jennifer', unit: 'Unit 1504', text: 'I can help hold it steady if you need a hand!', timestamp: Date.now() - 3600000, replies: [] }
-    ]
-  }
+  // Demo community posts
+  const demoCommunityPosts = [
+    {
+      id: 99,
+      type: 'ask',
+      text: "Does anyone have a ladder I could borrow this weekend? Need to change some light bulbs in the high ceilings. Happy to return it Sunday evening!",
+      author: 'Mike T.',
+      unit: 'Unit 805',
+      timestamp: Date.now() - 7200000,
+      likes: 2,
+      comments: 3
+    },
+    {
+      id: 98,
+      type: 'share',
+      text: "Just made fresh banana bread and have extra! Anyone want some? I'm in unit 1201.",
+      author: 'Sarah M.',
+      unit: 'Unit 1201',
+      timestamp: Date.now() - 14400000,
+      likes: 8,
+      comments: 5
+    }
+  ]
 
-  // Use demo post for demo mode, first real post for real users
-  const todayCommunityPost = isDemoMode ? demoCommunityPost : (realPosts.length > 0 ? {
-    id: realPosts[0].id,
-    type: realPosts[0].type || 'share',
-    text: realPosts[0].content || realPosts[0].text,
-    author: realPosts[0].author?.full_name || 'Neighbor',
-    unit: realPosts[0].author?.unit_number ? `Unit ${realPosts[0].author.unit_number}` : '',
-    timestamp: new Date(realPosts[0].created_at).getTime(),
-    likes: realPosts[0].likes || 0,
-    comments: realPosts[0].comments_count || 0,
+  // Transform all real posts for display
+  const allCommunityPosts = isDemoMode ? demoCommunityPosts : realPosts.map(post => ({
+    id: post.id,
+    type: post.type || 'share',
+    text: post.content || post.text,
+    author: post.author?.full_name || 'Neighbor',
+    unit: post.author?.unit_number ? `Unit ${post.author.unit_number}` : '',
+    timestamp: new Date(post.created_at).getTime(),
+    likes: post.likes_count || 0,
+    comments: post.comments_count || 0,
     commentsList: []
-  } : null)
+  }))
+
+  // For backwards compatibility
+  const todayCommunityPost = allCommunityPosts.length > 0 ? allCommunityPosts[0] : null
 
   // Handler to open community post detail
   const handleCommunityPostClick = (post) => {
@@ -490,30 +520,50 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
             </div>
           )}
 
-          {/* Today's Community Post - Demo or Real */}
-          {todayCommunityPost ? (
-            <button className="today-card community-post-card" onClick={() => handleCommunityPostClick(todayCommunityPost)}>
-              <div className="today-card-icon community-icon">
-                {todayCommunityPost.author.charAt(0)}
+          {/* New Joiners Welcome Tile */}
+          {!isDemoMode && newJoiners.length > 0 && (
+            <button className="today-card welcome-card" onClick={() => handleFeatureClick('Neighbors')}>
+              <div className="today-card-icon welcome-icon">
+                <Sparkles size={20} />
               </div>
               <div className="today-card-content">
-                <div className="community-post-header">
-                  <span className="community-post-author">{todayCommunityPost.author}</span>
-                  <span className="community-post-unit">{todayCommunityPost.unit}</span>
-                  <span
-                    className="community-post-badge"
-                    style={{ background: `${getPostTypeBadge(todayCommunityPost.type).color}15`, color: getPostTypeBadge(todayCommunityPost.type).color }}
-                  >
-                    {getPostTypeBadge(todayCommunityPost.type).label}
-                  </span>
-                </div>
-                <span className="today-card-subtitle community-post-preview">
-                  {todayCommunityPost.text.length > 80
-                    ? todayCommunityPost.text.substring(0, 80) + '...'
-                    : todayCommunityPost.text}
+                <span className="today-card-title">
+                  Welcome {newJoiners.map(j => j.full_name?.split(' ')[0]).slice(0, 2).join(' & ')}{newJoiners.length > 2 ? ` +${newJoiners.length - 2} more` : ''}!
+                </span>
+                <span className="today-card-subtitle">
+                  {newJoiners.length} new {newJoiners.length === 1 ? 'neighbor has' : 'neighbors have'} joined this week
                 </span>
               </div>
+              <ChevronRight size={20} className="today-card-arrow" />
             </button>
+          )}
+
+          {/* All Community Posts */}
+          {allCommunityPosts.length > 0 ? (
+            allCommunityPosts.map((post) => (
+              <button key={post.id} className="today-card community-post-card" onClick={() => handleCommunityPostClick(post)}>
+                <div className="today-card-icon community-icon">
+                  {post.author.charAt(0)}
+                </div>
+                <div className="today-card-content">
+                  <div className="community-post-header">
+                    <span className="community-post-author">{post.author}</span>
+                    <span className="community-post-unit">{post.unit}</span>
+                    <span
+                      className="community-post-badge"
+                      style={{ background: `${getPostTypeBadge(post.type).color}15`, color: getPostTypeBadge(post.type).color }}
+                    >
+                      {getPostTypeBadge(post.type).label}
+                    </span>
+                  </div>
+                  <span className="today-card-subtitle community-post-preview">
+                    {post.text.length > 80
+                      ? post.text.substring(0, 80) + '...'
+                      : post.text}
+                  </span>
+                </div>
+              </button>
+            ))
           ) : !isDemoMode && (
             <div className="today-card empty-state-card">
               <div className="today-card-icon community-icon" style={{ opacity: 0.5 }}>
