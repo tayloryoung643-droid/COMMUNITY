@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required fields: email, token, buildingName' });
   }
 
-  const joinUrl = `https://community-eight-theta.vercel.app/join?token=${token}`;
+  const joinUrl = `https://www.communityhq.space/join?token=${token}`;
   const displayName = fullName || 'Neighbor';
 
   try {
