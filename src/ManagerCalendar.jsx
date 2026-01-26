@@ -268,8 +268,8 @@ function ManagerCalendar() {
           icon: event.category === 'maintenance' ? Wrench : event.category === 'meeting' ? Users : Wine,
           color: event.category === 'maintenance' ? '#f59e0b' : event.category === 'meeting' ? '#3b82f6' : '#8b5cf6',
           location: event.location || '',
-          allowRsvp: event.allow_rsvp !== false,
-          rsvpLimit: event.rsvp_limit || null,
+          allowRsvp: true,
+          rsvpLimit: null,
           rsvps: [],
           isFromSupabase: true
         }))
@@ -375,9 +375,7 @@ function ManagerCalendar() {
           start_time: startTime,
           end_time: endTime,
           category: eventForm.category,
-          location: eventForm.location,
-          allow_rsvp: eventForm.allowRsvp,
-          rsvp_limit: eventForm.rsvpLimit ? parseInt(eventForm.rsvpLimit) : null
+          location: eventForm.location
         })
 
         // Refresh events
@@ -394,8 +392,8 @@ function ManagerCalendar() {
           icon: event.category === 'maintenance' ? Wrench : event.category === 'meeting' ? Users : Wine,
           color: event.category === 'maintenance' ? '#f59e0b' : event.category === 'meeting' ? '#3b82f6' : '#8b5cf6',
           location: event.location || '',
-          allowRsvp: event.allow_rsvp !== false,
-          rsvpLimit: event.rsvp_limit || null,
+          allowRsvp: true,
+          rsvpLimit: null,
           rsvps: [],
           isFromSupabase: true
         }))
@@ -431,9 +429,7 @@ function ManagerCalendar() {
           start_time: startTime,
           end_time: endTime,
           category: eventForm.category,
-          location: eventForm.location,
-          allow_rsvp: eventForm.allowRsvp,
-          rsvp_limit: eventForm.rsvpLimit ? parseInt(eventForm.rsvpLimit) : null
+          location: eventForm.location
         })
       } catch (err) {
         console.error('[ManagerCalendar] Error updating event:', err)
