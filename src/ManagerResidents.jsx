@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Search,
   UserPlus,
@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import './ManagerResidents.css'
 import { useAuth } from './contexts/AuthContext'
+import { supabase } from './lib/supabase'
 
 // Demo residents data - only shown for demo accounts
 const DEMO_RESIDENTS = [
@@ -64,6 +65,44 @@ function ManagerResidents() {
   // Residents data - demo mode gets demo data, real mode starts empty
   const [residents, setResidents] = useState(isInDemoMode ? DEMO_RESIDENTS : [])
 
+  // Pending invites from Supabase (for real mode)
+  const [pendingInvites, setPendingInvites] = useState([])
+  const [invitesLoading, setInvitesLoading] = useState(false)
+
+  // Fetch pending invites from Supabase on mount (real mode only)
+  useEffect(() => {
+    if (isInDemoMode) return
+
+    const fetchPendingInvites = async () => {
+      const buildingId = userProfile?.building_id
+      if (!buildingId) return
+
+      setInvitesLoading(true)
+      try {
+        const { data, error } = await supabase
+          .from('resident_invites')
+          .select('*')
+          .eq('building_id', buildingId)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false })
+
+        if (error) {
+          console.error('[ManagerResidents] Error fetching invites:', error)
+          return
+        }
+
+        console.log('[ManagerResidents] Fetched pending invites:', data?.length || 0)
+        setPendingInvites(data || [])
+      } catch (err) {
+        console.error('[ManagerResidents] Fetch invites error:', err)
+      } finally {
+        setInvitesLoading(false)
+      }
+    }
+
+    fetchPendingInvites()
+  }, [isInDemoMode, userProfile?.building_id])
+
   // Available units for invite dropdown
   const availableUnits = [
     '101', '102', '201', '202', '301', '302', '401', '501', '502',
@@ -71,9 +110,33 @@ function ManagerResidents() {
     '1401', '1402', '1501', '1502', '1503', '1601', '1602'
   ]
 
+  // Transform pending invites from Supabase to resident display format
+  const transformedPendingInvites = pendingInvites.map(invite => {
+    const nameParts = (invite.full_name || '').split(' ')
+    const firstName = nameParts[0] || 'Unknown'
+    const lastName = nameParts.slice(1).join(' ') || ''
+    return {
+      id: invite.id,
+      firstName,
+      lastName,
+      unit: invite.unit_number || '',
+      email: invite.email || '',
+      phone: invite.phone || '',
+      status: 'pending',
+      joinDate: null,
+      inviteSent: invite.created_at ? invite.created_at.split('T')[0] : null,
+      isFromSupabase: true // marker to identify Supabase invites
+    }
+  })
+
+  // Combine residents with pending invites (for real mode)
+  const allResidents = isInDemoMode
+    ? residents
+    : [...residents, ...transformedPendingInvites]
+
   // Get initials from name
   const getInitials = (firstName, lastName) => {
-    return `${firstName[0]}${lastName[0]}`.toUpperCase()
+    return `${firstName[0] || '?'}${lastName[0] || ''}`.toUpperCase()
   }
 
   // Get floor from unit number
@@ -82,8 +145,8 @@ function ManagerResidents() {
     return parseInt(unit.slice(0, -2)) || 1
   }
 
-  // Get unique floors from residents
-  const uniqueFloors = [...new Set(residents.map(r => getFloor(r.unit)))].sort((a, b) => a - b)
+  // Get unique floors from all residents (including pending invites)
+  const uniqueFloors = [...new Set(allResidents.filter(r => r.unit).map(r => getFloor(r.unit)))].sort((a, b) => a - b)
 
   // Sort options
   const sortOptions = [
@@ -116,8 +179,8 @@ function ManagerResidents() {
     }
   }
 
-  // Filter residents
-  const filteredResidents = residents
+  // Filter residents (using allResidents which includes pending invites)
+  const filteredResidents = allResidents
     .filter(resident => {
       // Search filter
       const searchLower = searchQuery.toLowerCase()
@@ -155,11 +218,11 @@ function ManagerResidents() {
       }
     })
 
-  // Stats
+  // Stats (using allResidents which includes pending invites)
   const totalUnits = 50
-  const activeCount = residents.filter(r => r.status === 'active').length
-  const pendingCount = residents.filter(r => r.status === 'pending').length
-  const inactiveCount = residents.filter(r => r.status === 'inactive').length
+  const activeCount = allResidents.filter(r => r.status === 'active').length
+  const pendingCount = allResidents.filter(r => r.status === 'pending').length
+  const inactiveCount = allResidents.filter(r => r.status === 'inactive').length
   const onboardedPercentage = Math.round((activeCount / totalUnits) * 100)
 
   // Handle invite form change
@@ -168,33 +231,95 @@ function ManagerResidents() {
   }
 
   // Handle send invite
-  const handleSendInvite = () => {
+  const handleSendInvite = async () => {
     if (!inviteForm.firstName || !inviteForm.lastName || !inviteForm.unit || !inviteForm.email) {
       return
     }
 
-    const newResident = {
-      id: Date.now(),
-      firstName: inviteForm.firstName,
-      lastName: inviteForm.lastName,
-      unit: inviteForm.unit,
-      email: inviteForm.email,
-      phone: inviteForm.phone,
-      status: 'pending',
-      joinDate: null,
-      inviteSent: new Date().toISOString().split('T')[0]
+    // Demo mode: use local state only
+    if (isInDemoMode) {
+      const newResident = {
+        id: Date.now(),
+        firstName: inviteForm.firstName,
+        lastName: inviteForm.lastName,
+        unit: inviteForm.unit,
+        email: inviteForm.email,
+        phone: inviteForm.phone,
+        status: 'pending',
+        joinDate: null,
+        inviteSent: new Date().toISOString().split('T')[0]
+      }
+      setResidents(prev => [...prev, newResident])
+      setShowInviteModal(false)
+      setInviteForm({
+        firstName: '',
+        lastName: '',
+        unit: '',
+        email: '',
+        phone: '',
+        moveInDate: ''
+      })
+      return
     }
 
-    setResidents(prev => [...prev, newResident])
-    setShowInviteModal(false)
-    setInviteForm({
-      firstName: '',
-      lastName: '',
-      unit: '',
-      email: '',
-      phone: '',
-      moveInDate: ''
-    })
+    // Real mode: insert into Supabase
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const authUserId = sessionData?.session?.user?.id
+
+      if (!authUserId) {
+        throw new Error('No authenticated user')
+      }
+
+      const buildingId = userProfile?.building_id
+      if (!buildingId) {
+        throw new Error('No building ID found')
+      }
+
+      const token = crypto.randomUUID()
+      const fullName = `${inviteForm.firstName} ${inviteForm.lastName}`.trim()
+
+      const { data, error } = await supabase
+        .from('resident_invites')
+        .insert([
+          {
+            building_id: buildingId,
+            inviter_user_id: authUserId,
+            email: inviteForm.email.trim().toLowerCase(),
+            full_name: fullName || null,
+            unit_number: inviteForm.unit || null,
+            phone: inviteForm.phone || null,
+            token,
+            status: 'pending',
+          },
+        ])
+        .select()
+        .single()
+
+      if (error) {
+        console.error('[ManagerResidents] Insert invite error:', error)
+        alert(`Failed to send invite: ${error.message}`)
+        return
+      }
+
+      console.log('[ManagerResidents] Invite created:', data)
+
+      // Add to local pending invites state
+      setPendingInvites(prev => [data, ...prev])
+
+      setShowInviteModal(false)
+      setInviteForm({
+        firstName: '',
+        lastName: '',
+        unit: '',
+        email: '',
+        phone: '',
+        moveInDate: ''
+      })
+    } catch (err) {
+      console.error('[ManagerResidents] Send invite error:', err)
+      alert(`Failed to send invite: ${err.message}`)
+    }
   }
 
   // Handle resend invite
@@ -208,10 +333,38 @@ function ManagerResidents() {
   }
 
   // Handle remove resident
-  const handleRemoveResident = (residentId) => {
-    if (window.confirm('Are you sure you want to remove this resident from the building?')) {
-      setResidents(prev => prev.filter(r => r.id !== residentId))
+  const handleRemoveResident = async (resident) => {
+    if (!window.confirm('Are you sure you want to remove this resident from the building?')) {
+      setOpenMenuId(null)
+      return
     }
+
+    // Check if this is a Supabase invite (real mode)
+    if (!isInDemoMode && resident.isFromSupabase) {
+      try {
+        const { error } = await supabase
+          .from('resident_invites')
+          .delete()
+          .eq('id', resident.id)
+
+        if (error) {
+          console.error('[ManagerResidents] Delete invite error:', error)
+          alert(`Failed to remove invite: ${error.message}`)
+          setOpenMenuId(null)
+          return
+        }
+
+        console.log('[ManagerResidents] Invite deleted:', resident.id)
+        setPendingInvites(prev => prev.filter(i => i.id !== resident.id))
+      } catch (err) {
+        console.error('[ManagerResidents] Remove invite error:', err)
+        alert(`Failed to remove invite: ${err.message}`)
+      }
+    } else {
+      // Demo mode or local resident
+      setResidents(prev => prev.filter(r => r.id !== resident.id))
+    }
+
     setOpenMenuId(null)
   }
 
@@ -322,7 +475,7 @@ function ManagerResidents() {
             onClick={() => setActiveFilter('all')}
           >
             All
-            <span className="filter-count">{residents.length}</span>
+            <span className="filter-count">{allResidents.length}</span>
           </button>
           <button
             className={`filter-btn ${activeFilter === 'active' ? 'active' : ''}`}
@@ -409,7 +562,7 @@ function ManagerResidents() {
                         <div className="menu-divider" />
                         <button
                           className="menu-item danger"
-                          onClick={() => handleRemoveResident(resident.id)}
+                          onClick={() => handleRemoveResident(resident)}
                         >
                           <Trash2 size={16} />
                           <span>Remove from Building</span>
