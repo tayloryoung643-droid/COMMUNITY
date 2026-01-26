@@ -80,7 +80,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
         // Fetch community posts for this building
         const { data: posts, error: postsError } = await supabase
           .from('community_posts')
-          .select('*, author:user_id(full_name, unit_number)')
+          .select('*, author:author_id(full_name, unit_number)')
           .eq('building_id', buildingId)
           .order('created_at', { ascending: false })
           .limit(5)
