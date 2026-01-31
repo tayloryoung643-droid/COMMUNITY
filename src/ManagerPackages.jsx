@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Package,
   Plus,
@@ -19,6 +19,7 @@ import {
   Mail
 } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
+import { getResidents } from './services/messageService'
 import './ManagerPackages.css'
 
 // Demo residents list for dropdown
@@ -181,8 +182,39 @@ function ManagerPackages() {
   const { userProfile, isDemoMode } = useAuth()
   const isInDemoMode = isDemoMode || userProfile?.is_demo === true
 
-  // Use demo data for demo users, empty arrays for real users
-  const residents = isInDemoMode ? DEMO_RESIDENTS : []
+  // Residents state - fetched from Supabase for real users, demo data for demo users
+  const [residents, setResidents] = useState([])
+  const [loadingResidents, setLoadingResidents] = useState(true)
+
+  // Fetch residents on mount
+  useEffect(() => {
+    async function loadResidents() {
+      if (isInDemoMode) {
+        // Use demo residents for demo users
+        setResidents(DEMO_RESIDENTS)
+        setLoadingResidents(false)
+        return
+      }
+
+      try {
+        const data = await getResidents(userProfile?.building_id)
+        // Transform to match expected format (name, unit)
+        const transformedResidents = (data || []).map(r => ({
+          id: r.id,
+          name: r.full_name,
+          unit: r.unit_number
+        }))
+        setResidents(transformedResidents)
+      } catch (err) {
+        console.error('[ManagerPackages] Error loading residents:', err)
+        setResidents([])
+      } finally {
+        setLoadingResidents(false)
+      }
+    }
+
+    loadResidents()
+  }, [isInDemoMode, userProfile?.building_id])
 
   const [activeFilter, setActiveFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -737,8 +769,11 @@ function ManagerPackages() {
                 <select
                   value={packageForm.residentId}
                   onChange={e => setPackageForm({ ...packageForm, residentId: e.target.value })}
+                  disabled={loadingResidents}
                 >
-                  <option value="">Select resident...</option>
+                  <option value="">
+                    {loadingResidents ? 'Loading residents...' : 'Select resident...'}
+                  </option>
                   {residents.map(resident => (
                     <option key={resident.id} value={resident.id}>
                       {resident.name} - Unit {resident.unit}
@@ -838,8 +873,11 @@ function ManagerPackages() {
                 <select
                   value={packageForm.residentId}
                   onChange={e => setPackageForm({ ...packageForm, residentId: e.target.value })}
+                  disabled={loadingResidents}
                 >
-                  <option value="">Select resident...</option>
+                  <option value="">
+                    {loadingResidents ? 'Loading residents...' : 'Select resident...'}
+                  </option>
                   {residents.map(resident => (
                     <option key={resident.id} value={resident.id}>
                       {resident.name} - Unit {resident.unit}
