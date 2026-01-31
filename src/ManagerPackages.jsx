@@ -417,7 +417,10 @@ function ManagerPackages() {
 
   // Handle log new package
   const handleLogPackage = () => {
-    const resident = residents.find(r => r.id === parseInt(packageForm.residentId))
+    // Compare as string or number (handles both UUID strings and demo integer IDs)
+    const resident = residents.find(r =>
+      String(r.id) === String(packageForm.residentId)
+    )
     if (!resident) return
 
     const newPackage = {
@@ -487,7 +490,10 @@ function ManagerPackages() {
 
   // Handle edit package
   const handleEditPackage = () => {
-    const resident = residents.find(r => r.id === parseInt(packageForm.residentId))
+    // Compare as string or number (handles both UUID strings and demo integer IDs)
+    const resident = residents.find(r =>
+      String(r.id) === String(packageForm.residentId)
+    )
     if (!resident) return
 
     setPackages(prev => prev.map(p => {
