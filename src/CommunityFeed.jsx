@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { MessageSquare, HelpCircle, Flag, Heart, MessageCircle, Share2, MoreHorizontal, Send, X, Sparkles, Users, Hand, ChevronDown, ChevronUp, Search, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
-import { getPosts, createPost, likePost, unlikePost } from './services/communityPostService'
+import { getPosts, createPost, likePost, unlikePost, getUserLikes } from './services/communityPostService'
 import HamburgerMenu from './HamburgerMenu'
 import EmptyState from './components/EmptyState'
 import './CommunityFeed.css'
@@ -194,8 +194,15 @@ function CommunityFeed({ onNavigate }) {
       }
 
       try {
-        const data = await getPosts(buildingId)
-        const transformedData = (data || []).map(post => ({
+        // Fetch posts and user's likes in parallel
+        const [postsData, userLikedPostIds] = await Promise.all([
+          getPosts(buildingId),
+          userProfile?.id ? getUserLikes(userProfile.id) : Promise.resolve([])
+        ])
+
+        const likedSet = new Set(userLikedPostIds)
+
+        const transformedData = (postsData || []).map(post => ({
           id: post.id,
           type: post.type || 'share',
           text: post.content,
@@ -204,13 +211,11 @@ function CommunityFeed({ onNavigate }) {
           timestamp: new Date(post.created_at).getTime(),
           likes: post.likes_count || 0,
           comments: post.comments_count || 0,
-          userLiked: post.user_liked || false
+          userLiked: likedSet.has(post.id)
         }))
         setPosts(transformedData)
-        console.log('[CommunityFeed] Posts fetched:', transformedData.length)
-        // Set liked posts from user's likes
-        const userLikedPosts = new Set(transformedData.filter(p => p.userLiked).map(p => p.id))
-        setLikedPosts(userLikedPosts)
+        setLikedPosts(likedSet)
+        console.log('[CommunityFeed] Posts fetched:', transformedData.length, 'User likes:', likedSet.size)
       } catch (err) {
         console.error('[CommunityFeed] Error loading posts:', err)
         setError('Unable to load posts. Please try again.')
@@ -734,7 +739,10 @@ function CommunityFeed({ onNavigate }) {
                             <Heart size={16} fill={isLiked ? '#ef4444' : 'none'} />
                             <span>{post.likes + (isLiked ? 1 : 0)}</span>
                           </button>
-                          <button className="action-btn" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            className="action-btn"
+                            onClick={(e) => { e.stopPropagation(); handlePostClick(); }}
+                          >
                             <MessageCircle size={16} />
                             <span>{post.comments}</span>
                           </button>

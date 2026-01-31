@@ -114,3 +114,33 @@ export async function addComment(postId, userId, content) {
   if (error) throw error
   return data[0]
 }
+
+/**
+ * Get all post IDs that a user has liked
+ * @param {string} userId - User UUID
+ * @returns {Promise<string[]>} Array of post IDs
+ */
+export async function getUserLikes(userId) {
+  const { data, error } = await supabase
+    .from('post_likes')
+    .select('post_id')
+    .eq('user_id', userId)
+
+  if (error) throw error
+  return (data || []).map(item => item.post_id)
+}
+
+/**
+ * Get like count for a post
+ * @param {string} postId - Post UUID
+ * @returns {Promise<number>} Like count
+ */
+export async function getPostLikeCount(postId) {
+  const { count, error } = await supabase
+    .from('post_likes')
+    .select('*', { count: 'exact', head: true })
+    .eq('post_id', postId)
+
+  if (error) throw error
+  return count || 0
+}

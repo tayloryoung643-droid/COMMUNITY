@@ -108,3 +108,40 @@ export async function removeRSVP(eventId, userId) {
   if (error) throw error
   return true
 }
+
+/**
+ * Get all event IDs that a user has RSVPd to
+ * @param {string} userId - User UUID
+ * @returns {Promise<Object>} Map of event_id -> status
+ */
+export async function getUserRSVPs(userId) {
+  const { data, error } = await supabase
+    .from('event_rsvps')
+    .select('event_id, status')
+    .eq('user_id', userId)
+
+  if (error) throw error
+
+  // Return as a map of event_id -> status for easy lookup
+  const rsvpMap = {}
+  ;(data || []).forEach(item => {
+    rsvpMap[item.event_id] = item.status
+  })
+  return rsvpMap
+}
+
+/**
+ * Get RSVP count for an event
+ * @param {string} eventId - Event UUID
+ * @returns {Promise<number>} RSVP count (going status)
+ */
+export async function getEventRSVPCount(eventId) {
+  const { count, error } = await supabase
+    .from('event_rsvps')
+    .select('*', { count: 'exact', head: true })
+    .eq('event_id', eventId)
+    .eq('status', 'going')
+
+  if (error) throw error
+  return count || 0
+}

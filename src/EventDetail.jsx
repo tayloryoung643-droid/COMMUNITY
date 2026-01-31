@@ -3,7 +3,7 @@ import { ChevronLeft, Check, HelpCircle, X, CalendarPlus, Send, Sun, Cloud, Clou
 import './EventDetail.css'
 
 function EventDetail({ event, onBack, onNavigate }) {
-  const [rsvpStatus, setRsvpStatus] = useState(event?.userRsvp || null)
+  const [rsvpStatus, setRsvpStatus] = useState(event?.rsvpStatus || null)
   const [comments, setComments] = useState(event?.comments || [])
   const [newComment, setNewComment] = useState('')
   const [acknowledged, setAcknowledged] = useState(false)

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, Calendar, Clock, MapPin, Users, Check, Sun, Cloud, CloudRain, Snowflake, Moon, Plus, X } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
-import { getEvents, addRSVP, removeRSVP, createEvent } from './services/eventService'
+import { getEvents, addRSVP, removeRSVP, createEvent, getUserRSVPs } from './services/eventService'
 import EmptyState from './components/EmptyState'
 import './Events.css'
 
@@ -152,9 +152,14 @@ function Events({ onBack }) {
       }
 
       try {
-        const data = await getEvents(buildingId)
+        // Fetch events and user's RSVPs in parallel
+        const [eventsData, userRsvpMap] = await Promise.all([
+          getEvents(buildingId),
+          userProfile?.id ? getUserRSVPs(userProfile.id) : Promise.resolve({})
+        ])
+
         // data will be [] if table is empty - this is SUCCESS, not an error
-        const transformedData = (data || []).map(event => ({
+        const transformedData = (eventsData || []).map(event => ({
           id: event.id,
           title: event.title || 'Untitled Event',
           date: event.start_time?.split('T')[0] || event.date,
@@ -163,11 +168,12 @@ function Events({ onBack }) {
           description: event.description || '',
           attendees: event.attendee_count || 0,
           isUpcoming: event.start_time ? new Date(event.start_time) >= new Date() : true,
-          userRSVPd: event.user_rsvpd || false
+          userRSVPd: !!userRsvpMap[event.id],
+          rsvpStatus: userRsvpMap[event.id] || null
         }))
         setEvents(transformedData)
         setError(null) // Clear any previous error
-        console.log('[Events] SUCCESS - events loaded:', transformedData.length)
+        console.log('[Events] SUCCESS - events loaded:', transformedData.length, 'User RSVPs:', Object.keys(userRsvpMap).length)
       } catch (err) {
         // Only set error for actual failures (network, permission, table doesn't exist)
         console.error('[Events] ERROR loading events:', {
