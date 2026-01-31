@@ -44,6 +44,9 @@ import {
 } from './services/faqService'
 import './ManagerFAQ.css'
 
+// Feature flags
+const FEATURE_FAQ_AI_IMPORT = false // Set to true to enable AI FAQ import (paste/file upload)
+
 // Demo FAQs data - used when in demo mode
 const DEMO_FAQS = [
   {
@@ -551,39 +554,43 @@ function ManagerFAQ() {
           <div className="wizard-header">
             <HelpCircle size={48} />
             <h2>Set Up Building FAQs</h2>
-            <p>Help your residents find answers quickly by importing your building's FAQ content.</p>
+            <p>Help your residents find answers quickly{FEATURE_FAQ_AI_IMPORT ? ' by importing your building\'s FAQ content' : ' by adding FAQ questions'}.</p>
           </div>
 
           <div className="wizard-options">
-            <button className="wizard-option" onClick={() => handleWizardChoice('paste')}>
-              <div className="option-icon">
-                <Clipboard size={32} />
-              </div>
-              <div className="option-content">
-                <h3>Paste Text</h3>
-                <p>Copy and paste your FAQ content from any document</p>
-              </div>
-              <ChevronRight size={20} />
-            </button>
+            {FEATURE_FAQ_AI_IMPORT && (
+              <>
+                <button className="wizard-option" onClick={() => handleWizardChoice('paste')}>
+                  <div className="option-icon">
+                    <Clipboard size={32} />
+                  </div>
+                  <div className="option-content">
+                    <h3>Paste Text</h3>
+                    <p>Copy and paste your FAQ content from any document</p>
+                  </div>
+                  <ChevronRight size={20} />
+                </button>
 
-            <button className="wizard-option" onClick={() => handleWizardChoice('file')}>
-              <div className="option-icon">
-                <FileUp size={32} />
-              </div>
-              <div className="option-content">
-                <h3>Upload File</h3>
-                <p>Upload a .txt file with your FAQ content</p>
-              </div>
-              <ChevronRight size={20} />
-            </button>
+                <button className="wizard-option" onClick={() => handleWizardChoice('file')}>
+                  <div className="option-icon">
+                    <FileUp size={32} />
+                  </div>
+                  <div className="option-content">
+                    <h3>Upload File</h3>
+                    <p>Upload a .txt file with your FAQ content</p>
+                  </div>
+                  <ChevronRight size={20} />
+                </button>
+              </>
+            )}
 
             <button className="wizard-option skip-option" onClick={() => handleWizardChoice('skip')}>
               <div className="option-icon">
                 <SkipForward size={32} />
               </div>
               <div className="option-content">
-                <h3>Skip for Now</h3>
-                <p>Set up FAQs later and add questions manually</p>
+                <h3>{FEATURE_FAQ_AI_IMPORT ? 'Skip for Now' : 'Start Adding FAQs'}</h3>
+                <p>{FEATURE_FAQ_AI_IMPORT ? 'Set up FAQs later and add questions manually' : 'Add FAQ questions manually one by one'}</p>
               </div>
               <ChevronRight size={20} />
             </button>
@@ -799,7 +806,7 @@ A: Use the app or email maintenance@building.com..."
           <p>Manage frequently asked questions for residents</p>
         </div>
         <div className="faq-header-actions">
-          {faqs.length > 0 && (
+          {FEATURE_FAQ_AI_IMPORT && faqs.length > 0 && (
             <button className="reimport-btn" onClick={() => setCurrentView('wizard')}>
               <Upload size={16} />
               <span>Re-import</span>
@@ -886,13 +893,17 @@ A: Use the app or email maintenance@building.com..."
             <p>
               {searchQuery
                 ? 'Try a different search term'
-                : 'Add your first question or import FAQs to get started!'}
+                : FEATURE_FAQ_AI_IMPORT
+                  ? 'Add your first question or import FAQs to get started!'
+                  : 'Add your first question to get started!'}
             </p>
             <div className="no-faqs-actions">
-              <button className="import-btn" onClick={() => setCurrentView('wizard')}>
-                <Upload size={18} />
-                Import FAQs
-              </button>
+              {FEATURE_FAQ_AI_IMPORT && (
+                <button className="import-btn" onClick={() => setCurrentView('wizard')}>
+                  <Upload size={18} />
+                  Import FAQs
+                </button>
+              )}
               <button className="add-first-btn" onClick={() => setShowAddModal(true)}>
                 <Plus size={18} />
                 Add Question

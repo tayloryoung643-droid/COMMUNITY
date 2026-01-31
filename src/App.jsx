@@ -32,6 +32,7 @@ import ResidentCreateBuilding from './ResidentCreateBuilding'
 import Join from './Join'
 import ResidentMessages from './ResidentMessages'
 import ResidentFAQ from './ResidentFAQ'
+import ResidentDocuments from './ResidentDocuments'
 
 function App() {
   const { user, userProfile, loading, isDemoMode, signIn, signOut, loginAsDemo, refreshUserProfile } = useAuth()
@@ -569,6 +570,8 @@ function App() {
       setCurrentScreen('messages')
     } else if (featureTitle === 'FAQ' || featureTitle === 'faq') {
       setCurrentScreen('faq')
+    } else if (featureTitle === 'Documents' || featureTitle === 'documents') {
+      setCurrentScreen('documents')
     }
   }
 
@@ -619,7 +622,7 @@ function App() {
   const residentScreens = [
     'home', 'announcements', 'packages', 'events', 'neighbors', 'emergency',
     'elevator-booking', 'community', 'bulletin-board', 'settings', 'building-info',
-    'calendar', 'building', 'event-detail', 'post-detail', 'messages', 'faq'
+    'calendar', 'building', 'event-detail', 'post-detail', 'messages', 'faq', 'documents'
   ]
   const showBottomNav = residentScreens.includes(currentScreen)
 
@@ -754,6 +757,16 @@ function App() {
     return (
       <MobileShell bottomNav={bottomNav}>
         <ResidentFAQ
+          onBack={() => setCurrentScreen('building')}
+        />
+      </MobileShell>
+    )
+  }
+
+  if (currentScreen === 'documents') {
+    return (
+      <MobileShell bottomNav={bottomNav}>
+        <ResidentDocuments
           onBack={() => setCurrentScreen('building')}
         />
       </MobileShell>

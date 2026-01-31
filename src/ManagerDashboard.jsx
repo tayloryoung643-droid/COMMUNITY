@@ -52,6 +52,7 @@ import ManagerPackages from './ManagerPackages'
 import ManagerElevator from './ManagerElevator'
 import ManagerBulletin from './ManagerBulletin'
 import ManagerFAQ from './ManagerFAQ'
+import ManagerDocuments from './ManagerDocuments'
 import ManagerSettings from './ManagerSettings'
 import AnnouncementModal from './components/AnnouncementModal'
 import EventModal from './components/EventModal'
@@ -213,6 +214,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
     { id: 'elevator', label: 'Elevator Booking', icon: ArrowUpDown },
     { id: 'bulletin', label: 'Bulletin Board', icon: ClipboardList },
     { id: 'faq', label: 'Building FAQ', icon: HelpCircle },
+    { id: 'documents', label: 'Documents', icon: FileText },
     { id: 'divider2', divider: true },
     { id: 'settings', label: 'Settings', icon: Settings }
   ]
@@ -464,6 +466,10 @@ function ManagerDashboard({ onLogout, buildingData }) {
 
     if (activeNav === 'faq') {
       return <ManagerFAQ />
+    }
+
+    if (activeNav === 'documents') {
+      return <ManagerDocuments />
     }
 
     if (activeNav === 'settings') {
