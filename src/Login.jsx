@@ -108,7 +108,7 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
             </div>
             <h1 className="login-title">Community</h1>
             <p className="login-tagline">
-              Stay connected, manage your building, and get things done.
+              this is where your building lives
             </p>
           </div>
 
