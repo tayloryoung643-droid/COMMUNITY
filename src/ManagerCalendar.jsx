@@ -305,7 +305,54 @@ function ManagerCalendar() {
     ? events
     : events.filter(event => event.category === activeFilter)
 
-  // Sort events by date
+  // Get temporal group for an event (matches Resident Calendar)
+  const getTemporalGroup = (dateString) => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const date = new Date(dateString)
+    date.setHours(0, 0, 0, 0)
+    const diffDays = Math.floor((date - today) / (1000 * 60 * 60 * 24))
+
+    const todayDayOfWeek = today.getDay()
+    const daysUntilEndOfWeek = 6 - todayDayOfWeek
+
+    if (diffDays < 0) return 'Past'
+    if (diffDays === 0) return 'Today'
+    if (diffDays === 1) return 'Tomorrow'
+    if (diffDays <= daysUntilEndOfWeek) return 'This Week'
+    if (diffDays <= daysUntilEndOfWeek + 7) return 'Next Week'
+    return 'Coming Up'
+  }
+
+  // Group events by temporal period (upcoming first, past last)
+  const groupEventsByTime = (items) => {
+    const groups = {}
+    const groupOrder = ['Today', 'Tomorrow', 'This Week', 'Next Week', 'Coming Up', 'Past']
+
+    items.forEach(item => {
+      const group = getTemporalGroup(item.date)
+      if (!groups[group]) {
+        groups[group] = []
+      }
+      groups[group].push(item)
+    })
+
+    // Sort events within each group by date
+    Object.keys(groups).forEach(key => {
+      groups[key].sort((a, b) => new Date(a.date) - new Date(b.date))
+    })
+
+    return groupOrder
+      .filter(group => groups[group] && groups[group].length > 0)
+      .map(group => ({
+        title: group,
+        items: groups[group]
+      }))
+  }
+
+  const groupedEvents = groupEventsByTime(filteredEvents)
+
+  // Legacy sorted events for compatibility (used by month view)
   const sortedEvents = [...filteredEvents].sort((a, b) => new Date(a.date) - new Date(b.date))
 
   // Date formatting functions
@@ -671,101 +718,105 @@ function ManagerCalendar() {
       {/* List View */}
       {viewMode === 'list' && (
         <div className="calendar-list">
-          {sortedEvents.length === 0 ? (
+          {groupedEvents.length === 0 ? (
             <div className="no-events">
               <Calendar size={48} />
               <h3>No events found</h3>
               <p>Create your first event to get started</p>
             </div>
           ) : (
-            sortedEvents.map(event => {
-              const IconComponent = event.icon
-              return (
-                <article key={event.id} className="event-card">
-                  <div className="event-card-accent" style={{ background: event.color }}></div>
+            groupedEvents.map(group => (
+              <div key={group.title} className="event-group">
+                <div className="event-group-header">
+                  <h3 className="event-group-title">{group.title}</h3>
+                  <span className="event-group-count">{group.items.length} event{group.items.length !== 1 ? 's' : ''}</span>
+                </div>
 
-                  <div className="event-card-header">
-                    <div className="event-date-info">
-                      <span className="event-relative-date">{getRelativeDate(event.date)}</span>
-                      <span className="event-exact-date">{formatDate(event.date)}</span>
-                    </div>
-                    <div className="event-card-actions">
-                      <span
-                        className="event-category-tag"
-                        style={{ background: `${event.color}20`, color: event.color }}
-                      >
-                        {event.categoryLabel}
-                      </span>
-                      <div className="event-menu-wrapper">
-                        <button
-                          className="event-menu-btn"
-                          onClick={() => setActiveMenu(activeMenu === event.id ? null : event.id)}
-                        >
-                          <MoreVertical size={18} />
-                        </button>
-                        {activeMenu === event.id && (
-                          <div className="event-menu-dropdown">
-                            <button onClick={() => openEditModal(event)}>
-                              <Edit3 size={16} />
-                              Edit Event
-                            </button>
-                            <button onClick={() => handleDuplicateEvent(event)}>
-                              <Copy size={16} />
-                              Duplicate
-                            </button>
-                            {event.allowRsvp && (
-                              <>
-                                <button onClick={() => openRSVPModal(event)}>
-                                  <Users size={16} />
-                                  View RSVPs ({event.rsvps.length})
-                                </button>
-                                <button onClick={() => handleSendReminder(event)}>
-                                  <Bell size={16} />
-                                  Send Reminder
-                                </button>
-                              </>
-                            )}
-                            <div className="menu-divider"></div>
-                            <button className="delete-btn" onClick={() => openDeleteConfirm(event)}>
-                              <Trash2 size={16} />
-                              Delete Event
-                            </button>
+                {group.items.map(event => {
+                  const IconComponent = event.icon
+                  const isPast = group.title === 'Past'
+                  return (
+                    <article key={event.id} className={`event-card ${isPast ? 'past-event' : ''}`}>
+                      <div className="event-card-accent" style={{ background: event.color }}></div>
+
+                      <div className="event-card-body">
+                        <div className="event-icon" style={{ background: `${event.color}20` }}>
+                          <IconComponent size={20} style={{ color: event.color }} />
+                        </div>
+                        <div className="event-details">
+                          <div className="event-details-header">
+                            <h3 className="event-title">{event.title}</h3>
+                            <span
+                              className="event-category-tag"
+                              style={{ background: `${event.color}20`, color: event.color }}
+                            >
+                              {event.categoryLabel}
+                            </span>
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="event-card-body">
-                    <div className="event-icon" style={{ background: `${event.color}20` }}>
-                      <IconComponent size={20} style={{ color: event.color }} />
-                    </div>
-                    <div className="event-details">
-                      <h3 className="event-title">{event.title}</h3>
-                      <p className="event-description">{event.description}</p>
-                      <div className="event-meta">
-                        <span className="event-time">
-                          <Clock size={14} />
-                          {event.time}{event.endTime && ` - ${event.endTime}`}
-                        </span>
-                        {event.location && (
-                          <span className="event-location">
-                            <MapPin size={14} />
-                            {event.location}
+                          <span className="event-datetime">
+                            {formatDate(event.date)} • {event.time}{event.endTime && ` - ${event.endTime}`}
                           </span>
-                        )}
-                        {event.allowRsvp && (
-                          <span className="event-rsvps">
-                            <Users size={14} />
-                            {event.rsvps.length}{event.rsvpLimit && ` / ${event.rsvpLimit}`} RSVPs
-                          </span>
-                        )}
+                          {event.location && (
+                            <span className="event-location-text">
+                              <MapPin size={14} />
+                              {event.location}
+                            </span>
+                          )}
+                          {event.description && (
+                            <p className="event-description">{event.description}</p>
+                          )}
+                          {event.allowRsvp && event.rsvps.length > 0 && (
+                            <span className="event-rsvps">
+                              <Users size={14} />
+                              {event.rsvps.length}{event.rsvpLimit && ` / ${event.rsvpLimit}`} RSVPs
+                            </span>
+                          )}
+                        </div>
+                        <div className="event-card-actions">
+                          <div className="event-menu-wrapper">
+                            <button
+                              className="event-menu-btn"
+                              onClick={() => setActiveMenu(activeMenu === event.id ? null : event.id)}
+                            >
+                              <MoreVertical size={18} />
+                            </button>
+                            {activeMenu === event.id && (
+                              <div className="event-menu-dropdown">
+                                <button onClick={() => openEditModal(event)}>
+                                  <Edit3 size={16} />
+                                  Edit Event
+                                </button>
+                                <button onClick={() => handleDuplicateEvent(event)}>
+                                  <Copy size={16} />
+                                  Duplicate
+                                </button>
+                                {event.allowRsvp && (
+                                  <>
+                                    <button onClick={() => openRSVPModal(event)}>
+                                      <Users size={16} />
+                                      View RSVPs ({event.rsvps.length})
+                                    </button>
+                                    <button onClick={() => handleSendReminder(event)}>
+                                      <Bell size={16} />
+                                      Send Reminder
+                                    </button>
+                                  </>
+                                )}
+                                <div className="menu-divider"></div>
+                                <button className="delete-btn" onClick={() => openDeleteConfirm(event)}>
+                                  <Trash2 size={16} />
+                                  Delete Event
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </article>
-              )
-            })
+                    </article>
+                  )
+                })}
+              </div>
+            ))
           )}
         </div>
       )}
