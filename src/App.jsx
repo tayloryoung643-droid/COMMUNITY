@@ -30,6 +30,7 @@ import ResidentAddressSearch from './ResidentAddressSearch'
 import ResidentJoinBuilding from './ResidentJoinBuilding'
 import ResidentCreateBuilding from './ResidentCreateBuilding'
 import Join from './Join'
+import ResidentMessages from './ResidentMessages'
 
 function App() {
   const { user, userProfile, loading, isDemoMode, signIn, signOut, loginAsDemo, refreshUserProfile } = useAuth()
@@ -729,6 +730,17 @@ function App() {
     return (
       <MobileShell bottomNav={bottomNav}>
         <Building onNavigate={handleNavigation} />
+      </MobileShell>
+    )
+  }
+
+  if (currentScreen === 'messages') {
+    return (
+      <MobileShell>
+        <ResidentMessages
+          onBack={() => setCurrentScreen('building')}
+          onNavigate={handleNavigation}
+        />
       </MobileShell>
     )
   }

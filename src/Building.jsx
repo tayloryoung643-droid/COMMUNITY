@@ -90,6 +90,13 @@ function Building({ onNavigate }) {
         <section className="building-section">
           <h2 className="section-title">Building Info</h2>
           <div className="list-card">
+            <button className="list-item" onClick={() => handleFeatureClick('messages')}>
+              <div className="list-item-icon">
+                <MessageSquare size={20} />
+              </div>
+              <span className="list-item-label">Messages</span>
+              <ChevronRight size={18} className="list-item-arrow" />
+            </button>
             <button className="list-item" onClick={() => handleFeatureClick('Bulletin Board')}>
               <div className="list-item-icon">
                 <ClipboardList size={20} />

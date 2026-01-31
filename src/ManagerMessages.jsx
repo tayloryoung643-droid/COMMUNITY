@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Search,
   Send,
@@ -7,10 +7,13 @@ import {
   ArrowLeft,
   Phone,
   Mail,
-  MoreVertical
+  MoreVertical,
+  Plus,
+  Users,
+  X
 } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
-import { getMessages, sendMessage } from './services/messageService'
+import { getMessages, sendMessage, markConversationAsRead, getResidents } from './services/messageService'
 import './ManagerMessages.css'
 
 // Demo messages data - used when in demo mode
@@ -18,6 +21,7 @@ const DEMO_MESSAGES = [
   {
     id: 1,
     resident: {
+      id: 'demo-1',
       name: 'Sarah Mitchell',
       unit: '1201',
       email: 'sarah.m@email.com',
@@ -37,6 +41,7 @@ const DEMO_MESSAGES = [
   {
     id: 2,
     resident: {
+      id: 'demo-2',
       name: 'Mike Thompson',
       unit: '805',
       email: 'mike.t@email.com',
@@ -68,6 +73,7 @@ const DEMO_MESSAGES = [
   {
     id: 3,
     resident: {
+      id: 'demo-3',
       name: 'Jessica Kim',
       unit: '402',
       email: 'jessica.k@email.com',
@@ -95,87 +101,6 @@ const DEMO_MESSAGES = [
         timestamp: Date.now() - 79200000
       }
     ]
-  },
-  {
-    id: 4,
-    resident: {
-      name: 'Alex Rivera',
-      unit: '1104',
-      email: 'alex.r@email.com',
-      phone: '(555) 456-7890'
-    },
-    unread: false,
-    archived: false,
-    thread: [
-      {
-        id: 1,
-        sender: 'resident',
-        text: "Can we get recycling bins added to the 11th floor? Currently we have to go down to the 1st floor to recycle, which is inconvenient.",
-        timestamp: Date.now() - 172800000
-      },
-      {
-        id: 2,
-        sender: 'manager',
-        text: "That's a great suggestion, Alex! I'll bring this up at the next building committee meeting and see what we can do.",
-        timestamp: Date.now() - 158400000
-      }
-    ]
-  },
-  {
-    id: 5,
-    resident: {
-      name: 'Chris Walker',
-      unit: '309',
-      email: 'chris.w@email.com',
-      phone: '(555) 567-8901'
-    },
-    unread: false,
-    archived: false,
-    thread: [
-      {
-        id: 1,
-        sender: 'resident',
-        text: "Thank you for fixing the elevator so quickly! I know it was an emergency repair and the team did a great job getting it done over the weekend.",
-        timestamp: Date.now() - 259200000
-      },
-      {
-        id: 2,
-        sender: 'manager',
-        text: "Thank you for the kind words, Chris! I'll pass along your appreciation to the maintenance team. We're glad we could get it fixed quickly.",
-        timestamp: Date.now() - 252000000
-      }
-    ]
-  },
-  {
-    id: 6,
-    resident: {
-      name: 'Emily Chen',
-      unit: '1507',
-      email: 'emily.c@email.com',
-      phone: '(555) 678-9012'
-    },
-    unread: false,
-    archived: true,
-    thread: [
-      {
-        id: 1,
-        sender: 'resident',
-        text: "Is there a way to reserve the rooftop lounge for a private party?",
-        timestamp: Date.now() - 604800000
-      },
-      {
-        id: 2,
-        sender: 'manager',
-        text: "Yes! You can reserve the rooftop lounge through the building app. Go to Calendar > Book Space and select the date you'd like.",
-        timestamp: Date.now() - 601200000
-      },
-      {
-        id: 3,
-        sender: 'resident',
-        text: "Perfect, I found it. Thanks!",
-        timestamp: Date.now() - 597600000
-      }
-    ]
   }
 ]
 
@@ -183,69 +108,115 @@ function ManagerMessages() {
   const { userProfile, isDemoMode } = useAuth()
   const isInDemoMode = isDemoMode || userProfile?.is_demo === true
 
-  const [messages, setMessages] = useState([])
+  const [conversations, setConversations] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState('all')
-  const [selectedMessage, setSelectedMessage] = useState(null)
+  const [selectedConversation, setSelectedConversation] = useState(null)
   const [replyText, setReplyText] = useState('')
   const [showMobileDetail, setShowMobileDetail] = useState(false)
+  const [showNewMessageModal, setShowNewMessageModal] = useState(false)
+  const [residents, setResidents] = useState([])
+  const [residentSearch, setResidentSearch] = useState('')
+  const messagesEndRef = useRef(null)
 
   useEffect(() => {
-    console.log('[ManagerMessages] Demo mode:', isInDemoMode)
-
     async function loadMessages() {
       if (isInDemoMode) {
-        console.log('Demo mode: using fake messages')
-        setMessages(DEMO_MESSAGES)
+        setConversations(DEMO_MESSAGES)
         setLoading(false)
-      } else {
-        console.log('Real mode: fetching messages from Supabase')
-        try {
-          const data = await getMessages(userProfile?.building_id)
-          // Transform data to match component structure
-          // Group messages by conversation/resident
-          const conversationMap = new Map()
-          data.forEach(msg => {
-            const residentId = msg.sender_id === userProfile?.id ? msg.recipient_id : msg.sender_id
-            const resident = msg.sender_id === userProfile?.id ? msg.recipient : msg.sender
-            if (!conversationMap.has(residentId)) {
-              conversationMap.set(residentId, {
+        return
+      }
+
+      try {
+        const data = await getMessages(userProfile?.building_id)
+
+        // Group messages by conversation partner (resident)
+        const conversationMap = new Map()
+
+        data.forEach(msg => {
+          // Determine who the resident is (the person who isn't the manager)
+          const isManagerSender = msg.from_user_id === userProfile?.id
+          const residentId = isManagerSender ? msg.to_user_id : msg.from_user_id
+          const resident = isManagerSender ? msg.recipient : msg.sender
+
+          // Skip if resident info is missing or it's a manager-to-manager message
+          if (!resident || resident.role === 'manager' || resident.role === 'property_manager') {
+            return
+          }
+
+          if (!conversationMap.has(residentId)) {
+            conversationMap.set(residentId, {
+              id: residentId,
+              resident: {
                 id: residentId,
-                resident: {
-                  name: resident?.full_name || 'Unknown',
-                  unit: resident?.unit_number || 'N/A',
-                  email: resident?.email || '',
-                  phone: resident?.phone || ''
-                },
-                unread: false,
-                archived: false,
-                thread: []
-              })
-            }
-            const conv = conversationMap.get(residentId)
-            conv.thread.push({
-              id: msg.id,
-              sender: msg.sender_id === userProfile?.id ? 'manager' : 'resident',
-              text: msg.content,
-              timestamp: new Date(msg.created_at).getTime()
+                name: resident?.full_name || 'Unknown',
+                unit: resident?.unit_number || 'N/A',
+                email: resident?.email || '',
+                phone: resident?.phone || ''
+              },
+              unread: false,
+              archived: false,
+              thread: []
             })
-            if (!msg.read && msg.recipient_id === userProfile?.id) {
-              conv.unread = true
-            }
+          }
+
+          const conv = conversationMap.get(residentId)
+          conv.thread.push({
+            id: msg.id,
+            sender: isManagerSender ? 'manager' : 'resident',
+            text: msg.content,
+            timestamp: new Date(msg.created_at).getTime()
           })
-          setMessages(Array.from(conversationMap.values()))
-        } catch (err) {
-          console.error('Error loading messages:', err)
-          setError('Failed to load messages. Please try again.')
-        } finally {
-          setLoading(false)
-        }
+
+          // Mark as unread if message is TO manager and not read
+          if (!isManagerSender && !msg.is_read) {
+            conv.unread = true
+          }
+        })
+
+        // Sort threads by timestamp
+        conversationMap.forEach(conv => {
+          conv.thread.sort((a, b) => a.timestamp - b.timestamp)
+        })
+
+        setConversations(Array.from(conversationMap.values()))
+      } catch (err) {
+        console.error('[ManagerMessages] Error loading messages:', err)
+        setError('Failed to load messages. Please try again.')
+      } finally {
+        setLoading(false)
       }
     }
+
     loadMessages()
   }, [isInDemoMode, userProfile])
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (selectedConversation) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [selectedConversation?.thread])
+
+  // Load residents for new message modal
+  const loadResidents = async () => {
+    if (isInDemoMode) {
+      setResidents([
+        { id: 'demo-new-1', full_name: 'New Resident 1', unit_number: '101' },
+        { id: 'demo-new-2', full_name: 'New Resident 2', unit_number: '202' }
+      ])
+      return
+    }
+
+    try {
+      const data = await getResidents(userProfile?.building_id)
+      setResidents(data)
+    } catch (err) {
+      console.error('[ManagerMessages] Error loading residents:', err)
+    }
+  }
 
   // Format timestamp to relative time
   const formatTime = (timestamp) => {
@@ -288,31 +259,37 @@ function ManagerMessages() {
     return name.split(' ').map(n => n[0]).join('').toUpperCase()
   }
 
-  // Filter messages based on search and filter
-  const filteredMessages = messages.filter(msg => {
-    // Search filter
+  // Filter conversations based on search and filter
+  const filteredConversations = conversations.filter(conv => {
     const searchLower = searchQuery.toLowerCase()
     const matchesSearch = searchQuery === '' ||
-      msg.resident.name.toLowerCase().includes(searchLower) ||
-      msg.resident.unit.includes(searchQuery) ||
-      msg.thread.some(t => t.text.toLowerCase().includes(searchLower))
+      conv.resident.name.toLowerCase().includes(searchLower) ||
+      conv.resident.unit.includes(searchQuery) ||
+      conv.thread.some(t => t.text.toLowerCase().includes(searchLower))
 
-    // Tab filter
-    if (activeFilter === 'unread') return matchesSearch && msg.unread
-    if (activeFilter === 'archived') return matchesSearch && msg.archived
-    return matchesSearch && !msg.archived
+    if (activeFilter === 'unread') return matchesSearch && conv.unread
+    if (activeFilter === 'archived') return matchesSearch && conv.archived
+    return matchesSearch && !conv.archived
   })
 
-  // Handle selecting a message
-  const handleSelectMessage = (msg) => {
-    setSelectedMessage(msg)
+  // Handle selecting a conversation
+  const handleSelectConversation = async (conv) => {
+    setSelectedConversation(conv)
     setShowMobileDetail(true)
 
     // Mark as read
-    if (msg.unread) {
-      setMessages(prev => prev.map(m =>
-        m.id === msg.id ? { ...m, unread: false } : m
+    if (conv.unread) {
+      setConversations(prev => prev.map(c =>
+        c.id === conv.id ? { ...c, unread: false } : c
       ))
+
+      if (!isInDemoMode) {
+        try {
+          await markConversationAsRead(userProfile?.id, conv.resident.id)
+        } catch (err) {
+          console.error('[ManagerMessages] Error marking as read:', err)
+        }
+      }
     }
   }
 
@@ -323,84 +300,107 @@ function ManagerMessages() {
 
   // Handle sending a reply
   const handleSendReply = async () => {
-    if (!replyText.trim() || !selectedMessage) return
+    if (!replyText.trim() || !selectedConversation) return
+
+    const messageText = replyText.trim()
+    setReplyText('')
 
     const newMessage = {
       id: Date.now(),
       sender: 'manager',
-      text: replyText.trim(),
+      text: messageText,
       timestamp: Date.now()
     }
 
-    if (isInDemoMode) {
-      // Demo mode: update local state only
-      setMessages(prev => prev.map(msg =>
-        msg.id === selectedMessage.id
-          ? { ...msg, thread: [...msg.thread, newMessage] }
-          : msg
-      ))
+    // Optimistically update UI
+    setConversations(prev => prev.map(conv =>
+      conv.id === selectedConversation.id
+        ? { ...conv, thread: [...conv.thread, newMessage] }
+        : conv
+    ))
 
-      setSelectedMessage(prev => ({
-        ...prev,
-        thread: [...prev.thread, newMessage]
-      }))
-    } else {
-      // Real mode: send to Supabase
+    setSelectedConversation(prev => ({
+      ...prev,
+      thread: [...prev.thread, newMessage]
+    }))
+
+    if (!isInDemoMode) {
       try {
         await sendMessage({
           building_id: userProfile.building_id,
-          sender_id: userProfile.id,
-          recipient_id: selectedMessage.id,
-          content: replyText.trim()
+          from_user_id: userProfile.id,
+          to_user_id: selectedConversation.resident.id,
+          content: messageText
         })
-
-        setMessages(prev => prev.map(msg =>
-          msg.id === selectedMessage.id
-            ? { ...msg, thread: [...msg.thread, newMessage] }
-            : msg
-        ))
-
-        setSelectedMessage(prev => ({
-          ...prev,
-          thread: [...prev.thread, newMessage]
-        }))
       } catch (err) {
-        console.error('Error sending message:', err)
+        console.error('[ManagerMessages] Error sending message:', err)
+        // Could revert optimistic update here
       }
     }
+  }
 
-    setReplyText('')
+  // Handle starting a new conversation
+  const handleStartNewConversation = async (resident) => {
+    setShowNewMessageModal(false)
+    setResidentSearch('')
+
+    // Check if conversation already exists
+    const existing = conversations.find(c => c.resident.id === resident.id)
+    if (existing) {
+      handleSelectConversation(existing)
+      return
+    }
+
+    // Create new conversation entry
+    const newConv = {
+      id: resident.id,
+      resident: {
+        id: resident.id,
+        name: resident.full_name,
+        unit: resident.unit_number,
+        email: resident.email || '',
+        phone: resident.phone || ''
+      },
+      unread: false,
+      archived: false,
+      thread: []
+    }
+
+    setConversations(prev => [newConv, ...prev])
+    setSelectedConversation(newConv)
+    setShowMobileDetail(true)
   }
 
   // Handle archive/unarchive
   const handleToggleArchive = () => {
-    if (!selectedMessage) return
+    if (!selectedConversation) return
 
-    setMessages(prev => prev.map(msg =>
-      msg.id === selectedMessage.id
-        ? { ...msg, archived: !msg.archived }
-        : msg
+    setConversations(prev => prev.map(conv =>
+      conv.id === selectedConversation.id
+        ? { ...conv, archived: !conv.archived }
+        : conv
     ))
 
-    setSelectedMessage(prev => ({ ...prev, archived: !prev.archived }))
+    setSelectedConversation(prev => ({ ...prev, archived: !prev.archived }))
   }
 
-  // Handle mark as resolved (archive)
+  // Handle mark as resolved
   const handleMarkResolved = () => {
-    if (!selectedMessage) return
+    if (!selectedConversation) return
 
-    setMessages(prev => prev.map(msg =>
-      msg.id === selectedMessage.id
-        ? { ...msg, archived: true }
-        : msg
+    setConversations(prev => prev.map(conv =>
+      conv.id === selectedConversation.id
+        ? { ...conv, archived: true }
+        : conv
     ))
 
-    setSelectedMessage(null)
+    setSelectedConversation(null)
     setShowMobileDetail(false)
   }
 
   // Get preview text from last message
   const getPreview = (thread) => {
+    if (thread.length === 0) return 'No messages yet'
     const lastMessage = thread[thread.length - 1]
     const prefix = lastMessage.sender === 'manager' ? 'You: ' : ''
     return prefix + lastMessage.text
@@ -408,14 +408,23 @@ function ManagerMessages() {
 
   // Get last message time
   const getLastTime = (thread) => {
+    if (thread.length === 0) return Date.now()
     return thread[thread.length - 1].timestamp
   }
+
+  // Filter residents for new message modal
+  const filteredResidents = residents.filter(r => {
+    if (!residentSearch) return true
+    const search = residentSearch.toLowerCase()
+    return r.full_name?.toLowerCase().includes(search) ||
+           r.unit_number?.includes(search)
+  })
 
   // Loading state
   if (loading) {
     return (
       <div className="manager-messages">
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: 'rgba(255,255,255,0.7)' }}>
+        <div className="messages-loading">
           Loading messages...
         </div>
       </div>
@@ -426,7 +435,7 @@ function ManagerMessages() {
   if (error) {
     return (
       <div className="manager-messages">
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: '#ef4444' }}>
+        <div className="messages-error">
           {error}
         </div>
       </div>
@@ -437,6 +446,21 @@ function ManagerMessages() {
     <div className={`manager-messages ${showMobileDetail ? 'show-detail' : ''}`}>
       {/* Message List */}
       <div className="messages-list-panel">
+        {/* Header with New Message Button */}
+        <div className="messages-list-header">
+          <h2>Messages</h2>
+          <button
+            className="new-message-btn"
+            onClick={() => {
+              loadResidents()
+              setShowNewMessageModal(true)
+            }}
+          >
+            <Plus size={18} />
+            <span>New</span>
+          </button>
+        </div>
+
         {/* Search Bar */}
         <div className="messages-search">
           <Search size={18} />
@@ -461,9 +485,9 @@ function ManagerMessages() {
             onClick={() => setActiveFilter('unread')}
           >
             Unread
-            {messages.filter(m => m.unread && !m.archived).length > 0 && (
+            {conversations.filter(c => c.unread && !c.archived).length > 0 && (
               <span className="filter-count">
-                {messages.filter(m => m.unread && !m.archived).length}
+                {conversations.filter(c => c.unread && !c.archived).length}
               </span>
             )}
           </button>
@@ -475,33 +499,43 @@ function ManagerMessages() {
           </button>
         </div>
 
-        {/* Messages List */}
+        {/* Conversations List */}
         <div className="messages-list">
-          {filteredMessages.length === 0 ? (
+          {filteredConversations.length === 0 ? (
             <div className="no-messages">
+              <Users size={32} />
               <p>No messages found</p>
+              <button
+                className="start-conversation-btn"
+                onClick={() => {
+                  loadResidents()
+                  setShowNewMessageModal(true)
+                }}
+              >
+                Start a conversation
+              </button>
             </div>
           ) : (
-            filteredMessages
+            filteredConversations
               .sort((a, b) => getLastTime(b.thread) - getLastTime(a.thread))
-              .map(msg => (
+              .map(conv => (
                 <button
-                  key={msg.id}
-                  className={`message-item ${msg.unread ? 'unread' : ''} ${selectedMessage?.id === msg.id ? 'selected' : ''}`}
-                  onClick={() => handleSelectMessage(msg)}
+                  key={conv.id}
+                  className={`message-item ${conv.unread ? 'unread' : ''} ${selectedConversation?.id === conv.id ? 'selected' : ''}`}
+                  onClick={() => handleSelectConversation(conv)}
                 >
                   <div className="message-avatar">
-                    {getInitials(msg.resident.name)}
+                    {getInitials(conv.resident.name)}
                   </div>
                   <div className="message-content">
                     <div className="message-header">
-                      <span className="message-name">{msg.resident.name}</span>
-                      <span className="message-time">{formatTime(getLastTime(msg.thread))}</span>
+                      <span className="message-name">{conv.resident.name}</span>
+                      <span className="message-time">{formatTime(getLastTime(conv.thread))}</span>
                     </div>
-                    <span className="message-unit">Unit {msg.resident.unit}</span>
-                    <p className="message-preview">{getPreview(msg.thread)}</p>
+                    <span className="message-unit">Unit {conv.resident.unit}</span>
+                    <p className="message-preview">{getPreview(conv.thread)}</p>
                   </div>
-                  {msg.unread && <div className="unread-dot" />}
+                  {conv.unread && <div className="unread-dot" />}
                 </button>
               ))
           )}
@@ -510,7 +544,7 @@ function ManagerMessages() {
 
       {/* Message Detail */}
       <div className="messages-detail-panel">
-        {selectedMessage ? (
+        {selectedConversation ? (
           <>
             {/* Detail Header */}
             <div className="detail-header">
@@ -519,20 +553,24 @@ function ManagerMessages() {
               </button>
               <div className="detail-resident">
                 <div className="detail-avatar">
-                  {getInitials(selectedMessage.resident.name)}
+                  {getInitials(selectedConversation.resident.name)}
                 </div>
                 <div className="detail-info">
-                  <span className="detail-name">{selectedMessage.resident.name}</span>
-                  <span className="detail-unit">Unit {selectedMessage.resident.unit}</span>
+                  <span className="detail-name">{selectedConversation.resident.name}</span>
+                  <span className="detail-unit">Unit {selectedConversation.resident.unit}</span>
                 </div>
               </div>
               <div className="detail-contact">
-                <a href={`tel:${selectedMessage.resident.phone}`} className="contact-btn" title="Call">
-                  <Phone size={18} />
-                </a>
-                <a href={`mailto:${selectedMessage.resident.email}`} className="contact-btn" title="Email">
-                  <Mail size={18} />
-                </a>
+                {selectedConversation.resident.phone && (
+                  <a href={`tel:${selectedConversation.resident.phone}`} className="contact-btn" title="Call">
+                    <Phone size={18} />
+                  </a>
+                )}
+                {selectedConversation.resident.email && (
+                  <a href={`mailto:${selectedConversation.resident.email}`} className="contact-btn" title="Email">
+                    <Mail size={18} />
+                  </a>
+                )}
                 <button className="contact-btn" title="More options">
                   <MoreVertical size={18} />
                 </button>
@@ -541,31 +579,38 @@ function ManagerMessages() {
 
             {/* Thread */}
             <div className="message-thread">
-              {selectedMessage.thread.map(msg => (
-                <div
-                  key={msg.id}
-                  className={`thread-message ${msg.sender === 'manager' ? 'sent' : 'received'}`}
-                >
-                  <div className="thread-bubble">
-                    <p>{msg.text}</p>
-                  </div>
-                  <span className="thread-time">{formatMessageTime(msg.timestamp)}</span>
+              {selectedConversation.thread.length === 0 ? (
+                <div className="empty-thread">
+                  <p>No messages yet. Send a message to start the conversation.</p>
                 </div>
-              ))}
+              ) : (
+                selectedConversation.thread.map(msg => (
+                  <div
+                    key={msg.id}
+                    className={`thread-message ${msg.sender === 'manager' ? 'sent' : 'received'}`}
+                  >
+                    <div className="thread-bubble">
+                      <p>{msg.text}</p>
+                    </div>
+                    <span className="thread-time">{formatMessageTime(msg.timestamp)}</span>
+                  </div>
+                ))
+              )}
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Reply Box */}
             <div className="reply-box">
               <div className="reply-actions">
                 <button
-                  className={`action-btn ${selectedMessage.archived ? 'archived' : ''}`}
+                  className={`action-btn ${selectedConversation.archived ? 'archived' : ''}`}
                   onClick={handleToggleArchive}
-                  title={selectedMessage.archived ? 'Unarchive' : 'Archive'}
+                  title={selectedConversation.archived ? 'Unarchive' : 'Archive'}
                 >
                   <Archive size={18} />
-                  <span>{selectedMessage.archived ? 'Unarchive' : 'Archive'}</span>
+                  <span>{selectedConversation.archived ? 'Unarchive' : 'Archive'}</span>
                 </button>
-                {!selectedMessage.archived && (
+                {!selectedConversation.archived && (
                   <button
                     className="action-btn resolve"
                     onClick={handleMarkResolved}
@@ -609,6 +654,55 @@ function ManagerMessages() {
           </div>
         )}
       </div>
+
+      {/* New Message Modal */}
+      {showNewMessageModal && (
+        <div className="modal-overlay" onClick={() => setShowNewMessageModal(false)}>
+          <div className="new-message-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>New Message</h3>
+              <button className="modal-close" onClick={() => setShowNewMessageModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="resident-search">
+                <Search size={18} />
+                <input
+                  type="text"
+                  placeholder="Search residents by name or unit..."
+                  value={residentSearch}
+                  onChange={(e) => setResidentSearch(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <div className="resident-list">
+                {filteredResidents.length === 0 ? (
+                  <div className="no-residents">
+                    <p>No residents found</p>
+                  </div>
+                ) : (
+                  filteredResidents.map(resident => (
+                    <button
+                      key={resident.id}
+                      className="resident-item"
+                      onClick={() => handleStartNewConversation(resident)}
+                    >
+                      <div className="resident-avatar">
+                        {getInitials(resident.full_name || 'U')}
+                      </div>
+                      <div className="resident-info">
+                        <span className="resident-name">{resident.full_name}</span>
+                        <span className="resident-unit">Unit {resident.unit_number}</span>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

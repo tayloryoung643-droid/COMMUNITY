@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { Menu, X, Bell, Home as HomeIcon, MessageSquare, Calendar, Package, Building2, Settings, LogOut, ChevronRight, Wrench, Users, Wine, ClipboardList, CalendarClock } from 'lucide-react'
+import { Menu, X, Bell, Home as HomeIcon, MessageSquare, MessageCircle, Calendar, Package, Building2, Settings, LogOut, ChevronRight, Wrench, Users, Wine, ClipboardList, CalendarClock } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import './HamburgerMenu.css'
 
@@ -90,6 +90,7 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' 
       'calendar': 'Calendar',
       'packages': 'Packages',
       'building': 'Building',
+      'messages': 'Messages',
       'settings': 'Settings'
     }
     return screenMap[currentScreen] || ''
@@ -231,6 +232,13 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' 
         >
           <Building2 size={22} />
           <span>Building</span>
+        </button>
+        <button
+          className={`global-menu-item ${activeItem === 'Messages' ? 'active' : ''}`}
+          onClick={() => handleMenuItemClick('messages')}
+        >
+          <MessageCircle size={22} />
+          <span>Messages</span>
         </button>
         <button
           className="global-menu-item"
