@@ -79,13 +79,40 @@ export async function deleteEvent(eventId) {
 }
 
 export async function getRSVPs(eventId) {
-  const { data, error } = await supabase
+  // First fetch RSVPs
+  const { data: rsvps, error: rsvpsError } = await supabase
     .from('event_rsvps')
-    .select('*, user:users(*)')
+    .select('*')
     .eq('event_id', eventId)
 
-  if (error) throw error
-  return data
+  if (rsvpsError) throw rsvpsError
+  if (!rsvps || rsvps.length === 0) return []
+
+  // Get unique user IDs
+  const userIds = [...new Set(rsvps.map(r => r.user_id).filter(Boolean))]
+
+  if (userIds.length === 0) return rsvps
+
+  // Fetch users separately
+  const { data: users, error: usersError } = await supabase
+    .from('users')
+    .select('id, full_name, unit_number, avatar_url')
+    .in('id', userIds)
+
+  if (usersError) {
+    console.warn('[eventService] Error fetching RSVP users:', usersError)
+    return rsvps
+  }
+
+  // Create user lookup map
+  const userMap = {}
+  ;(users || []).forEach(u => { userMap[u.id] = u })
+
+  // Attach user info to RSVPs
+  return rsvps.map(rsvp => ({
+    ...rsvp,
+    user: userMap[rsvp.user_id] || null
+  }))
 }
 
 export async function addRSVP(eventId, userId, status) {

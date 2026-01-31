@@ -1,14 +1,41 @@
 import { supabase } from '../lib/supabase'
 
 export async function getPosts(buildingId) {
-  const { data, error } = await supabase
+  // First fetch posts
+  const { data: posts, error: postsError } = await supabase
     .from('community_posts')
-    .select('*, author:author_id(full_name, unit_number)')
+    .select('*')
     .eq('building_id', buildingId)
     .order('created_at', { ascending: false })
 
-  if (error) throw error
-  return data
+  if (postsError) throw postsError
+  if (!posts || posts.length === 0) return []
+
+  // Get unique author IDs
+  const authorIds = [...new Set(posts.map(p => p.author_id).filter(Boolean))]
+
+  if (authorIds.length === 0) return posts
+
+  // Fetch authors separately
+  const { data: users, error: usersError } = await supabase
+    .from('users')
+    .select('id, full_name, unit_number')
+    .in('id', authorIds)
+
+  if (usersError) {
+    console.warn('[communityPostService] Error fetching post authors:', usersError)
+    return posts
+  }
+
+  // Create user lookup map
+  const userMap = {}
+  ;(users || []).forEach(u => { userMap[u.id] = u })
+
+  // Attach author info to posts
+  return posts.map(post => ({
+    ...post,
+    author: userMap[post.author_id] || null
+  }))
 }
 
 export async function createPost(postData) {
@@ -62,15 +89,42 @@ export async function deletePost(postId) {
 }
 
 export async function getAnnouncements(buildingId) {
-  const { data, error } = await supabase
+  // First fetch announcements
+  const { data: posts, error: postsError } = await supabase
     .from('community_posts')
-    .select('*, author:author_id(full_name, unit_number)')
+    .select('*')
     .eq('building_id', buildingId)
     .eq('is_announcement', true)
     .order('created_at', { ascending: false })
 
-  if (error) throw error
-  return data
+  if (postsError) throw postsError
+  if (!posts || posts.length === 0) return []
+
+  // Get unique author IDs
+  const authorIds = [...new Set(posts.map(p => p.author_id).filter(Boolean))]
+
+  if (authorIds.length === 0) return posts
+
+  // Fetch authors separately
+  const { data: users, error: usersError } = await supabase
+    .from('users')
+    .select('id, full_name, unit_number')
+    .in('id', authorIds)
+
+  if (usersError) {
+    console.warn('[communityPostService] Error fetching announcement authors:', usersError)
+    return posts
+  }
+
+  // Create user lookup map
+  const userMap = {}
+  ;(users || []).forEach(u => { userMap[u.id] = u })
+
+  // Attach author info to announcements
+  return posts.map(post => ({
+    ...post,
+    author: userMap[post.author_id] || null
+  }))
 }
 
 export async function likePost(postId, userId) {
@@ -95,14 +149,41 @@ export async function unlikePost(postId, userId) {
 }
 
 export async function getComments(postId) {
-  const { data, error } = await supabase
+  // First fetch comments
+  const { data: comments, error: commentsError } = await supabase
     .from('post_comments')
-    .select('*, author:user_id(full_name, unit_number)')
+    .select('*')
     .eq('post_id', postId)
     .order('created_at', { ascending: true })
 
-  if (error) throw error
-  return data
+  if (commentsError) throw commentsError
+  if (!comments || comments.length === 0) return []
+
+  // Get unique user IDs
+  const userIds = [...new Set(comments.map(c => c.user_id).filter(Boolean))]
+
+  if (userIds.length === 0) return comments
+
+  // Fetch users separately
+  const { data: users, error: usersError } = await supabase
+    .from('users')
+    .select('id, full_name, unit_number')
+    .in('id', userIds)
+
+  if (usersError) {
+    console.warn('[communityPostService] Error fetching comment authors:', usersError)
+    return comments
+  }
+
+  // Create user lookup map
+  const userMap = {}
+  ;(users || []).forEach(u => { userMap[u.id] = u })
+
+  // Attach author info to comments
+  return comments.map(comment => ({
+    ...comment,
+    author: userMap[comment.user_id] || null
+  }))
 }
 
 export async function addComment(postId, userId, content) {
