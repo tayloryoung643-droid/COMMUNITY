@@ -70,13 +70,33 @@ function ElevatorBooking({ onBack }) {
 
       try {
         const data = await getBookings(buildingId)
+
+        // Map DB booking types to display values
+        const typeMapReverse = {
+          'move_in': 'Moving In',
+          'move_out': 'Moving Out',
+          'furniture_delivery': 'Furniture Delivery',
+          'appliance_delivery': 'Appliance Delivery',
+          'contractor_work': 'Contractor Work',
+          'other': 'Other'
+        }
+
+        // Map times to time slot display
+        const getTimeSlot = (startTime) => {
+          if (!startTime) return 'N/A'
+          const hour = parseInt(startTime.split('T')[1]?.substring(0, 2) || '9')
+          if (hour < 12) return 'Morning (8:00 AM - 12:00 PM)'
+          if (hour < 16) return 'Afternoon (12:00 PM - 4:00 PM)'
+          return 'Evening (4:00 PM - 8:00 PM)'
+        }
+
         // data will be [] if table is empty - this is SUCCESS, not an error
         const transformedData = (data || []).map(booking => ({
           id: booking.id,
           date: booking.start_time?.split('T')[0],
-          timeSlot: booking.time_slot || booking.booking_type || 'N/A',
-          unit: `Unit ${booking.unit_number || userProfile?.unit_number || 'Unknown'}`,
-          type: booking.moving_type || booking.booking_type || 'Unknown',
+          timeSlot: getTimeSlot(booking.start_time),
+          unit: `Unit ${userProfile?.unit_number || 'Unknown'}`,
+          type: typeMapReverse[booking.booking_type] || booking.booking_type || 'Unknown',
           status: booking.status === 'confirmed' ? 'Confirmed' : 'Pending'
         }))
         setReservations(transformedData)
@@ -119,25 +139,58 @@ function ElevatorBooking({ onBack }) {
     if (!formData.date || !formData.timeSlot || !formData.movingType) return
 
     try {
+      // Map moving types to valid DB booking_type values
+      const typeMap = {
+        'Moving In': 'move_in',
+        'Moving Out': 'move_out'
+      }
+
+      // Parse time slot to get start/end times
+      const timeSlotMap = {
+        'Morning (8:00 AM - 12:00 PM)': { start: '08:00:00', end: '12:00:00' },
+        'Afternoon (12:00 PM - 4:00 PM)': { start: '12:00:00', end: '16:00:00' },
+        'Evening (4:00 PM - 8:00 PM)': { start: '16:00:00', end: '20:00:00' }
+      }
+      const times = timeSlotMap[formData.timeSlot] || { start: '09:00:00', end: '11:00:00' }
+
       await createBooking({
         building_id: userProfile.building_id,
-        user_id: userProfile.id,
-        start_time: formData.date,
-        time_slot: formData.timeSlot,
-        moving_type: formData.movingType,
-        booking_type: formData.movingType,
+        resident_id: userProfile.id,
+        start_time: `${formData.date}T${times.start}`,
+        end_time: `${formData.date}T${times.end}`,
+        booking_type: typeMap[formData.movingType] || 'other',
         status: 'pending',
-        unit_number: userProfile.unit_number,
-        resident_name: userProfile.full_name
+        notes: null,
+        requires_service_elevator: true
       })
       // Reload bookings
       const data = await getBookings(userProfile.building_id)
+
+      // Map DB booking types to display values
+      const typeMapReverse = {
+        'move_in': 'Moving In',
+        'move_out': 'Moving Out',
+        'furniture_delivery': 'Furniture Delivery',
+        'appliance_delivery': 'Appliance Delivery',
+        'contractor_work': 'Contractor Work',
+        'other': 'Other'
+      }
+
+      // Map times to time slot display
+      const getTimeSlot = (startTime) => {
+        if (!startTime) return 'N/A'
+        const hour = parseInt(startTime.split('T')[1]?.substring(0, 2) || '9')
+        if (hour < 12) return 'Morning (8:00 AM - 12:00 PM)'
+        if (hour < 16) return 'Afternoon (12:00 PM - 4:00 PM)'
+        return 'Evening (4:00 PM - 8:00 PM)'
+      }
+
       const transformedData = (data || []).map(booking => ({
         id: booking.id,
         date: booking.start_time?.split('T')[0],
-        timeSlot: booking.time_slot || booking.booking_type || 'N/A',
-        unit: `Unit ${booking.unit_number || userProfile?.unit_number || 'Unknown'}`,
-        type: booking.moving_type || booking.booking_type || 'Unknown',
+        timeSlot: getTimeSlot(booking.start_time),
+        unit: `Unit ${userProfile?.unit_number || 'Unknown'}`,
+        type: typeMapReverse[booking.booking_type] || booking.booking_type || 'Unknown',
         status: booking.status === 'confirmed' ? 'Confirmed' : 'Pending'
       }))
       setReservations(transformedData)

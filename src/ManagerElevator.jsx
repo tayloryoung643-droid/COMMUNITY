@@ -141,19 +141,29 @@ function ManagerElevator() {
         const data = await getBookings(userProfile.building_id)
         console.log('[ManagerElevator] Loaded bookings:', data?.length || 0)
 
+        // Map DB booking types to UI values
+        const typeMapReverse = {
+          'furniture_delivery': 'furniture',
+          'appliance_delivery': 'appliance',
+          'contractor_work': 'contractor',
+          'move_in': 'move_in',
+          'move_out': 'move_out',
+          'other': 'other'
+        }
+
         // Transform Supabase data to UI format
         const transformedBookings = (data || []).map(booking => {
-          // Find resident info
-          const resident = residents.find(r => String(r.id) === String(booking.user_id))
+          // Find resident info using resident_id
+          const resident = residents.find(r => String(r.id) === String(booking.resident_id))
           return {
             id: booking.id,
-            residentName: resident?.name || booking.resident_name || 'Unknown',
-            residentId: booking.user_id,
-            unit: resident?.unit || booking.unit_number || 'N/A',
-            date: booking.start_time?.split('T')[0] || booking.date,
-            startTime: booking.start_time?.split('T')[1]?.substring(0, 5) || booking.time_slot?.split(' ')[0] || '09:00',
+            residentName: resident?.name || 'Unknown',
+            residentId: booking.resident_id,
+            unit: resident?.unit || 'N/A',
+            date: booking.start_time?.split('T')[0],
+            startTime: booking.start_time?.split('T')[1]?.substring(0, 5) || '09:00',
             endTime: booking.end_time?.split('T')[1]?.substring(0, 5) || '11:00',
-            type: booking.booking_type || booking.moving_type || 'other',
+            type: typeMapReverse[booking.booking_type] || booking.booking_type || 'other',
             status: booking.status || 'pending',
             notes: booking.notes || '',
             requiresServiceElevator: booking.requires_service_elevator || false
@@ -343,17 +353,24 @@ function ManagerElevator() {
     if (!resident) return
 
     try {
+      // Map UI booking types to valid DB values
+      const typeMap = {
+        'furniture': 'furniture_delivery',
+        'appliance': 'appliance_delivery',
+        'contractor': 'contractor_work',
+        'move_in': 'move_in',
+        'move_out': 'move_out',
+        'other': 'other'
+      }
       const bookingData = {
         building_id: userProfile.building_id,
-        user_id: bookingForm.residentId,
+        resident_id: bookingForm.residentId,
         start_time: `${bookingForm.date}T${bookingForm.startTime}:00`,
         end_time: `${bookingForm.date}T${bookingForm.endTime}:00`,
-        booking_type: bookingForm.type,
+        booking_type: typeMap[bookingForm.type] || 'other',
         status: bookingForm.autoApprove ? 'confirmed' : 'pending',
-        notes: bookingForm.notes,
-        requires_service_elevator: bookingForm.requiresServiceElevator,
-        resident_name: resident.name,
-        unit_number: resident.unit
+        notes: bookingForm.notes || null,
+        requires_service_elevator: bookingForm.requiresServiceElevator
       }
 
       console.log('[ManagerElevator] Creating booking:', bookingData)
@@ -390,15 +407,22 @@ function ManagerElevator() {
     const resident = residents.find(r => String(r.id) === String(bookingForm.residentId))
 
     try {
+      // Map UI booking types to valid DB values
+      const typeMap = {
+        'furniture': 'furniture_delivery',
+        'appliance': 'appliance_delivery',
+        'contractor': 'contractor_work',
+        'move_in': 'move_in',
+        'move_out': 'move_out',
+        'other': 'other'
+      }
       const updateData = {
-        user_id: bookingForm.residentId,
+        resident_id: bookingForm.residentId,
         start_time: `${bookingForm.date}T${bookingForm.startTime}:00`,
         end_time: `${bookingForm.date}T${bookingForm.endTime}:00`,
-        booking_type: bookingForm.type,
-        notes: bookingForm.notes,
-        requires_service_elevator: bookingForm.requiresServiceElevator,
-        resident_name: resident?.name,
-        unit_number: resident?.unit
+        booking_type: typeMap[bookingForm.type] || 'other',
+        notes: bookingForm.notes || null,
+        requires_service_elevator: bookingForm.requiresServiceElevator
       }
 
       console.log('[ManagerElevator] Updating booking:', selectedBooking.id, updateData)
