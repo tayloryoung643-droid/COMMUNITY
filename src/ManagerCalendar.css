@@ -205,19 +205,19 @@
 /* Event Card */
 .event-card {
   position: relative;
-  background: var(--md-card-bg);
-  backdrop-filter: blur(var(--blur-md));
-  -webkit-backdrop-filter: blur(var(--blur-md));
-  border: 1px solid var(--md-card-border);
+  background: #FFFCF7;
+  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: var(--radius-xl);
   padding: var(--spacing-lg);
   transition: all var(--transition-base);
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .event-card:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: var(--md-card-border-hover);
+  background: #FFFDF9;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .event-card-accent {
@@ -373,6 +373,11 @@
   height: 48px;
   border-radius: var(--radius-lg);
   flex-shrink: 0;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.event-icon svg {
+  color: #3b82f6;
 }
 
 .event-details {
@@ -394,13 +399,13 @@
 .event-title {
   font-size: var(--font-size-lg);
   font-weight: 600;
-  color: var(--md-text-primary);
+  color: #1a1a1a;
   margin: 0;
 }
 
 .event-datetime {
   font-size: var(--font-size-sm);
-  color: var(--md-text-secondary);
+  color: #666666;
   font-weight: 500;
 }
 
@@ -409,17 +414,17 @@
   align-items: center;
   gap: var(--spacing-xs);
   font-size: var(--font-size-sm);
-  color: var(--md-text-muted);
+  color: #666666;
 }
 
 .event-location-text svg {
-  color: var(--md-accent-soft);
+  color: #5B9A9A;
   flex-shrink: 0;
 }
 
 .event-description {
   font-size: var(--font-size-sm);
-  color: var(--md-text-muted);
+  color: #888888;
   line-height: 1.5;
   margin: var(--spacing-xs) 0 0 0;
 }
@@ -429,12 +434,12 @@
   align-items: center;
   gap: var(--spacing-xs);
   font-size: var(--font-size-sm);
-  color: var(--md-text-secondary);
+  color: #666666;
   margin-top: var(--spacing-xs);
 }
 
 .event-rsvps svg {
-  color: var(--md-accent-soft);
+  color: #5B9A9A;
 }
 
 /* Past Event Styling */
@@ -443,7 +448,7 @@
 }
 
 .event-card.past-event .event-title {
-  color: var(--md-text-muted);
+  color: #888888;
 }
 
 .event-card.past-event .event-card-accent {
