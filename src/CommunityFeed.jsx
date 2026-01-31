@@ -374,7 +374,9 @@ function CommunityFeed({ onNavigate }) {
   }
 
   const handleLike = async (postId) => {
+    console.log('[CommunityFeed] handleLike called:', { postId, isInDemoMode, userId: userProfile?.id })
     const isCurrentlyLiked = likedPosts.has(postId)
+    console.log('[CommunityFeed] isCurrentlyLiked:', isCurrentlyLiked)
 
     // Optimistic update
     setLikedPosts(prev => {
@@ -387,16 +389,20 @@ function CommunityFeed({ onNavigate }) {
       return newSet
     })
 
-    if (!isInDemoMode) {
+    if (!isInDemoMode && userProfile?.id) {
       // Real mode: update in Supabase
+      console.log('[CommunityFeed] Calling Supabase for like action...')
       try {
         if (isCurrentlyLiked) {
+          console.log('[CommunityFeed] Calling unlikePost:', postId, userProfile.id)
           await unlikePost(postId, userProfile.id)
         } else {
+          console.log('[CommunityFeed] Calling likePost:', postId, userProfile.id)
           await likePost(postId, userProfile.id)
         }
+        console.log('[CommunityFeed] Like action successful')
       } catch (err) {
-        console.error('Error updating like:', err)
+        console.error('[CommunityFeed] Error updating like:', err)
         // Revert optimistic update on error
         setLikedPosts(prev => {
           const newSet = new Set(prev)
@@ -408,6 +414,8 @@ function CommunityFeed({ onNavigate }) {
           return newSet
         })
       }
+    } else {
+      console.log('[CommunityFeed] Skipping Supabase call - demo mode or no user:', { isInDemoMode, hasUserId: !!userProfile?.id })
     }
   }
 
@@ -699,8 +707,12 @@ function CommunityFeed({ onNavigate }) {
 
                 // Handler to open post detail
                 const handlePostClick = () => {
+                  console.log('[CommunityFeed] handlePostClick called for post:', post.id, post.text?.substring(0, 30))
                   if (onNavigate) {
+                    console.log('[CommunityFeed] Navigating to PostDetail')
                     onNavigate('PostDetail', post)
+                  } else {
+                    console.log('[CommunityFeed] onNavigate is not defined!')
                   }
                 }
 

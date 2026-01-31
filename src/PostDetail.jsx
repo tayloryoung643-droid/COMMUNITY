@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react'
 import { ChevronLeft, Heart, MessageCircle, Share2, Send, Sun, Cloud, CloudRain, Snowflake, Moon, MessageSquare, HelpCircle, Flag } from 'lucide-react'
-import { addComment, getComments } from './services/communityPostService'
+import { addComment, getComments, likePost, unlikePost, getUserLikes } from './services/communityPostService'
 import './PostDetail.css'
 
 function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
-  const [isLiked, setIsLiked] = useState(false)
+  const [isLiked, setIsLiked] = useState(post?.userLiked || false)
   const [likeCount, setLikeCount] = useState(post?.likes || 0)
   const [comments, setComments] = useState(post?.commentsList || [])
   const [newComment, setNewComment] = useState('')
   const [replyingTo, setReplyingTo] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLiking, setIsLiking] = useState(false)
 
   // Weather and time state - matches other pages exactly
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -106,13 +107,35 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
   // User avatar for comments
   const userAvatar = '/images/profile-taylor.jpg'
 
-  const handleLike = () => {
-    if (isLiked) {
-      setLikeCount(prev => prev - 1)
-    } else {
-      setLikeCount(prev => prev + 1)
+  const handleLike = async () => {
+    if (isLiking) return
+
+    const wasLiked = isLiked
+
+    // Optimistic update
+    setIsLiked(!wasLiked)
+    setLikeCount(prev => wasLiked ? prev - 1 : prev + 1)
+
+    if (!isDemoMode && userProfile?.id && post?.id) {
+      setIsLiking(true)
+      try {
+        if (wasLiked) {
+          console.log('[PostDetail] Unliking post:', post.id)
+          await unlikePost(post.id, userProfile.id)
+        } else {
+          console.log('[PostDetail] Liking post:', post.id)
+          await likePost(post.id, userProfile.id)
+        }
+        console.log('[PostDetail] Like action successful')
+      } catch (err) {
+        console.error('[PostDetail] Error updating like:', err)
+        // Revert optimistic update on error
+        setIsLiked(wasLiked)
+        setLikeCount(prev => wasLiked ? prev + 1 : prev - 1)
+      } finally {
+        setIsLiking(false)
+      }
     }
-    setIsLiked(!isLiked)
   }
 
   const handlePostComment = async () => {

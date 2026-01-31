@@ -128,23 +128,33 @@ export async function getAnnouncements(buildingId) {
 }
 
 export async function likePost(postId, userId) {
+  console.log('[communityPostService.likePost] Inserting like:', { postId, userId })
   const { data, error } = await supabase
     .from('post_likes')
     .insert([{ post_id: postId, user_id: userId }])
     .select()
 
-  if (error) throw error
+  if (error) {
+    console.error('[communityPostService.likePost] Error:', error.code, error.message, error.details, error.hint)
+    throw error
+  }
+  console.log('[communityPostService.likePost] Success:', data[0])
   return data[0]
 }
 
 export async function unlikePost(postId, userId) {
+  console.log('[communityPostService.unlikePost] Deleting like:', { postId, userId })
   const { error } = await supabase
     .from('post_likes')
     .delete()
     .eq('post_id', postId)
     .eq('user_id', userId)
 
-  if (error) throw error
+  if (error) {
+    console.error('[communityPostService.unlikePost] Error:', error.code, error.message, error.details)
+    throw error
+  }
+  console.log('[communityPostService.unlikePost] Success')
   return true
 }
 
