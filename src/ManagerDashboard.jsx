@@ -290,10 +290,13 @@ function ManagerDashboard({ onLogout, buildingData }) {
     event_rsvp: Wine,
     maintenance: CheckCircle,
     elevator: ArrowUpDown,
+    elevator_booking: ArrowUpDown,
     bulletin: ClipboardList,
     faq: HelpCircle,
     profile: User,
     community: Users,
+    community_post: MessageSquare,
+    event_created: Calendar,
   }
 
   // Recent activity with navigation - from dashboardData
@@ -532,22 +535,30 @@ function ManagerDashboard({ onLogout, buildingData }) {
                 </button>
               </div>
               <div className="activity-list">
-                {recentActivity.map(item => (
-                  <div
-                    key={item.id}
-                    className="activity-item clickable"
-                    onClick={() => handleActivityClick(item)}
-                  >
-                    <div className={`activity-icon activity-${item.color}`}>
-                      <item.icon size={16} />
+                {recentActivity.length > 0 ? (
+                  recentActivity.map(item => (
+                    <div
+                      key={item.id}
+                      className="activity-item clickable"
+                      onClick={() => handleActivityClick(item)}
+                    >
+                      <div className={`activity-icon activity-${item.color}`}>
+                        <item.icon size={16} />
+                      </div>
+                      <div className="activity-content">
+                        <span className="activity-text">{item.text}</span>
+                        <span className="activity-time">{item.time}</span>
+                      </div>
+                      <ChevronRight size={16} className="activity-arrow" />
                     </div>
-                    <div className="activity-content">
-                      <span className="activity-text">{item.text}</span>
-                      <span className="activity-time">{item.time}</span>
-                    </div>
-                    <ChevronRight size={16} className="activity-arrow" />
+                  ))
+                ) : (
+                  <div className="activity-empty-state">
+                    <Bell size={24} style={{ opacity: 0.4 }} />
+                    <p>No recent activity</p>
+                    <span>Activity from your building will appear here</span>
                   </div>
-                ))}
+                )}
               </div>
             </div>
 

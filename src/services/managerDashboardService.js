@@ -146,6 +146,204 @@ export function loadDemoDashboardData() {
 }
 
 // ============================================================
+// RECENT ACTIVITY LOADING - Fetches from multiple tables
+// ============================================================
+
+/**
+ * Format relative time for activity display
+ */
+function formatRelativeTime(date) {
+  const now = new Date()
+  const diff = now - new Date(date)
+  const minutes = Math.floor(diff / 60000)
+  const hours = Math.floor(diff / 3600000)
+  const days = Math.floor(diff / 86400000)
+
+  if (minutes < 1) return 'Just now'
+  if (minutes < 60) return `${minutes} min ago`
+  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`
+  if (days === 1) return 'Yesterday'
+  if (days < 7) return `${days} days ago`
+
+  // For older items, show the date
+  return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+/**
+ * Fetch recent activity from all relevant tables
+ */
+async function fetchRecentActivity(buildingId) {
+  const activities = []
+
+  try {
+    // 1. Community Posts - when someone creates a post
+    const { data: posts } = await supabase
+      .from('community_posts')
+      .select('id, content, created_at, author:author_id(full_name, unit_number)')
+      .eq('building_id', buildingId)
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    if (posts) {
+      posts.forEach(post => {
+        activities.push({
+          id: `post-${post.id}`,
+          text: `${post.author?.full_name || 'A resident'} posted in Community`,
+          detail: post.content?.substring(0, 50) + (post.content?.length > 50 ? '...' : ''),
+          time: formatRelativeTime(post.created_at),
+          timestamp: new Date(post.created_at).getTime(),
+          type: 'community_post',
+          color: 'blue',
+          navTarget: 'community'
+        })
+      })
+    }
+
+    // 2. New Residents - users who recently joined
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+    const { data: newUsers } = await supabase
+      .from('users')
+      .select('id, full_name, unit_number, created_at')
+      .eq('building_id', buildingId)
+      .eq('role', 'resident')
+      .gte('created_at', sevenDaysAgo.toISOString())
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    if (newUsers) {
+      newUsers.forEach(user => {
+        activities.push({
+          id: `user-${user.id}`,
+          text: `${user.full_name || 'New resident'} joined the building`,
+          detail: user.unit_number ? `Unit ${user.unit_number}` : '',
+          time: formatRelativeTime(user.created_at),
+          timestamp: new Date(user.created_at).getTime(),
+          type: 'resident_joined',
+          color: 'green',
+          navTarget: 'residents'
+        })
+      })
+    }
+
+    // 3. Events - recently created events
+    const { data: events } = await supabase
+      .from('events')
+      .select('id, title, location, created_at, start_time')
+      .eq('building_id', buildingId)
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    if (events) {
+      events.forEach(event => {
+        activities.push({
+          id: `event-${event.id}`,
+          text: `New event: ${event.title}`,
+          detail: event.location || '',
+          time: formatRelativeTime(event.created_at),
+          timestamp: new Date(event.created_at).getTime(),
+          type: 'event_created',
+          color: 'purple',
+          navTarget: 'calendar'
+        })
+      })
+    }
+
+    // 4. Packages - recently logged packages
+    const { data: packages } = await supabase
+      .from('packages')
+      .select('id, unit_number, carrier, created_at, status')
+      .eq('building_id', buildingId)
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    if (packages) {
+      packages.forEach(pkg => {
+        const statusText = pkg.status === 'picked_up' ? 'picked up' : 'logged'
+        activities.push({
+          id: `pkg-${pkg.id}`,
+          text: `Package ${statusText} for Unit ${pkg.unit_number || 'N/A'}`,
+          detail: pkg.carrier || '',
+          time: formatRelativeTime(pkg.created_at),
+          timestamp: new Date(pkg.created_at).getTime(),
+          type: 'package',
+          color: 'orange',
+          navTarget: 'packages'
+        })
+      })
+    }
+
+    // 5. Elevator Bookings (if table exists)
+    try {
+      const { data: bookings } = await supabase
+        .from('elevator_bookings')
+        .select('id, user_id, start_time, end_time, created_at, users:user_id(full_name, unit_number)')
+        .eq('building_id', buildingId)
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      if (bookings) {
+        bookings.forEach(booking => {
+          const bookingDate = new Date(booking.start_time)
+          const dateStr = bookingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          const startTime = bookingDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+          const endTime = new Date(booking.end_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+
+          activities.push({
+            id: `elevator-${booking.id}`,
+            text: `${booking.users?.full_name || 'A resident'} booked elevator`,
+            detail: `${dateStr}, ${startTime} - ${endTime}`,
+            time: formatRelativeTime(booking.created_at),
+            timestamp: new Date(booking.created_at).getTime(),
+            type: 'elevator_booking',
+            color: 'teal',
+            navTarget: 'residents'
+          })
+        })
+      }
+    } catch (e) {
+      // Table might not exist, skip silently
+    }
+
+    // 6. Bulletin Board Posts (if table exists)
+    try {
+      const { data: bulletins } = await supabase
+        .from('bulletin_posts')
+        .select('id, title, created_at, author:author_id(full_name)')
+        .eq('building_id', buildingId)
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      if (bulletins) {
+        bulletins.forEach(bulletin => {
+          activities.push({
+            id: `bulletin-${bulletin.id}`,
+            text: `New bulletin: ${bulletin.title}`,
+            detail: `Posted by ${bulletin.author?.full_name || 'Anonymous'}`,
+            time: formatRelativeTime(bulletin.created_at),
+            timestamp: new Date(bulletin.created_at).getTime(),
+            type: 'bulletin',
+            color: 'yellow',
+            navTarget: 'community'
+          })
+        })
+      }
+    } catch (e) {
+      // Table might not exist, skip silently
+    }
+
+    // Sort all activities by timestamp (newest first) and limit to 10
+    activities.sort((a, b) => b.timestamp - a.timestamp)
+    return activities.slice(0, 10)
+
+  } catch (error) {
+    console.error('[Dashboard] Error fetching recent activity:', error)
+    return []
+  }
+}
+
+// ============================================================
 // REAL DATA LOADING - Fetches from Supabase
 // ============================================================
 
@@ -201,6 +399,7 @@ export async function loadRealDashboardData(userId) {
       packagesResult,
       eventsResult,
       messagesResult,
+      recentActivityResult,
     ] = await Promise.all([
       // Get residents count
       supabase
@@ -232,6 +431,9 @@ export async function loadRealDashboardData(userId) {
         .select('*')
         .eq('building_id', buildingId)
         .eq('is_read', false),
+
+      // Get recent activity from all tables
+      fetchRecentActivity(buildingId),
     ])
 
     // Calculate stats
@@ -290,7 +492,7 @@ export async function loadRealDashboardData(userId) {
           new Date(m.created_at).toDateString() === new Date().toDateString()
         ).length,
       },
-      recentActivity: [], // Real activity would come from an activity log table
+      recentActivity: recentActivityResult || [],
       upcomingEvents: formattedEvents,
       notifications: [], // Real notifications would come from a notifications table
       isLoaded: true,
