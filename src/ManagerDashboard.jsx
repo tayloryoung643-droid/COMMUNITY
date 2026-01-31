@@ -55,6 +55,7 @@ import ManagerFAQ from './ManagerFAQ'
 import ManagerSettings from './ManagerSettings'
 import AnnouncementModal from './components/AnnouncementModal'
 import EventModal from './components/EventModal'
+import PackageModal from './components/PackageModal'
 
 function ManagerDashboard({ onLogout, buildingData }) {
   // Auth context for demo detection and user info
@@ -81,15 +82,6 @@ function ManagerDashboard({ onLogout, buildingData }) {
   const [toastMessage, setToastMessage] = useState('')
 
   // Form states
-  const [packageForm, setPackageForm] = useState({
-    unit: '',
-    residentName: '',
-    carrier: 'USPS',
-    trackingNumber: '',
-    description: '',
-    size: 'medium'
-  })
-
   const [inviteForm, setInviteForm] = useState({
     firstName: '',
     lastName: '',
@@ -384,10 +376,8 @@ function ManagerDashboard({ onLogout, buildingData }) {
     showToastMessage('Announcement posted successfully!')
   }
 
-  // Handle package submit
-  const handlePackageSubmit = () => {
-    setShowPackageModal(false)
-    setPackageForm({ unit: '', residentName: '', carrier: 'USPS', trackingNumber: '', description: '', size: 'medium' })
+  // Handle package success (from modal)
+  const handlePackageSuccess = () => {
     showToastMessage('Package logged successfully!')
   }
 
@@ -767,105 +757,13 @@ function ManagerDashboard({ onLogout, buildingData }) {
       />
 
       {/* Log Package Modal */}
-      {showPackageModal && (
-        <div className="modal-overlay" onClick={() => setShowPackageModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Log New Package</h3>
-              <button className="modal-close" onClick={() => setShowPackageModal(false)}>
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Unit Number *</label>
-                  <div className="input-with-icon">
-                    <Home size={16} />
-                    <input
-                      type="text"
-                      placeholder="e.g., 1201"
-                      value={packageForm.unit}
-                      onChange={e => setPackageForm({...packageForm, unit: e.target.value})}
-                    />
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label>Resident Name</label>
-                  <div className="input-with-icon">
-                    <User size={16} />
-                    <input
-                      type="text"
-                      placeholder="Resident name"
-                      value={packageForm.residentName}
-                      onChange={e => setPackageForm({...packageForm, residentName: e.target.value})}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Carrier *</label>
-                  <select
-                    value={packageForm.carrier}
-                    onChange={e => setPackageForm({...packageForm, carrier: e.target.value})}
-                  >
-                    <option value="USPS">USPS</option>
-                    <option value="UPS">UPS</option>
-                    <option value="FedEx">FedEx</option>
-                    <option value="Amazon">Amazon</option>
-                    <option value="DHL">DHL</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Package Size</label>
-                  <select
-                    value={packageForm.size}
-                    onChange={e => setPackageForm({...packageForm, size: e.target.value})}
-                  >
-                    <option value="small">Small (envelope/small box)</option>
-                    <option value="medium">Medium (shoebox)</option>
-                    <option value="large">Large (moving box)</option>
-                    <option value="oversized">Oversized (furniture)</option>
-                  </select>
-                </div>
-              </div>
-              <div className="form-group">
-                <label>Tracking Number</label>
-                <input
-                  type="text"
-                  placeholder="Optional tracking number"
-                  value={packageForm.trackingNumber}
-                  onChange={e => setPackageForm({...packageForm, trackingNumber: e.target.value})}
-                />
-              </div>
-              <div className="form-group">
-                <label>Description</label>
-                <input
-                  type="text"
-                  placeholder="Brief description (e.g., Large Amazon box)"
-                  value={packageForm.description}
-                  onChange={e => setPackageForm({...packageForm, description: e.target.value})}
-                />
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn-secondary" onClick={() => setShowPackageModal(false)}>
-                Cancel
-              </button>
-              <button
-                className="btn-primary"
-                onClick={handlePackageSubmit}
-                disabled={!packageForm.unit}
-              >
-                <Package size={18} />
-                Log Package
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <PackageModal
+        isOpen={showPackageModal}
+        onClose={() => setShowPackageModal(false)}
+        onSuccess={handlePackageSuccess}
+        userProfile={userProfile}
+        isInDemoMode={isDemoMode}
+      />
 
       {/* Create Event Modal */}
       <EventModal
