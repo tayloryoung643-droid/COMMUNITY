@@ -564,6 +564,8 @@ function App() {
       setCurrentScreen('building')
     } else if (featureTitle === 'Home') {
       setCurrentScreen('home')
+    } else if (featureTitle === 'messages' || featureTitle === 'Messages') {
+      setCurrentScreen('messages')
     }
   }
 
@@ -614,7 +616,7 @@ function App() {
   const residentScreens = [
     'home', 'announcements', 'packages', 'events', 'neighbors', 'emergency',
     'elevator-booking', 'community', 'bulletin-board', 'settings', 'building-info',
-    'calendar', 'building', 'event-detail', 'post-detail'
+    'calendar', 'building', 'event-detail', 'post-detail', 'messages'
   ]
   const showBottomNav = residentScreens.includes(currentScreen)
 
@@ -736,9 +738,9 @@ function App() {
 
   if (currentScreen === 'messages') {
     return (
-      <MobileShell>
+      <MobileShell bottomNav={bottomNav}>
         <ResidentMessages
-          onBack={() => setCurrentScreen('building')}
+          onBack={() => setCurrentScreen('home')}
           onNavigate={handleNavigation}
         />
       </MobileShell>

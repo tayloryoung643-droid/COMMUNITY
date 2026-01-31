@@ -259,7 +259,7 @@ function ResidentMessages({ onBack, onNavigate }) {
           <div className="messages-empty">
             <MessageCircle size={48} />
             <h3>No messages yet</h3>
-            <p>Send a message to your building manager to get started.</p>
+            <p>Send a message to your building manager to get started!</p>
           </div>
         ) : (
           messages.map(msg => (
@@ -267,6 +267,9 @@ function ResidentMessages({ onBack, onNavigate }) {
               key={msg.id}
               className={`message-bubble ${isFromMe(msg) ? 'sent' : 'received'}`}
             >
+              {!isFromMe(msg) && (
+                <span className="bubble-sender">{manager?.full_name || 'Building Manager'}</span>
+              )}
               <div className="bubble-content">
                 <p>{msg.content}</p>
               </div>

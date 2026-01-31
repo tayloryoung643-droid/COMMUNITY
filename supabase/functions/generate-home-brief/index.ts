@@ -100,7 +100,7 @@ serve(async (req) => {
 
       // Community posts (last 24h)
       supabase
-        .from('posts')
+        .from('community_posts')
         .select('id, type, created_at')
         .eq('building_id', building_id)
         .gte('created_at', last24h),
