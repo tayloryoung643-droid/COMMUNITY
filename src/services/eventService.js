@@ -41,12 +41,19 @@ export async function getUpcomingEvents(buildingId) {
 }
 
 export async function createEvent(eventData) {
+  console.log('[eventService.createEvent] Inserting:', eventData)
+
   const { data, error } = await supabase
     .from('events')
     .insert([eventData])
     .select()
 
-  if (error) throw error
+  if (error) {
+    console.error('[eventService.createEvent] Error:', error.code, error.message, error.details, error.hint)
+    throw error
+  }
+
+  console.log('[eventService.createEvent] Success:', data[0])
   return data[0]
 }
 

@@ -16,13 +16,12 @@ import {
   Edit3,
   Trash2,
   EyeOff,
-  Bell,
-  Image,
   Check
 } from 'lucide-react'
 import './ManagerCommunity.css'
 import { useAuth } from './contexts/AuthContext'
 import { getPosts, createPost, deletePost } from './services/communityPostService'
+import AnnouncementModal from './components/AnnouncementModal'
 
 // Demo posts data - only shown for demo accounts
 const DEMO_POSTS = [
@@ -47,14 +46,6 @@ function ManagerCommunity() {
   const [activeFilter, setActiveFilter] = useState('all')
   const [openMenuId, setOpenMenuId] = useState(null)
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
-
-  // Announcement form state
-  const [announcementForm, setAnnouncementForm] = useState({
-    title: '',
-    message: '',
-    category: 'general',
-    sendNotification: true
-  })
 
   // Posts data - demo mode gets demo data, real mode fetches from Supabase
   const [posts, setPosts] = useState(isInDemoMode ? DEMO_POSTS : [])
@@ -101,15 +92,6 @@ function ManagerCommunity() {
     { type: 'share', label: 'Share', icon: MessageSquare, color: '#3b82f6' },
     { type: 'ask', label: 'Ask', icon: HelpCircle, color: '#8b5cf6' },
     { type: 'report', label: 'Report', icon: Flag, color: '#ef4444' }
-  ]
-
-  // Category options for announcements
-  const categories = [
-    { value: 'general', label: 'General' },
-    { value: 'maintenance', label: 'Maintenance' },
-    { value: 'event', label: 'Event' },
-    { value: 'emergency', label: 'Emergency' },
-    { value: 'reminder', label: 'Reminder' }
   ]
 
   const getPostTypeConfig = (type) => {
@@ -182,42 +164,14 @@ function ManagerCommunity() {
     setOpenMenuId(null)
   }
 
-  // Handle announcement form change
-  const handleAnnouncementChange = (field, value) => {
-    setAnnouncementForm(prev => ({ ...prev, [field]: value }))
-  }
-
-  // Handle post announcement
-  const handlePostAnnouncement = async () => {
-    if (!announcementForm.title.trim() || !announcementForm.message.trim()) return
-
-    if (isInDemoMode) {
-      // Demo mode: local state only
-      const newAnnouncement = {
-        id: `a${Date.now()}`,
-        type: 'announcement',
-        title: announcementForm.title.trim(),
-        text: announcementForm.message.trim(),
-        author: 'Property Manager',
-        unit: 'Management',
-        timestamp: Date.now(),
-        likes: 0,
-        comments: 0,
-        pinned: false,
-        category: announcementForm.category
-      }
-      setPosts(prev => [newAnnouncement, ...prev])
-    } else {
-      // Real mode: save to Supabase
+  // Handle announcement success (from modal)
+  const handleAnnouncementSuccess = async (demoAnnouncement) => {
+    if (isInDemoMode && demoAnnouncement) {
+      // Demo mode: add to local state
+      setPosts(prev => [demoAnnouncement, ...prev])
+    } else if (!isInDemoMode) {
+      // Real mode: refresh posts from Supabase
       try {
-        const content = `${announcementForm.title.trim()}\n\n${announcementForm.message.trim()}`
-        await createPost({
-          building_id: userProfile.building_id,
-          user_id: userProfile.id,
-          content,
-          is_announcement: true
-        })
-        // Refresh posts
         const data = await getPosts(userProfile.building_id)
         const transformedPosts = (data || []).map(post => ({
           id: post.id,
@@ -234,19 +188,9 @@ function ManagerCommunity() {
         }))
         setPosts(transformedPosts)
       } catch (err) {
-        console.error('[ManagerCommunity] Error creating announcement:', err)
-        alert('Failed to post announcement. Please try again.')
-        return
+        console.error('[ManagerCommunity] Error refreshing posts:', err)
       }
     }
-
-    setShowAnnouncementModal(false)
-    setAnnouncementForm({
-      title: '',
-      message: '',
-      category: 'general',
-      sendNotification: true
-    })
 
     // Show success message
     setShowSuccessMessage(true)
@@ -519,95 +463,13 @@ function ManagerCommunity() {
       </div>
 
       {/* Announcement Modal */}
-      {showAnnouncementModal && (
-        <div className="modal-overlay" onClick={() => setShowAnnouncementModal(false)}>
-          <div className="announcement-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <div className="modal-header-left">
-                <Megaphone size={20} />
-                <h2>Post Building Announcement</h2>
-              </div>
-              <button className="modal-close" onClick={() => setShowAnnouncementModal(false)}>
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="modal-body">
-              <div className="form-group">
-                <label htmlFor="announcement-title">Title *</label>
-                <input
-                  id="announcement-title"
-                  type="text"
-                  placeholder="Announcement title..."
-                  value={announcementForm.title}
-                  onChange={(e) => handleAnnouncementChange('title', e.target.value)}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="announcement-message">Message *</label>
-                <textarea
-                  id="announcement-message"
-                  placeholder="Write your announcement..."
-                  rows={4}
-                  value={announcementForm.message}
-                  onChange={(e) => handleAnnouncementChange('message', e.target.value)}
-                />
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="announcement-category">Category</label>
-                  <select
-                    id="announcement-category"
-                    value={announcementForm.category}
-                    onChange={(e) => handleAnnouncementChange('category', e.target.value)}
-                  >
-                    {categories.map(cat => (
-                      <option key={cat.value} value={cat.value}>{cat.label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Attach Image</label>
-                  <button className="attach-btn">
-                    <Image size={18} />
-                    <span>Add Image</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="form-checkbox">
-                <input
-                  type="checkbox"
-                  id="send-notification"
-                  checked={announcementForm.sendNotification}
-                  onChange={(e) => handleAnnouncementChange('sendNotification', e.target.checked)}
-                />
-                <label htmlFor="send-notification">
-                  <Bell size={16} />
-                  <span>Send push notification to all residents</span>
-                </label>
-              </div>
-            </div>
-
-            <div className="modal-footer">
-              <button className="btn-secondary" onClick={() => setShowAnnouncementModal(false)}>
-                Cancel
-              </button>
-              <button
-                className="btn-primary"
-                onClick={handlePostAnnouncement}
-                disabled={!announcementForm.title.trim() || !announcementForm.message.trim()}
-              >
-                <Send size={18} />
-                <span>Post Announcement</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AnnouncementModal
+        isOpen={showAnnouncementModal}
+        onClose={() => setShowAnnouncementModal(false)}
+        onSuccess={handleAnnouncementSuccess}
+        userProfile={userProfile}
+        isInDemoMode={isInDemoMode}
+      />
 
       {/* Regular Post Modal */}
       {showPostModal && (

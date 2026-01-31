@@ -17,15 +17,26 @@ export async function createPost(postData) {
     building_id: postData.building_id,
     author_id: postData.user_id,
     content: postData.content
-    // Note: 'type' column doesn't exist in table, storing in content if needed
   }
+
+  // Include is_announcement if provided
+  if (postData.is_announcement !== undefined) {
+    insertData.is_announcement = postData.is_announcement
+  }
+
+  console.log('[communityPostService.createPost] Inserting:', insertData)
 
   const { data, error } = await supabase
     .from('community_posts')
     .insert([insertData])
     .select()
 
-  if (error) throw error
+  if (error) {
+    console.error('[communityPostService.createPost] Error:', error.code, error.message, error.details)
+    throw error
+  }
+
+  console.log('[communityPostService.createPost] Success:', data[0])
   return data[0]
 }
 

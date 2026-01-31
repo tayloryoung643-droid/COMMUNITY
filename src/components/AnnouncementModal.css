@@ -1,0 +1,218 @@
+/* AnnouncementModal - Shared modal component styles */
+
+.announcement-modal {
+  background: rgba(45, 60, 75, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--md-border);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: announcementModalSlideUp 0.3s ease;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
+}
+
+@keyframes announcementModalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.announcement-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--md-border-subtle);
+}
+
+.announcement-modal .modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.announcement-modal .modal-header-left svg {
+  color: var(--md-yellow);
+}
+
+.announcement-modal .modal-header h2 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--md-text-heading);
+  margin: 0;
+}
+
+.announcement-modal .modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--md-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.announcement-modal .modal-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--md-text-primary);
+}
+
+.announcement-modal .modal-body {
+  padding: var(--spacing-lg);
+}
+
+.announcement-modal .form-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.announcement-modal .form-group label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--md-text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.announcement-modal .form-group input,
+.announcement-modal .form-group textarea,
+.announcement-modal .form-group select {
+  width: 100%;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-base);
+  color: var(--md-text-primary);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--md-border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+}
+
+.announcement-modal .form-group input:focus,
+.announcement-modal .form-group textarea:focus,
+.announcement-modal .form-group select:focus {
+  outline: none;
+  border-color: var(--md-accent);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.announcement-modal .form-group input::placeholder,
+.announcement-modal .form-group textarea::placeholder {
+  color: var(--md-text-muted);
+}
+
+.announcement-modal .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.announcement-modal .attach-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--md-text-muted);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed var(--md-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.announcement-modal .attach-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--md-border-hover);
+  color: var(--md-text-secondary);
+}
+
+.announcement-modal .form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+.announcement-modal .form-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--md-accent);
+  cursor: pointer;
+}
+
+.announcement-modal .form-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--md-text-secondary);
+  cursor: pointer;
+}
+
+.announcement-modal .form-checkbox label svg {
+  color: var(--md-yellow);
+}
+
+.announcement-modal .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  border-top: 1px solid var(--md-border-subtle);
+}
+
+.announcement-modal .btn-secondary {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--md-text-secondary);
+  background: transparent;
+  border: 1px solid var(--md-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.announcement-modal .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--md-border-hover);
+}
+
+.announcement-modal .btn-primary {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--md-bg-primary);
+  background: var(--md-accent);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.announcement-modal .btn-primary:hover:not(:disabled) {
+  background: var(--md-accent-hover);
+  transform: translateY(-1px);
+}
+
+.announcement-modal .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

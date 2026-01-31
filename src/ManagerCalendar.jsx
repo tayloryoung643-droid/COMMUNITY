@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getEvents, createEvent, updateEvent, deleteEvent as deleteEventFromDb } from './services/eventService'
+import EventModal from './components/EventModal'
 import './ManagerCalendar.css'
 
 // Demo events data
@@ -412,6 +413,40 @@ function ManagerCalendar() {
     showToastMessage('Event created successfully!')
   }
 
+  // Handle create event success (from shared modal)
+  const handleCreateEventSuccess = async (demoEvent) => {
+    if (isInDemoMode && demoEvent) {
+      // Demo mode: add to local state
+      setEvents(prev => [...prev, demoEvent])
+    } else if (!isInDemoMode) {
+      // Real mode: refresh events from Supabase
+      try {
+        const data = await getEvents(userProfile.building_id)
+        const transformedEvents = (data || []).map(event => ({
+          id: event.id,
+          date: event.start_time ? event.start_time.split('T')[0] : event.date,
+          time: event.start_time ? new Date(event.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'All Day',
+          endTime: event.end_time ? new Date(event.end_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
+          title: event.title,
+          description: event.description || '',
+          category: event.category || 'social',
+          categoryLabel: event.category ? event.category.charAt(0).toUpperCase() + event.category.slice(1) : 'Social',
+          icon: event.category === 'maintenance' ? Wrench : event.category === 'meeting' ? Users : Wine,
+          color: event.category === 'maintenance' ? '#f59e0b' : event.category === 'meeting' ? '#3b82f6' : '#8b5cf6',
+          location: event.location || '',
+          allowRsvp: true,
+          rsvpLimit: null,
+          rsvps: [],
+          isFromSupabase: true
+        }))
+        setEvents(transformedEvents)
+      } catch (err) {
+        console.error('[ManagerCalendar] Error refreshing events:', err)
+      }
+    }
+    showToastMessage('Event created successfully!')
+  }
+
   // Handle edit event
   const handleEditEvent = async () => {
     const category = categories.find(c => c.id === eventForm.category)
@@ -788,129 +823,13 @@ function ManagerCalendar() {
       )}
 
       {/* Create Event Modal */}
-      {showCreateModal && (
-        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
-          <div className="modal-content event-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Create Event</h3>
-              <button className="modal-close" onClick={() => setShowCreateModal(false)}>
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="modal-body">
-              <div className="form-group">
-                <label>Event Title *</label>
-                <input
-                  type="text"
-                  placeholder="Enter event title..."
-                  value={eventForm.title}
-                  onChange={e => setEventForm({ ...eventForm, title: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Description</label>
-                <textarea
-                  placeholder="Add event details..."
-                  value={eventForm.description}
-                  onChange={e => setEventForm({ ...eventForm, description: e.target.value })}
-                  rows={3}
-                />
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Date *</label>
-                  <input
-                    type="date"
-                    value={eventForm.date}
-                    onChange={e => setEventForm({ ...eventForm, date: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Category *</label>
-                  <select
-                    value={eventForm.category}
-                    onChange={e => setEventForm({ ...eventForm, category: e.target.value })}
-                  >
-                    {categories.map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Start Time</label>
-                  <input
-                    type="time"
-                    value={eventForm.time}
-                    onChange={e => setEventForm({ ...eventForm, time: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>End Time</label>
-                  <input
-                    type="time"
-                    value={eventForm.endTime}
-                    onChange={e => setEventForm({ ...eventForm, endTime: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Location</label>
-                <input
-                  type="text"
-                  placeholder="e.g., Party Room, Rooftop, Lobby"
-                  value={eventForm.location}
-                  onChange={e => setEventForm({ ...eventForm, location: e.target.value })}
-                />
-              </div>
-
-              <div className="form-row rsvp-row">
-                <div className="form-group checkbox-group">
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={eventForm.allowRsvp}
-                      onChange={e => setEventForm({ ...eventForm, allowRsvp: e.target.checked })}
-                    />
-                    <span>Allow RSVPs</span>
-                  </label>
-                </div>
-                {eventForm.allowRsvp && (
-                  <div className="form-group">
-                    <label>RSVP Limit</label>
-                    <input
-                      type="number"
-                      placeholder="No limit"
-                      value={eventForm.rsvpLimit}
-                      onChange={e => setEventForm({ ...eventForm, rsvpLimit: e.target.value })}
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="modal-footer">
-              <button className="btn-secondary" onClick={() => setShowCreateModal(false)}>
-                Cancel
-              </button>
-              <button
-                className="btn-primary"
-                onClick={handleCreateEvent}
-                disabled={!eventForm.title || !eventForm.date}
-              >
-                <Plus size={18} />
-                Create Event
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <EventModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={handleCreateEventSuccess}
+        userProfile={userProfile}
+        isInDemoMode={isInDemoMode}
+      />
 
       {/* Edit Event Modal */}
       {showEditModal && selectedEvent && (

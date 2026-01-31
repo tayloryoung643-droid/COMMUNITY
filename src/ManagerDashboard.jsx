@@ -53,6 +53,8 @@ import ManagerElevator from './ManagerElevator'
 import ManagerBulletin from './ManagerBulletin'
 import ManagerFAQ from './ManagerFAQ'
 import ManagerSettings from './ManagerSettings'
+import AnnouncementModal from './components/AnnouncementModal'
+import EventModal from './components/EventModal'
 
 function ManagerDashboard({ onLogout, buildingData }) {
   // Auth context for demo detection and user info
@@ -79,13 +81,6 @@ function ManagerDashboard({ onLogout, buildingData }) {
   const [toastMessage, setToastMessage] = useState('')
 
   // Form states
-  const [announcementForm, setAnnouncementForm] = useState({
-    title: '',
-    content: '',
-    priority: 'normal',
-    sendPush: true
-  })
-
   const [packageForm, setPackageForm] = useState({
     unit: '',
     residentName: '',
@@ -93,17 +88,6 @@ function ManagerDashboard({ onLogout, buildingData }) {
     trackingNumber: '',
     description: '',
     size: 'medium'
-  })
-
-  const [eventForm, setEventForm] = useState({
-    title: '',
-    date: '',
-    startTime: '',
-    endTime: '',
-    location: '',
-    description: '',
-    type: 'social',
-    maxAttendees: ''
   })
 
   const [inviteForm, setInviteForm] = useState({
@@ -395,10 +379,8 @@ function ManagerDashboard({ onLogout, buildingData }) {
   // Get unread count
   const unreadCount = notifications.filter(n => n.unread).length
 
-  // Handle announcement submit
-  const handleAnnouncementSubmit = () => {
-    setShowAnnouncementModal(false)
-    setAnnouncementForm({ title: '', content: '', priority: 'normal', sendPush: true })
+  // Handle announcement success (from modal)
+  const handleAnnouncementSuccess = () => {
     showToastMessage('Announcement posted successfully!')
   }
 
@@ -409,10 +391,8 @@ function ManagerDashboard({ onLogout, buildingData }) {
     showToastMessage('Package logged successfully!')
   }
 
-  // Handle event submit
-  const handleEventSubmit = () => {
-    setShowEventModal(false)
-    setEventForm({ title: '', date: '', startTime: '', endTime: '', location: '', description: '', type: 'social', maxAttendees: '' })
+  // Handle event success (from modal)
+  const handleEventSuccess = () => {
     showToastMessage('Event created successfully!')
   }
 
@@ -778,74 +758,13 @@ function ManagerDashboard({ onLogout, buildingData }) {
       </main>
 
       {/* Post Announcement Modal */}
-      {showAnnouncementModal && (
-        <div className="modal-overlay" onClick={() => setShowAnnouncementModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Post Announcement</h3>
-              <button className="modal-close" onClick={() => setShowAnnouncementModal(false)}>
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="form-group">
-                <label>Title *</label>
-                <input
-                  type="text"
-                  placeholder="Announcement title..."
-                  value={announcementForm.title}
-                  onChange={e => setAnnouncementForm({...announcementForm, title: e.target.value})}
-                />
-              </div>
-              <div className="form-group">
-                <label>Message *</label>
-                <textarea
-                  placeholder="Write your announcement..."
-                  value={announcementForm.content}
-                  onChange={e => setAnnouncementForm({...announcementForm, content: e.target.value})}
-                  rows={5}
-                />
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Priority</label>
-                  <select
-                    value={announcementForm.priority}
-                    onChange={e => setAnnouncementForm({...announcementForm, priority: e.target.value})}
-                  >
-                    <option value="normal">Normal</option>
-                    <option value="important">Important</option>
-                    <option value="urgent">Urgent</option>
-                  </select>
-                </div>
-                <div className="form-group checkbox-group">
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={announcementForm.sendPush}
-                      onChange={e => setAnnouncementForm({...announcementForm, sendPush: e.target.checked})}
-                    />
-                    <span>Send push notification</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn-secondary" onClick={() => setShowAnnouncementModal(false)}>
-                Cancel
-              </button>
-              <button
-                className="btn-primary"
-                onClick={handleAnnouncementSubmit}
-                disabled={!announcementForm.title || !announcementForm.content}
-              >
-                <Send size={18} />
-                Post Announcement
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AnnouncementModal
+        isOpen={showAnnouncementModal}
+        onClose={() => setShowAnnouncementModal(false)}
+        onSuccess={handleAnnouncementSuccess}
+        userProfile={userProfile}
+        isInDemoMode={isDemoMode}
+      />
 
       {/* Log Package Modal */}
       {showPackageModal && (
@@ -949,113 +868,13 @@ function ManagerDashboard({ onLogout, buildingData }) {
       )}
 
       {/* Create Event Modal */}
-      {showEventModal && (
-        <div className="modal-overlay" onClick={() => setShowEventModal(false)}>
-          <div className="modal-content large-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Create Event</h3>
-              <button className="modal-close" onClick={() => setShowEventModal(false)}>
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="form-group">
-                <label>Event Title *</label>
-                <input
-                  type="text"
-                  placeholder="Event name..."
-                  value={eventForm.title}
-                  onChange={e => setEventForm({...eventForm, title: e.target.value})}
-                />
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Date *</label>
-                  <input
-                    type="date"
-                    value={eventForm.date}
-                    onChange={e => setEventForm({...eventForm, date: e.target.value})}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Start Time *</label>
-                  <input
-                    type="time"
-                    value={eventForm.startTime}
-                    onChange={e => setEventForm({...eventForm, startTime: e.target.value})}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>End Time</label>
-                  <input
-                    type="time"
-                    value={eventForm.endTime}
-                    onChange={e => setEventForm({...eventForm, endTime: e.target.value})}
-                  />
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Location *</label>
-                  <div className="input-with-icon">
-                    <MapPin size={16} />
-                    <input
-                      type="text"
-                      placeholder="Event location"
-                      value={eventForm.location}
-                      onChange={e => setEventForm({...eventForm, location: e.target.value})}
-                    />
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label>Event Type</label>
-                  <select
-                    value={eventForm.type}
-                    onChange={e => setEventForm({...eventForm, type: e.target.value})}
-                  >
-                    <option value="social">Social Event</option>
-                    <option value="maintenance">Maintenance</option>
-                    <option value="meeting">Meeting</option>
-                    <option value="class">Class/Workshop</option>
-                    <option value="holiday">Holiday</option>
-                  </select>
-                </div>
-              </div>
-              <div className="form-group">
-                <label>Description</label>
-                <textarea
-                  placeholder="Event details..."
-                  value={eventForm.description}
-                  onChange={e => setEventForm({...eventForm, description: e.target.value})}
-                  rows={3}
-                />
-              </div>
-              <div className="form-group">
-                <label>Max Attendees (leave blank for unlimited)</label>
-                <input
-                  type="number"
-                  placeholder="Optional limit"
-                  value={eventForm.maxAttendees}
-                  onChange={e => setEventForm({...eventForm, maxAttendees: e.target.value})}
-                />
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn-secondary" onClick={() => setShowEventModal(false)}>
-                Cancel
-              </button>
-              <button
-                className="btn-primary"
-                onClick={handleEventSubmit}
-                disabled={!eventForm.title || !eventForm.date || !eventForm.startTime || !eventForm.location}
-              >
-                <PartyPopper size={18} />
-                Create Event
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <EventModal
+        isOpen={showEventModal}
+        onClose={() => setShowEventModal(false)}
+        onSuccess={handleEventSuccess}
+        userProfile={userProfile}
+        isInDemoMode={isDemoMode}
+      />
 
       {/* Invite Resident Modal */}
       {showInviteModal && (

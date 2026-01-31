@@ -1,0 +1,181 @@
+/* EventModal - Shared event modal component styles */
+
+.event-modal {
+  background: rgba(45, 60, 75, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--md-border);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: eventModalSlideUp 0.3s ease;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
+}
+
+@keyframes eventModalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.event-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--md-border-subtle);
+}
+
+.event-modal .modal-header h3 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--md-text-heading);
+  margin: 0;
+}
+
+.event-modal .modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--md-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.event-modal .modal-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--md-text-primary);
+}
+
+.event-modal .modal-body {
+  padding: var(--spacing-lg);
+}
+
+.event-modal .form-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.event-modal .form-group label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--md-text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.event-modal .form-group input,
+.event-modal .form-group textarea,
+.event-modal .form-group select {
+  width: 100%;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-base);
+  color: var(--md-text-primary);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--md-border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+}
+
+.event-modal .form-group input:focus,
+.event-modal .form-group textarea:focus,
+.event-modal .form-group select:focus {
+  outline: none;
+  border-color: var(--md-accent);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.event-modal .form-group input::placeholder,
+.event-modal .form-group textarea::placeholder {
+  color: var(--md-text-muted);
+}
+
+.event-modal .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.event-modal .rsvp-row {
+  align-items: center;
+}
+
+.event-modal .checkbox-group {
+  display: flex;
+  align-items: center;
+}
+
+.event-modal .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+}
+
+.event-modal .checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--md-accent);
+  cursor: pointer;
+}
+
+.event-modal .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  border-top: 1px solid var(--md-border-subtle);
+}
+
+.event-modal .btn-secondary {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--md-text-secondary);
+  background: transparent;
+  border: 1px solid var(--md-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.event-modal .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--md-border-hover);
+}
+
+.event-modal .btn-primary {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--md-bg-primary);
+  background: var(--md-accent);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.event-modal .btn-primary:hover:not(:disabled) {
+  background: var(--md-accent-hover);
+  transform: translateY(-1px);
+}
+
+.event-modal .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

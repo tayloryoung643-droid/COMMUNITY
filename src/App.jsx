@@ -608,30 +608,6 @@ function App() {
     )
   }
 
-  // Debug bar (development only)
-  const DebugBar = import.meta.env.DEV ? (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      backgroundColor: '#1e293b',
-      color: '#94a3b8',
-      fontSize: '10px',
-      padding: '4px 8px',
-      zIndex: 9999,
-      fontFamily: 'monospace',
-      display: 'flex',
-      gap: '12px',
-      flexWrap: 'wrap'
-    }}>
-      <span>demo: <b style={{color: isDemoMode ? '#f87171' : '#4ade80'}}>{isDemoMode ? 'YES' : 'NO'}</b></span>
-      <span>screen: <b style={{color: '#60a5fa'}}>{currentScreen}</b></span>
-      <span>session: <b style={{color: '#fbbf24'}}>{user?.id || 'none'}</b></span>
-      <span>profile: <b style={{color: '#a78bfa'}}>{userProfile?.id || 'none'}</b></span>
-      <span>building: <b style={{color: '#2dd4bf'}}>{userProfile?.building_id || 'none'}</b></span>
-    </div>
-  ) : null
 
   // Define which screens are resident screens (should show bottom nav)
   const residentScreens = [
@@ -871,8 +847,7 @@ function App() {
 
     return (
       <>
-        {DebugBar}
-        <ManagerDashboard
+                <ManagerDashboard
           onLogout={handleLogout}
           buildingData={buildingData}
         />
@@ -883,8 +858,7 @@ function App() {
   if (currentScreen === 'home') {
     return (
       <>
-        {DebugBar}
-        <MobileShell bottomNav={bottomNav}>
+                <MobileShell bottomNav={bottomNav}>
           <Home buildingCode={buildingCode} onNavigate={handleNavigation} isDemoMode={isDemoMode} userProfile={userProfile} />
         </MobileShell>
       </>
@@ -894,8 +868,7 @@ function App() {
   // Otherwise, show the Login screen
   return (
     <>
-      {DebugBar}
-      <Login
+            <Login
         onResidentLogin={handleResidentLogin}
         onResidentEmailLogin={handleResidentEmailLogin}
         onManagerLogin={handleManagerLogin}
