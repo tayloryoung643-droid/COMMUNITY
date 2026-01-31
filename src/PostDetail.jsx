@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ChevronLeft, Heart, MessageCircle, Share2, Send, Sun, Cloud, CloudRain, Snowflake, Moon, MessageSquare, HelpCircle, Flag } from 'lucide-react'
-import { addComment, getComments, likePost, unlikePost, getUserLikes } from './services/communityPostService'
+import { addComment, getComments, likePost, unlikePost, hasUserLikedPost } from './services/communityPostService'
 import './PostDetail.css'
 
 function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
@@ -11,6 +11,7 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
   const [replyingTo, setReplyingTo] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLiking, setIsLiking] = useState(false)
+  const commentInputRef = useRef(null)
 
   // Weather and time state - matches other pages exactly
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -51,6 +52,31 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
 
     fetchComments()
   }, [post?.id, isDemoMode])
+
+  // Fetch like status from Supabase for real users
+  useEffect(() => {
+    const fetchLikeStatus = async () => {
+      if (isDemoMode || !post?.id || !userProfile?.id) return
+
+      try {
+        const liked = await hasUserLikedPost(post.id, userProfile.id)
+        console.log('[PostDetail] Like status fetched:', liked)
+        setIsLiked(liked)
+      } catch (err) {
+        console.error('[PostDetail] Error fetching like status:', err)
+      }
+    }
+
+    fetchLikeStatus()
+  }, [post?.id, userProfile?.id, isDemoMode])
+
+  // Focus comment input handler
+  const focusCommentInput = () => {
+    if (commentInputRef.current) {
+      commentInputRef.current.focus()
+      commentInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }
 
   const getWeatherIcon = (condition) => {
     const hour = currentTime.getHours()
@@ -317,7 +343,7 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
             <Heart size={20} fill={isLiked ? '#ef4444' : 'none'} />
             <span>Like</span>
           </button>
-          <button className="post-action-btn">
+          <button className="post-action-btn" onClick={focusCommentInput}>
             <MessageCircle size={20} />
             <span>Comment</span>
           </button>
@@ -416,6 +442,7 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
           />
           <div className="comment-input-wrapper">
             <input
+              ref={commentInputRef}
               type="text"
               className="comment-input"
               placeholder="Write a comment..."

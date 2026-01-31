@@ -128,18 +128,39 @@ export async function getAnnouncements(buildingId) {
 }
 
 export async function likePost(postId, userId) {
-  console.log('[communityPostService.likePost] Inserting like:', { postId, userId })
+  console.log('[communityPostService.likePost] Upserting like:', { postId, userId })
   const { data, error } = await supabase
     .from('post_likes')
-    .insert([{ post_id: postId, user_id: userId }])
+    .upsert([{ post_id: postId, user_id: userId }], {
+      onConflict: 'post_id,user_id',
+      ignoreDuplicates: true
+    })
     .select()
 
   if (error) {
     console.error('[communityPostService.likePost] Error:', error.code, error.message, error.details, error.hint)
     throw error
   }
-  console.log('[communityPostService.likePost] Success:', data[0])
-  return data[0]
+  console.log('[communityPostService.likePost] Success:', data?.[0])
+  return data?.[0]
+}
+
+/**
+ * Check if a user has liked a specific post
+ */
+export async function hasUserLikedPost(postId, userId) {
+  const { data, error } = await supabase
+    .from('post_likes')
+    .select('id')
+    .eq('post_id', postId)
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (error) {
+    console.error('[communityPostService.hasUserLikedPost] Error:', error)
+    return false
+  }
+  return !!data
 }
 
 export async function unlikePost(postId, userId) {
