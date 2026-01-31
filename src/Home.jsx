@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Package, Calendar, Users, ChevronRight, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon, HelpCircle, MessageSquare, UserPlus, Sparkles } from 'lucide-react'
+import { Package, Calendar, Users, ChevronRight, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon, HelpCircle, MessageSquare, UserPlus, Sparkles, ClipboardList } from 'lucide-react'
 import HamburgerMenu from './HamburgerMenu'
 import { eventsData } from './eventsData'
 import { supabase } from './lib/supabase'
 import { getHomeIntelligence, logEngagementEvent } from './services/homeIntelligenceService'
+import { getActiveListings } from './services/bulletinService'
 import './Home.css'
 
 function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
@@ -26,6 +27,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
   const [realEvents, setRealEvents] = useState([])
   const [realPosts, setRealPosts] = useState([])
   const [newJoiners, setNewJoiners] = useState([])
+  const [bulletinListings, setBulletinListings] = useState([])
   const [dataLoading, setDataLoading] = useState(false)
 
   // Home Intelligence state (context lines)
@@ -128,6 +130,16 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
         if (!joinersError) {
           setNewJoiners(joiners || [])
           console.log('[Home] New joiners fetched:', joiners?.length || 0)
+        }
+
+        // Fetch bulletin listings for this building
+        try {
+          const bulletinData = await getActiveListings(buildingId)
+          setBulletinListings(bulletinData || [])
+          console.log('[Home] Bulletin listings fetched:', bulletinData?.length || 0)
+        } catch (bulletinError) {
+          console.error('[Home] Bulletin fetch error:', bulletinError)
+          setBulletinListings([])
         }
 
         console.log('[Home] Data fetch complete:', {
@@ -518,6 +530,20 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
                 <span className="today-card-subtitle">Check back later</span>
               </div>
             </div>
+          )}
+
+          {/* Bulletin Board Tile */}
+          {bulletinListings.length > 0 && (
+            <button className="today-card bulletin-card" onClick={() => handleFeatureClick('Bulletin')}>
+              <div className="today-card-icon bulletin-icon">
+                <ClipboardList size={20} />
+              </div>
+              <div className="today-card-content">
+                <span className="today-card-title">New Postings on the Bulletin Board!</span>
+                <span className="today-card-subtitle">{bulletinListings.length} active {bulletinListings.length === 1 ? 'listing' : 'listings'}</span>
+              </div>
+              <ChevronRight size={20} className="today-card-arrow" />
+            </button>
           )}
 
           {/* New Joiners Welcome Tile */}
