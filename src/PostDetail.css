@@ -175,6 +175,7 @@
 
 .post-detail-comments {
   margin-top: 8px;
+  padding-bottom: 80px; /* Space for fixed comment input */
 }
 
 .comments-title {
@@ -324,13 +325,12 @@
 
 .comment-input-container {
   position: fixed;
-  bottom: 0;
+  bottom: 88px; /* Above the bottom nav */
   left: 0;
   right: 0;
   background: #FFFCF7;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   padding: 12px 16px;
-  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   z-index: 100;
 }
 

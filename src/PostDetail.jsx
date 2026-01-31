@@ -72,9 +72,14 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
 
   // Focus comment input handler
   const focusCommentInput = () => {
+    console.log('[PostDetail] Comment button clicked, focusing input')
     if (commentInputRef.current) {
+      console.log('[PostDetail] Input ref found, focusing...')
       commentInputRef.current.focus()
-      commentInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      // Scroll the page to bottom to reveal the input
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+    } else {
+      console.log('[PostDetail] Input ref NOT found!')
     }
   }
 
