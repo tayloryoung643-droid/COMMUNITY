@@ -1,6 +1,18 @@
 /* Manager Calendar */
 .manager-calendar {
   padding: var(--spacing-lg);
+
+  /* CSS Variables for text colors */
+  --md-text-primary: rgba(255, 255, 255, 0.95);
+  --md-text-secondary: rgba(255, 255, 255, 0.75);
+  --md-text-muted: rgba(255, 255, 255, 0.5);
+  --md-card-bg: rgba(255, 255, 255, 0.06);
+  --md-card-border: rgba(255, 255, 255, 0.08);
+  --md-card-border-hover: rgba(255, 255, 255, 0.15);
+  --md-accent: #5B9A9A;
+  --md-accent-soft: #82AAAA;
+  --md-green: #34D399;
+  --md-red: #ef4444;
 }
 
 /* Header */

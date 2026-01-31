@@ -257,25 +257,29 @@ function ManagerCalendar() {
       setLoading(true)
       try {
         const data = await getEvents(buildingId)
-        const transformedEvents = (data || []).map(event => ({
-          id: event.id,
-          date: event.start_time ? event.start_time.split('T')[0] : (event.date || new Date().toISOString().split('T')[0]),
-          time: event.start_time ? new Date(event.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'All Day',
-          endTime: event.end_time ? new Date(event.end_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
-          title: event.title || 'Untitled Event',
-          description: event.description || '',
-          category: event.category || 'social',
-          categoryLabel: event.category ? event.category.charAt(0).toUpperCase() + event.category.slice(1) : 'Social',
-          icon: event.category === 'maintenance' ? Wrench : event.category === 'meeting' ? Users : Wine,
-          color: event.category === 'maintenance' ? '#f59e0b' : event.category === 'meeting' ? '#3b82f6' : '#8b5cf6',
-          location: event.location || 'TBD',
-          allowRsvp: true,
-          rsvpLimit: null,
-          rsvps: [],
-          isFromSupabase: true
-        }))
+        console.log('[ManagerCalendar] Raw events from Supabase:', data)
+        const transformedEvents = (data || []).map(event => {
+          console.log('[ManagerCalendar] Transforming event:', event)
+          return {
+            id: event.id,
+            date: event.start_time ? event.start_time.split('T')[0] : (event.date || new Date().toISOString().split('T')[0]),
+            time: event.start_time ? new Date(event.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'All Day',
+            endTime: event.end_time ? new Date(event.end_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
+            title: event.title || 'Untitled Event',
+            description: event.description || '',
+            category: event.category || 'social',
+            categoryLabel: event.category ? event.category.charAt(0).toUpperCase() + event.category.slice(1) : 'Social',
+            icon: event.category === 'maintenance' ? Wrench : event.category === 'meeting' ? Users : Wine,
+            color: event.category === 'maintenance' ? '#f59e0b' : event.category === 'meeting' ? '#3b82f6' : '#8b5cf6',
+            location: event.location || 'TBD',
+            allowRsvp: true,
+            rsvpLimit: null,
+            rsvps: [],
+            isFromSupabase: true
+          }
+        })
         setEvents(transformedEvents)
-        console.log('[ManagerCalendar] Events fetched:', transformedEvents.length)
+        console.log('[ManagerCalendar] Transformed events:', transformedEvents)
       } catch (err) {
         console.error('[ManagerCalendar] Error fetching events:', err)
       } finally {
@@ -351,6 +355,7 @@ function ManagerCalendar() {
   }
 
   const groupedEvents = groupEventsByTime(filteredEvents)
+  console.log('[ManagerCalendar] Grouped events:', groupedEvents)
 
   // Legacy sorted events for compatibility (used by month view)
   const sortedEvents = [...filteredEvents].sort((a, b) => new Date(a.date) - new Date(b.date))
@@ -733,28 +738,34 @@ function ManagerCalendar() {
                 </div>
 
                 {group.items.map(event => {
-                  const IconComponent = event.icon
+                  const IconComponent = event.icon || Wine
                   const isPast = group.title === 'Past'
                   return (
-                    <article key={event.id} className={`event-card ${isPast ? 'past-event' : ''}`}>
-                      <div className="event-card-accent" style={{ background: event.color }}></div>
+                    <article
+                      key={event.id}
+                      className={`event-card ${isPast ? 'past-event' : ''}`}
+                      onClick={() => openEditModal(event)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <div className="event-card-accent" style={{ background: event.color || '#8b5cf6' }}></div>
 
                       <div className="event-card-body">
-                        <div className="event-icon" style={{ background: `${event.color}20` }}>
-                          <IconComponent size={20} style={{ color: event.color }} />
+                        <div className="event-icon" style={{ background: `${event.color || '#8b5cf6'}20` }}>
+                          <IconComponent size={20} style={{ color: event.color || '#8b5cf6' }} />
                         </div>
                         <div className="event-details">
                           <div className="event-details-header">
-                            <h3 className="event-title">{event.title}</h3>
+                            <h3 className="event-title">{event.title || 'Untitled Event'}</h3>
                             <span
                               className="event-category-tag"
-                              style={{ background: `${event.color}20`, color: event.color }}
+                              style={{ background: `${event.color || '#8b5cf6'}20`, color: event.color || '#8b5cf6' }}
                             >
-                              {event.categoryLabel}
+                              {event.categoryLabel || 'Social'}
                             </span>
                           </div>
                           <span className="event-datetime">
-                            {formatDate(event.date)} • {event.time}{event.endTime && ` - ${event.endTime}`}
+                            {event.date ? formatDate(event.date) : 'No date'} • {event.time || 'TBD'}
+                            {event.endTime && ` - ${event.endTime}`}
                           </span>
                           {event.location && (
                             <span className="event-location-text">
@@ -765,7 +776,7 @@ function ManagerCalendar() {
                           {event.description && (
                             <p className="event-description">{event.description}</p>
                           )}
-                          {event.allowRsvp && event.rsvps.length > 0 && (
+                          {event.allowRsvp && event.rsvps && event.rsvps.length > 0 && (
                             <span className="event-rsvps">
                               <Users size={14} />
                               {event.rsvps.length}{event.rsvpLimit && ` / ${event.rsvpLimit}`} RSVPs
