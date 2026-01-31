@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   ArrowUpDown,
   Plus,
@@ -20,11 +20,17 @@ import {
   Package,
   Wrench,
   HelpCircle,
-  Send
+  Send,
+  Loader2
 } from 'lucide-react'
+import { useAuth } from './contexts/AuthContext'
+import { getResidents } from './services/messageService'
+import { getBookings, createBooking, updateBooking, cancelBooking } from './services/elevatorBookingService'
 import './ManagerElevator.css'
 
 function ManagerElevator() {
+  const { userProfile } = useAuth()
+
   const [viewMode, setViewMode] = useState('list') // 'list' or 'calendar'
   const [activeFilter, setActiveFilter] = useState('all')
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -35,7 +41,11 @@ function ManagerElevator() {
   const [activeMenu, setActiveMenu] = useState(null)
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
-  const [currentWeek, setCurrentWeek] = useState(new Date(2026, 0, 12)) // Week of Jan 12, 2026
+  const [currentWeek, setCurrentWeek] = useState(new Date())
+
+  // Loading states
+  const [loadingBookings, setLoadingBookings] = useState(true)
+  const [loadingResidents, setLoadingResidents] = useState(true)
 
   // Form state
   const [bookingForm, setBookingForm] = useState({
@@ -54,21 +64,34 @@ function ManagerElevator() {
   const [blockReason, setBlockReason] = useState('conflict')
   const [blockMessage, setBlockMessage] = useState('')
 
-  // Residents list
-  const residents = [
-    { id: 1, name: 'Sarah Mitchell', unit: '1201' },
-    { id: 2, name: 'David Park', unit: '1502' },
-    { id: 3, name: 'Alex Rivera', unit: '1104' },
-    { id: 4, name: 'Chris Walker', unit: '309' },
-    { id: 5, name: 'Emma Davis', unit: '1507' },
-    { id: 6, name: 'Mike Thompson', unit: '805' },
-    { id: 7, name: 'Jessica Kim', unit: '402' },
-    { id: 8, name: 'James Lee', unit: '203' },
-    { id: 9, name: 'Lisa Chen', unit: '608' },
-    { id: 10, name: 'Robert Martinez', unit: '1012' },
-    { id: 11, name: 'Taylor Young', unit: '612' },
-    { id: 12, name: 'Amanda White', unit: '305' }
-  ]
+  // Residents list - loaded from Supabase
+  const [residents, setResidents] = useState([])
+
+  // Load residents from Supabase
+  useEffect(() => {
+    async function loadResidents() {
+      if (!userProfile?.building_id) {
+        setLoadingResidents(false)
+        return
+      }
+
+      try {
+        const data = await getResidents(userProfile.building_id)
+        const transformedResidents = (data || []).map(r => ({
+          id: r.id,
+          name: r.full_name,
+          unit: r.unit_number
+        }))
+        setResidents(transformedResidents)
+      } catch (err) {
+        console.error('[ManagerElevator] Error loading residents:', err)
+        setResidents([])
+      } finally {
+        setLoadingResidents(false)
+      }
+    }
+    loadResidents()
+  }, [userProfile?.building_id])
 
   // Booking types
   const bookingTypes = [
@@ -102,109 +125,58 @@ function ManagerElevator() {
     }
   }
 
-  // Bookings data
-  const [bookings, setBookings] = useState([
-    {
-      id: 1,
-      residentName: 'Sarah Mitchell',
-      unit: '1201',
-      date: '2026-01-14',
-      startTime: '14:00',
-      endTime: '16:00',
-      type: 'furniture',
-      status: 'confirmed',
-      notes: 'Large sectional sofa delivery',
-      requiresServiceElevator: true
-    },
-    {
-      id: 2,
-      residentName: 'David Park',
-      unit: '1502',
-      date: '2026-01-14',
-      startTime: '17:00',
-      endTime: '19:00',
-      type: 'move_in',
-      status: 'confirmed',
-      notes: 'New tenant moving in - full apartment',
-      requiresServiceElevator: true
-    },
-    {
-      id: 3,
-      residentName: 'Alex Rivera',
-      unit: '1104',
-      date: '2026-01-15',
-      startTime: '10:00',
-      endTime: '12:00',
-      type: 'appliance',
-      status: 'pending',
-      notes: 'New refrigerator delivery - need to remove doors',
-      requiresServiceElevator: true
-    },
-    {
-      id: 4,
-      residentName: 'Chris Walker',
-      unit: '309',
-      date: '2026-01-17',
-      startTime: '09:00',
-      endTime: '11:00',
-      type: 'contractor',
-      status: 'confirmed',
-      notes: 'Kitchen remodel - multiple trips expected',
-      requiresServiceElevator: false
-    },
-    {
-      id: 5,
-      residentName: 'Emma Davis',
-      unit: '1507',
-      date: '2026-01-18',
-      startTime: '13:00',
-      endTime: '15:00',
-      type: 'furniture',
-      status: 'confirmed',
-      notes: 'Bed frame and mattress delivery',
-      requiresServiceElevator: true
-    },
-    {
-      id: 6,
-      residentName: 'Mike Thompson',
-      unit: '805',
-      date: '2026-01-20',
-      startTime: '15:00',
-      endTime: '17:00',
-      type: 'move_out',
-      status: 'confirmed',
-      notes: 'Moving to new city - full apartment',
-      requiresServiceElevator: true
-    },
-    {
-      id: 7,
-      residentName: 'Jessica Kim',
-      unit: '402',
-      date: '2026-01-22',
-      startTime: '16:00',
-      endTime: '18:00',
-      type: 'furniture',
-      status: 'pending',
-      notes: 'Office desk and chair',
-      requiresServiceElevator: false
-    },
-    {
-      id: 8,
-      residentName: 'James Lee',
-      unit: '203',
-      date: '2026-01-15',
-      startTime: '14:00',
-      endTime: '16:00',
-      type: 'contractor',
-      status: 'confirmed',
-      notes: 'HVAC maintenance',
-      requiresServiceElevator: false
+  // Bookings data - loaded from Supabase
+  const [bookings, setBookings] = useState([])
+
+  // Load bookings from Supabase
+  useEffect(() => {
+    async function loadBookings() {
+      if (!userProfile?.building_id) {
+        setLoadingBookings(false)
+        return
+      }
+
+      try {
+        console.log('[ManagerElevator] Loading bookings for building:', userProfile.building_id)
+        const data = await getBookings(userProfile.building_id)
+        console.log('[ManagerElevator] Loaded bookings:', data?.length || 0)
+
+        // Transform Supabase data to UI format
+        const transformedBookings = (data || []).map(booking => {
+          // Find resident info
+          const resident = residents.find(r => String(r.id) === String(booking.user_id))
+          return {
+            id: booking.id,
+            residentName: resident?.name || booking.resident_name || 'Unknown',
+            residentId: booking.user_id,
+            unit: resident?.unit || booking.unit_number || 'N/A',
+            date: booking.start_time?.split('T')[0] || booking.date,
+            startTime: booking.start_time?.split('T')[1]?.substring(0, 5) || booking.time_slot?.split(' ')[0] || '09:00',
+            endTime: booking.end_time?.split('T')[1]?.substring(0, 5) || '11:00',
+            type: booking.booking_type || booking.moving_type || 'other',
+            status: booking.status || 'pending',
+            notes: booking.notes || '',
+            requiresServiceElevator: booking.requires_service_elevator || false
+          }
+        })
+        setBookings(transformedBookings)
+      } catch (err) {
+        console.error('[ManagerElevator] Error loading bookings:', err)
+        setBookings([])
+      } finally {
+        setLoadingBookings(false)
+      }
     }
-  ])
+
+    // Wait for residents to load first
+    if (!loadingResidents) {
+      loadBookings()
+    }
+  }, [userProfile?.building_id, residents, loadingResidents])
 
   // Get today's date string
   const getTodayString = () => {
-    return '2026-01-14' // Demo date
+    return new Date().toISOString().split('T')[0]
   }
 
   // Check if date is today
@@ -366,80 +338,137 @@ function ManagerElevator() {
   }
 
   // Handle create booking
-  const handleCreateBooking = () => {
-    const resident = residents.find(r => r.id === parseInt(bookingForm.residentId))
+  const handleCreateBooking = async () => {
+    const resident = residents.find(r => String(r.id) === String(bookingForm.residentId))
     if (!resident) return
 
-    const newBooking = {
-      id: Date.now(),
-      residentName: resident.name,
-      unit: resident.unit,
-      date: bookingForm.date,
-      startTime: bookingForm.startTime,
-      endTime: bookingForm.endTime,
-      type: bookingForm.type,
-      status: bookingForm.autoApprove ? 'confirmed' : 'pending',
-      notes: bookingForm.notes,
-      requiresServiceElevator: bookingForm.requiresServiceElevator
-    }
+    try {
+      const bookingData = {
+        building_id: userProfile.building_id,
+        user_id: bookingForm.residentId,
+        start_time: `${bookingForm.date}T${bookingForm.startTime}:00`,
+        end_time: `${bookingForm.date}T${bookingForm.endTime}:00`,
+        booking_type: bookingForm.type,
+        status: bookingForm.autoApprove ? 'confirmed' : 'pending',
+        notes: bookingForm.notes,
+        requires_service_elevator: bookingForm.requiresServiceElevator,
+        resident_name: resident.name,
+        unit_number: resident.unit
+      }
 
-    setBookings(prev => [...prev, newBooking])
-    setShowCreateModal(false)
-    resetForm()
-    showToastMessage(`Booking created for ${resident.name}${bookingForm.sendNotification ? ' - Notification sent!' : ''}`)
+      console.log('[ManagerElevator] Creating booking:', bookingData)
+      const created = await createBooking(bookingData)
+      console.log('[ManagerElevator] Booking created:', created)
+
+      // Add to local state
+      const newBooking = {
+        id: created.id,
+        residentName: resident.name,
+        residentId: created.user_id,
+        unit: resident.unit,
+        date: bookingForm.date,
+        startTime: bookingForm.startTime,
+        endTime: bookingForm.endTime,
+        type: bookingForm.type,
+        status: bookingForm.autoApprove ? 'confirmed' : 'pending',
+        notes: bookingForm.notes,
+        requiresServiceElevator: bookingForm.requiresServiceElevator
+      }
+
+      setBookings(prev => [...prev, newBooking])
+      setShowCreateModal(false)
+      resetForm()
+      showToastMessage(`Booking created for ${resident.name}${bookingForm.sendNotification ? ' - Notification sent!' : ''}`)
+    } catch (err) {
+      console.error('[ManagerElevator] Error creating booking:', err)
+      showToastMessage('Failed to create booking. Please try again.')
+    }
   }
 
   // Handle edit booking
-  const handleEditBooking = () => {
-    const resident = residents.find(r => r.id === parseInt(bookingForm.residentId))
+  const handleEditBooking = async () => {
+    const resident = residents.find(r => String(r.id) === String(bookingForm.residentId))
 
-    setBookings(prev => prev.map(b => {
-      if (b.id === selectedBooking.id) {
-        return {
-          ...b,
-          residentName: resident ? resident.name : b.residentName,
-          unit: resident ? resident.unit : b.unit,
-          date: bookingForm.date,
-          startTime: bookingForm.startTime,
-          endTime: bookingForm.endTime,
-          type: bookingForm.type,
-          notes: bookingForm.notes,
-          requiresServiceElevator: bookingForm.requiresServiceElevator
-        }
+    try {
+      const updateData = {
+        user_id: bookingForm.residentId,
+        start_time: `${bookingForm.date}T${bookingForm.startTime}:00`,
+        end_time: `${bookingForm.date}T${bookingForm.endTime}:00`,
+        booking_type: bookingForm.type,
+        notes: bookingForm.notes,
+        requires_service_elevator: bookingForm.requiresServiceElevator,
+        resident_name: resident?.name,
+        unit_number: resident?.unit
       }
-      return b
-    }))
-    setShowEditModal(false)
-    setSelectedBooking(null)
-    resetForm()
-    showToastMessage('Booking updated!')
+
+      console.log('[ManagerElevator] Updating booking:', selectedBooking.id, updateData)
+      await updateBooking(selectedBooking.id, updateData)
+
+      // Update local state
+      setBookings(prev => prev.map(b => {
+        if (b.id === selectedBooking.id) {
+          return {
+            ...b,
+            residentName: resident ? resident.name : b.residentName,
+            residentId: bookingForm.residentId,
+            unit: resident ? resident.unit : b.unit,
+            date: bookingForm.date,
+            startTime: bookingForm.startTime,
+            endTime: bookingForm.endTime,
+            type: bookingForm.type,
+            notes: bookingForm.notes,
+            requiresServiceElevator: bookingForm.requiresServiceElevator
+          }
+        }
+        return b
+      }))
+      setShowEditModal(false)
+      setSelectedBooking(null)
+      resetForm()
+      showToastMessage('Booking updated!')
+    } catch (err) {
+      console.error('[ManagerElevator] Error updating booking:', err)
+      showToastMessage('Failed to update booking. Please try again.')
+    }
   }
 
   // Handle approve booking
-  const handleApproveBooking = (booking) => {
-    setBookings(prev => prev.map(b => {
-      if (b.id === booking.id) {
-        return { ...b, status: 'confirmed' }
-      }
-      return b
-    }))
-    setActiveMenu(null)
-    showToastMessage(`Booking approved for ${booking.residentName}!`)
+  const handleApproveBooking = async (booking) => {
+    try {
+      console.log('[ManagerElevator] Approving booking:', booking.id)
+      await updateBooking(booking.id, { status: 'confirmed' })
+
+      setBookings(prev => prev.map(b => {
+        if (b.id === booking.id) {
+          return { ...b, status: 'confirmed' }
+        }
+        return b
+      }))
+      setActiveMenu(null)
+      showToastMessage(`Booking approved for ${booking.residentName}!`)
+    } catch (err) {
+      console.error('[ManagerElevator] Error approving booking:', err)
+      showToastMessage('Failed to approve booking. Please try again.')
+    }
   }
 
   // Handle block booking
-  const handleBlockBooking = () => {
-    setBookings(prev => prev.map(b => {
-      if (b.id === selectedBooking.id) {
-        return { ...b, status: 'blocked' }
-      }
-      return b
-    }))
-    setShowBlockModal(false)
-    setSelectedBooking(null)
-    showToastMessage(`Booking cancelled - ${blockMessage ? 'Notification sent to resident' : 'Resident notified'}`)
-    setBlockReason('conflict')
-    setBlockMessage('')
+  const handleBlockBooking = async () => {
+    try {
+      console.log('[ManagerElevator] Cancelling booking:', selectedBooking.id)
+      await cancelBooking(selectedBooking.id)
+
+      // Remove from local state
+      setBookings(prev => prev.filter(b => b.id !== selectedBooking.id))
+      setShowBlockModal(false)
+      setSelectedBooking(null)
+      showToastMessage(`Booking cancelled - ${blockMessage ? 'Notification sent to resident' : 'Resident notified'}`)
+      setBlockReason('conflict')
+      setBlockMessage('')
+    } catch (err) {
+      console.error('[ManagerElevator] Error cancelling booking:', err)
+      showToastMessage('Failed to cancel booking. Please try again.')
+    }
   }
 
   // Handle send reminder
@@ -451,15 +480,18 @@ function ManagerElevator() {
   // Open edit modal
   const openEditModal = (booking) => {
     setSelectedBooking(booking)
-    const resident = residents.find(r => r.name === booking.residentName && r.unit === booking.unit)
+    // Try to find resident by ID first, then by name/unit
+    const resident = booking.residentId
+      ? residents.find(r => String(r.id) === String(booking.residentId))
+      : residents.find(r => r.name === booking.residentName && r.unit === booking.unit)
     setBookingForm({
-      residentId: resident ? resident.id.toString() : '',
+      residentId: resident ? String(resident.id) : (booking.residentId || ''),
       type: booking.type,
       date: booking.date,
       startTime: booking.startTime,
       endTime: booking.endTime,
-      notes: booking.notes,
-      requiresServiceElevator: booking.requiresServiceElevator,
+      notes: booking.notes || '',
+      requiresServiceElevator: booking.requiresServiceElevator || false,
       autoApprove: true,
       sendNotification: true
     })
@@ -528,6 +560,24 @@ function ManagerElevator() {
   }
 
   const filteredBookings = getFilteredBookings()
+
+  // Loading state
+  if (loadingBookings || loadingResidents) {
+    return (
+      <div className="manager-elevator">
+        <div className="elevator-header">
+          <div className="elevator-header-left">
+            <h2>Elevator Booking</h2>
+            <p>Manage service elevator reservations</p>
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '40vh', color: '#9CA3AF' }}>
+          <Loader2 size={32} className="loading-spinner" style={{ animation: 'spin 1s linear infinite' }} />
+          <span style={{ marginLeft: '12px' }}>Loading bookings...</span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="manager-elevator">

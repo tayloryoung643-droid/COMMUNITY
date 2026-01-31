@@ -5,53 +5,8 @@ import { getBookings, createBooking } from './services/elevatorBookingService'
 import EmptyState from './components/EmptyState'
 import './ElevatorBooking.css'
 
-// Demo reservation data - used when in demo mode
-const DEMO_RESERVATIONS = [
-  {
-    id: 1,
-    date: "2026-01-15",
-    timeSlot: "Morning (8:00 AM - 12:00 PM)",
-    unit: "Unit 1504",
-    type: "Moving Out",
-    status: "Confirmed"
-  },
-  {
-    id: 2,
-    date: "2026-01-18",
-    timeSlot: "Afternoon (12:00 PM - 4:00 PM)",
-    unit: "Unit 802",
-    type: "Moving In",
-    status: "Confirmed"
-  },
-  {
-    id: 3,
-    date: "2026-01-20",
-    timeSlot: "Morning (8:00 AM - 12:00 PM)",
-    unit: "Unit 1107",
-    type: "Moving Out",
-    status: "Pending"
-  },
-  {
-    id: 4,
-    date: "2026-01-22",
-    timeSlot: "Evening (4:00 PM - 8:00 PM)",
-    unit: "Unit 605",
-    type: "Moving In",
-    status: "Confirmed"
-  },
-  {
-    id: 5,
-    date: "2026-01-25",
-    timeSlot: "Afternoon (12:00 PM - 4:00 PM)",
-    unit: "Unit 1203",
-    type: "Moving In",
-    status: "Pending"
-  }
-]
-
 function ElevatorBooking({ onBack }) {
-  const { userProfile, isDemoMode } = useAuth()
-  const isInDemoMode = isDemoMode || userProfile?.is_demo === true
+  const { userProfile } = useAuth()
 
   const [reservations, setReservations] = useState([])
   const [loading, setLoading] = useState(true)
@@ -103,16 +58,8 @@ function ElevatorBooking({ onBack }) {
 
   useEffect(() => {
     async function loadBookings() {
-      if (isInDemoMode) {
-        console.log('[ElevatorBooking] MODE: DEMO - bookings.length:', DEMO_RESERVATIONS.length)
-        setReservations(DEMO_RESERVATIONS)
-        setLoading(false)
-        return
-      }
-
-      // Real mode
       const buildingId = userProfile?.building_id
-      console.log('[ElevatorBooking] MODE: REAL - fetching for building:', buildingId)
+      console.log('[ElevatorBooking] Fetching bookings for building:', buildingId)
 
       if (!buildingId) {
         console.log('[ElevatorBooking] No building_id - showing empty state')
@@ -127,9 +74,9 @@ function ElevatorBooking({ onBack }) {
         const transformedData = (data || []).map(booking => ({
           id: booking.id,
           date: booking.start_time?.split('T')[0],
-          timeSlot: booking.time_slot,
-          unit: `Unit ${booking.unit_number || 'Unknown'}`,
-          type: booking.moving_type,
+          timeSlot: booking.time_slot || booking.booking_type || 'N/A',
+          unit: `Unit ${booking.unit_number || userProfile?.unit_number || 'Unknown'}`,
+          type: booking.moving_type || booking.booking_type || 'Unknown',
           status: booking.status === 'confirmed' ? 'Confirmed' : 'Pending'
         }))
         setReservations(transformedData)
@@ -150,7 +97,7 @@ function ElevatorBooking({ onBack }) {
       }
     }
     loadBookings()
-  }, [isInDemoMode, userProfile])
+  }, [userProfile])
 
   // Format date nicely
   const formatDate = (dateString) => {
@@ -171,55 +118,45 @@ function ElevatorBooking({ onBack }) {
     e.preventDefault()
     if (!formData.date || !formData.timeSlot || !formData.movingType) return
 
-    if (isInDemoMode) {
-      // Demo mode: add to local state only
-      const newReservation = {
-        id: Date.now(),
-        date: formData.date,
-        timeSlot: formData.timeSlot,
-        unit: 'Unit 1201',
-        type: formData.movingType,
-        status: 'Pending'
-      }
-      setReservations([...reservations, newReservation])
-    } else {
-      // Real mode: save to Supabase
-      try {
-        await createBooking({
-          building_id: userProfile.building_id,
-          user_id: userProfile.id,
-          start_time: formData.date,
-          time_slot: formData.timeSlot,
-          moving_type: formData.movingType,
-          status: 'pending'
-        })
-        // Reload bookings
-        const data = await getBookings(userProfile.building_id)
-        const transformedData = data.map(booking => ({
-          id: booking.id,
-          date: booking.start_time?.split('T')[0],
-          timeSlot: booking.time_slot,
-          unit: `Unit ${booking.user?.unit_number || 'Unknown'}`,
-          type: booking.moving_type,
-          status: booking.status === 'confirmed' ? 'Confirmed' : 'Pending'
-        }))
-        setReservations(transformedData)
-      } catch (err) {
-        console.error('Error creating booking:', err)
-      }
-    }
+    try {
+      await createBooking({
+        building_id: userProfile.building_id,
+        user_id: userProfile.id,
+        start_time: formData.date,
+        time_slot: formData.timeSlot,
+        moving_type: formData.movingType,
+        booking_type: formData.movingType,
+        status: 'pending',
+        unit_number: userProfile.unit_number,
+        resident_name: userProfile.full_name
+      })
+      // Reload bookings
+      const data = await getBookings(userProfile.building_id)
+      const transformedData = (data || []).map(booking => ({
+        id: booking.id,
+        date: booking.start_time?.split('T')[0],
+        timeSlot: booking.time_slot || booking.booking_type || 'N/A',
+        unit: `Unit ${booking.unit_number || userProfile?.unit_number || 'Unknown'}`,
+        type: booking.moving_type || booking.booking_type || 'Unknown',
+        status: booking.status === 'confirmed' ? 'Confirmed' : 'Pending'
+      }))
+      setReservations(transformedData)
 
-    setShowForm(false)
-    setShowSuccess(true)
-    setFormData({
-      date: '',
-      timeSlot: '',
-      movingType: ''
-    })
-    // Hide success message after 3 seconds
-    setTimeout(() => {
-      setShowSuccess(false)
-    }, 3000)
+      setShowForm(false)
+      setShowSuccess(true)
+      setFormData({
+        date: '',
+        timeSlot: '',
+        movingType: ''
+      })
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        setShowSuccess(false)
+      }, 3000)
+    } catch (err) {
+      console.error('[ElevatorBooking] Error creating booking:', err)
+      setError('Failed to create booking. Please try again.')
+    }
   }
 
   const handleRequestBooking = () => {
