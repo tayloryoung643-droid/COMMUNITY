@@ -31,6 +31,7 @@ import ResidentJoinBuilding from './ResidentJoinBuilding'
 import ResidentCreateBuilding from './ResidentCreateBuilding'
 import Join from './Join'
 import ResidentMessages from './ResidentMessages'
+import ResidentFAQ from './ResidentFAQ'
 
 function App() {
   const { user, userProfile, loading, isDemoMode, signIn, signOut, loginAsDemo, refreshUserProfile } = useAuth()
@@ -566,6 +567,8 @@ function App() {
       setCurrentScreen('home')
     } else if (featureTitle === 'messages' || featureTitle === 'Messages') {
       setCurrentScreen('messages')
+    } else if (featureTitle === 'FAQ' || featureTitle === 'faq') {
+      setCurrentScreen('faq')
     }
   }
 
@@ -616,7 +619,7 @@ function App() {
   const residentScreens = [
     'home', 'announcements', 'packages', 'events', 'neighbors', 'emergency',
     'elevator-booking', 'community', 'bulletin-board', 'settings', 'building-info',
-    'calendar', 'building', 'event-detail', 'post-detail', 'messages'
+    'calendar', 'building', 'event-detail', 'post-detail', 'messages', 'faq'
   ]
   const showBottomNav = residentScreens.includes(currentScreen)
 
@@ -742,6 +745,16 @@ function App() {
         <ResidentMessages
           onBack={() => setCurrentScreen('home')}
           onNavigate={handleNavigation}
+        />
+      </MobileShell>
+    )
+  }
+
+  if (currentScreen === 'faq') {
+    return (
+      <MobileShell bottomNav={bottomNav}>
+        <ResidentFAQ
+          onBack={() => setCurrentScreen('building')}
         />
       </MobileShell>
     )

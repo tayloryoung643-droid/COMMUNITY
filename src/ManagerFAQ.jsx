@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   HelpCircle,
   Plus,
@@ -21,261 +21,470 @@ import {
   Phone,
   GripVertical,
   ExternalLink,
-  Clock
+  Clock,
+  Upload,
+  FileUp,
+  Clipboard,
+  SkipForward,
+  Sparkles,
+  Loader2,
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  Save
 } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
-import { getFAQs, createFAQ, updateFAQ, deleteFAQ } from './services/faqService'
+import {
+  getFaqItems,
+  replaceFaqItems,
+  updateFaqItem,
+  deleteFaqItem,
+  createFaqItem,
+  extractFaqsFromText
+} from './services/faqService'
 import './ManagerFAQ.css'
 
 // Demo FAQs data - used when in demo mode
 const DEMO_FAQS = [
   {
     id: 1,
-    category: 'general',
+    category: 'General',
     question: 'What are the building\'s quiet hours?',
-    answer: 'Quiet hours are 10:00 PM to 8:00 AM on weekdays, and 11:00 PM to 9:00 AM on weekends. Please be considerate of your neighbors during these times.',
-    views: 156,
-    updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-    visible: true
+    answer: 'Quiet hours are 10:00 PM to 8:00 AM on weekdays, and 11:00 PM to 9:00 AM on weekends.',
+    view_count: 156,
+    is_visible: true,
+    display_order: 0
   },
   {
     id: 2,
-    category: 'general',
+    category: 'General',
     question: 'Where can I find my building access code?',
-    answer: 'Your building access code was sent to your email when you moved in. You can also contact the property manager to receive it again. For security reasons, we cannot share access codes over the phone.',
-    views: 89,
-    updatedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
-    visible: true
+    answer: 'Your building access code was sent to your email when you moved in. Contact the property manager to receive it again.',
+    view_count: 89,
+    is_visible: true,
+    display_order: 1
   },
   {
     id: 3,
-    category: 'general',
-    question: 'Is there guest parking available?',
-    answer: 'Yes, we have 5 guest parking spots available on a first-come, first-served basis in the P1 level. Guest parking is limited to 48 hours. Please register your guest\'s vehicle with the property manager.',
-    views: 124,
-    updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    visible: true
+    category: 'Amenities',
+    question: 'What are the gym hours?',
+    answer: 'The fitness center is open 24/7 for residents. Use your key fob to access the gym at any time.',
+    view_count: 203,
+    is_visible: true,
+    display_order: 2
   },
   {
     id: 4,
-    category: 'amenities',
-    question: 'What are the gym hours?',
-    answer: 'The fitness center is open 24/7 for residents. Use your key fob to access the gym at any time. Please wipe down equipment after use and re-rack weights.',
-    views: 203,
-    updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    visible: true
+    category: 'Parking',
+    question: 'How do I get a parking permit?',
+    answer: 'Contact the property manager with your vehicle details. Monthly parking permits are $150/month.',
+    view_count: 178,
+    is_visible: true,
+    display_order: 3
   },
   {
     id: 5,
-    category: 'amenities',
-    question: 'Can I reserve the rooftop lounge for private events?',
-    answer: 'Yes! Contact the property manager at least 2 weeks in advance to reserve the rooftop lounge. There\'s a $100 refundable cleaning deposit required. Maximum capacity is 30 guests. Events must end by 10 PM.',
-    views: 67,
-    updatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-    visible: true
+    category: 'Maintenance',
+    question: 'How do I submit a maintenance request?',
+    answer: 'Use the Community app Messages section or email maintenance@building.com. For emergencies, call (555) 123-4567.',
+    view_count: 234,
+    is_visible: true,
+    display_order: 4
   },
   {
     id: 6,
-    category: 'amenities',
-    question: 'Is the pool heated?',
-    answer: 'Yes, the rooftop pool is heated year-round and maintained at 82°F. Pool hours are 6 AM to 10 PM daily. The pool is closed during thunderstorms and for weekly maintenance on Mondays from 8-10 AM.',
-    views: 145,
-    updatedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
-    visible: true
-  },
-  {
-    id: 7,
-    category: 'parking',
-    question: 'How do I get a parking permit?',
-    answer: 'Contact the property manager with your vehicle make, model, color, and license plate number. Monthly parking permits are $150/month. Limited spots available - first come, first served with a waitlist.',
-    views: 178,
-    updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    visible: true
-  },
-  {
-    id: 8,
-    category: 'parking',
-    question: 'Is there bike storage?',
-    answer: 'Yes, secure bike storage is available in the basement. Access it with your key fob through the main garage entrance. Each unit is allowed up to 2 bikes. Bike cages are available for $25/month.',
-    views: 92,
-    updatedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
-    visible: true
-  },
-  {
-    id: 9,
-    category: 'maintenance',
-    question: 'How do I submit a maintenance request?',
-    answer: 'Use the Community app to submit maintenance requests through the Messages section, or email maintenance@theparamount.com. For emergencies, call (555) 123-4567. Include photos if possible to help us diagnose the issue.',
-    views: 234,
-    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-    visible: true
-  },
-  {
-    id: 10,
-    category: 'maintenance',
-    question: 'What is considered an emergency maintenance issue?',
-    answer: 'Emergencies include: no heat when outside temp is below 55°F, no A/C when inside temp exceeds 85°F, major water leaks or flooding, gas leaks (evacuate and call 911), electrical hazards, lockouts, and broken windows or doors that affect security.',
-    views: 87,
-    updatedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
-    visible: true
-  },
-  {
-    id: 11,
-    category: 'packages',
+    category: 'Packages & Mail',
     question: 'Where do I pick up packages?',
-    answer: 'All packages are held in the package room located on the ground floor next to the mail room. Use your key fob to access. You\'ll receive a notification in the Community app when packages arrive.',
-    views: 312,
-    updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-    visible: true
-  },
-  {
-    id: 12,
-    category: 'packages',
-    question: 'How long will packages be held?',
-    answer: 'Packages are held for 5 business days. After that, they may be returned to sender or relocated to overflow storage. You\'ll receive reminder notifications at 3 days and 5 days. Contact us if you need extended hold time for vacation.',
-    views: 156,
-    updatedAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000),
-    visible: true
-  },
-  {
-    id: 13,
-    category: 'policies',
-    question: 'Are pets allowed?',
-    answer: 'Yes! We allow up to 2 pets per unit. Dogs must be under 50 lbs. Restricted breeds include Pit Bulls, Rottweilers, and Dobermans. There\'s a $500 refundable pet deposit and $50/month pet rent per pet. All pets must be registered.',
-    views: 267,
-    updatedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
-    visible: true
-  },
-  {
-    id: 14,
-    category: 'policies',
-    question: 'Can I smoke in my unit?',
-    answer: 'The Paramount is a 100% smoke-free building. Smoking (including vaping and marijuana) is prohibited in all units, common areas, and balconies. Smoking is only permitted in the designated outdoor smoking area near the west entrance.',
-    views: 134,
-    updatedAt: new Date(Date.now() - 11 * 24 * 60 * 60 * 1000),
-    visible: true
-  },
-  {
-    id: 15,
-    category: 'policies',
-    question: 'What\'s the policy on subleasing?',
-    answer: 'Subleasing requires written property manager approval. Submit a request at least 30 days in advance with the potential tenant\'s full name, contact info, employment verification, and background check consent. Minimum sublease term is 3 months.',
-    views: 78,
-    updatedAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
-    visible: true
-  },
-  {
-    id: 16,
-    category: 'contact',
-    question: 'How do I contact the property manager?',
-    answer: 'You can reach the property manager through: the Community app (Messages), email at manager@theparamount.com, phone at (555) 123-4560 (Mon-Fri 9AM-5PM), or visit the management office on the ground floor.',
-    views: 198,
-    updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    visible: true
-  },
-  {
-    id: 17,
-    category: 'contact',
-    question: 'What should I do in an emergency?',
-    answer: 'For life-threatening emergencies, call 911 immediately. For building emergencies (fire, gas leak, flood), activate the nearest fire alarm and evacuate. After-hours maintenance emergencies: call (555) 123-4567. The building\'s address is 1234 Main Street for emergency services.',
-    views: 145,
-    updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    visible: true
+    answer: 'All packages are held in the package room on the ground floor. You\'ll receive a notification when packages arrive.',
+    view_count: 312,
+    is_visible: true,
+    display_order: 5
   }
+]
+
+// Category definitions with icons and colors
+const CATEGORIES = [
+  { id: 'General', label: 'General', icon: Building2, color: '#3b82f6' },
+  { id: 'Amenities', label: 'Amenities', icon: Dumbbell, color: '#8b5cf6' },
+  { id: 'Parking', label: 'Parking', icon: Car, color: '#06b6d4' },
+  { id: 'Maintenance', label: 'Maintenance', icon: Wrench, color: '#f59e0b' },
+  { id: 'Packages & Mail', label: 'Packages & Mail', icon: Package, color: '#10b981' },
+  { id: 'Building Policies', label: 'Building Policies', icon: FileText, color: '#ec4899' },
+  { id: 'Access & Security', label: 'Access & Security', icon: Phone, color: '#ef4444' },
+  { id: 'Pets', label: 'Pets', icon: HelpCircle, color: '#84cc16' },
+  { id: 'Billing & Payments', label: 'Billing & Payments', icon: FileText, color: '#a855f7' },
+  { id: 'Moving & Elevator', label: 'Moving & Elevator', icon: Building2, color: '#14b8a6' },
+  { id: 'Trash & Recycling', label: 'Trash & Recycling', icon: Package, color: '#78716c' },
+  { id: 'Safety & Emergency', label: 'Safety & Emergency', icon: AlertCircle, color: '#dc2626' }
 ]
 
 function ManagerFAQ() {
   const { userProfile, isDemoMode } = useAuth()
   const isInDemoMode = isDemoMode || userProfile?.is_demo === true
+  const fileInputRef = useRef(null)
 
+  // Main state
   const [faqs, setFaqs] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // View states
+  const [currentView, setCurrentView] = useState('loading') // 'loading' | 'wizard' | 'import' | 'review' | 'manage'
+  const [importMethod, setImportMethod] = useState(null) // 'paste' | 'file'
+
+  // Import state
+  const [pasteText, setPasteText] = useState('')
+  const [uploadedFile, setUploadedFile] = useState(null)
+  const [extractedItems, setExtractedItems] = useState([])
+  const [extracting, setExtracting] = useState(false)
+  const [extractError, setExtractError] = useState(null)
+
+  // Management state
   const [activeCategory, setActiveCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
-  const [showPreview, setShowPreview] = useState(false)
   const [expandedFAQs, setExpandedFAQs] = useState([])
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [selectedFAQ, setSelectedFAQ] = useState(null)
   const [activeMenu, setActiveMenu] = useState(null)
+
+  // Toast
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
 
   // Form state
   const [faqForm, setFaqForm] = useState({
-    category: 'general',
+    category: 'General',
     question: '',
     answer: '',
-    link: '',
-    visible: true
+    is_visible: true
   })
 
-  // Categories
-  const categories = [
-    { id: 'general', label: 'General Building Info', icon: Building2, color: '#3b82f6' },
-    { id: 'amenities', label: 'Amenities & Facilities', icon: Dumbbell, color: '#8b5cf6' },
-    { id: 'parking', label: 'Parking & Transportation', icon: Car, color: '#06b6d4' },
-    { id: 'maintenance', label: 'Maintenance & Repairs', icon: Wrench, color: '#f59e0b' },
-    { id: 'packages', label: 'Packages & Deliveries', icon: Package, color: '#10b981' },
-    { id: 'policies', label: 'Policies & Rules', icon: FileText, color: '#ec4899' },
-    { id: 'contact', label: 'Contact & Emergency', icon: Phone, color: '#ef4444' }
-  ]
-
+  // Load FAQs on mount
   useEffect(() => {
-    console.log('[ManagerFAQ] Demo mode:', isInDemoMode)
-
-    async function loadFAQs() {
-      if (isInDemoMode) {
-        console.log('Demo mode: using fake FAQs')
-        setFaqs(DEMO_FAQS)
-        setLoading(false)
-      } else {
-        console.log('Real mode: fetching FAQs from Supabase')
-        try {
-          const data = await getFAQs(userProfile?.building_id)
-          const transformedData = data.map(faq => ({
-            id: faq.id,
-            category: faq.category,
-            question: faq.question,
-            answer: faq.answer,
-            link: faq.link || '',
-            views: faq.view_count || 0,
-            updatedAt: new Date(faq.updated_at || faq.created_at),
-            visible: faq.visible !== false
-          }))
-          setFaqs(transformedData)
-        } catch (err) {
-          console.error('Error loading FAQs:', err)
-          setError('Failed to load FAQs. Please try again.')
-        } finally {
-          setLoading(false)
-        }
-      }
-    }
     loadFAQs()
-  }, [isInDemoMode, userProfile])
+  }, [isInDemoMode, userProfile?.building_id])
+
+  const loadFAQs = async () => {
+    setLoading(true)
+
+    if (isInDemoMode) {
+      setFaqs(DEMO_FAQS)
+      setCurrentView('manage')
+      setLoading(false)
+      return
+    }
+
+    const buildingId = userProfile?.building_id
+    if (!buildingId) {
+      setCurrentView('wizard')
+      setLoading(false)
+      return
+    }
+
+    try {
+      const data = await getFaqItems(buildingId, true)
+      setFaqs(data || [])
+
+      // Determine initial view based on whether FAQs exist
+      if (!data || data.length === 0) {
+        setCurrentView('wizard')
+      } else {
+        setCurrentView('manage')
+      }
+    } catch (err) {
+      console.error('[ManagerFAQ] Error loading FAQs:', err)
+      setError('Failed to load FAQs. Please try again.')
+      setCurrentView('wizard')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Get category info
   const getCategory = (categoryId) => {
-    return categories.find(c => c.id === categoryId) || categories[0]
+    return CATEGORIES.find(c => c.id === categoryId) || CATEGORIES[0]
   }
 
-  // Format date
-  const formatDate = (date) => {
-    const daysAgo = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24))
-    if (daysAgo === 0) return 'Today'
-    if (daysAgo === 1) return 'Yesterday'
-    if (daysAgo < 7) return `${daysAgo} days ago`
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  // Show toast
+  const showToastMessage = (message) => {
+    setToastMessage(message)
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 3000)
+  }
+
+  // ============================================================================
+  // WIZARD HANDLERS
+  // ============================================================================
+
+  const handleWizardChoice = (choice) => {
+    if (choice === 'skip') {
+      setCurrentView('manage')
+    } else if (choice === 'paste') {
+      setImportMethod('paste')
+      setCurrentView('import')
+    } else if (choice === 'file') {
+      setImportMethod('file')
+      setCurrentView('import')
+    }
+  }
+
+  // ============================================================================
+  // IMPORT HANDLERS
+  // ============================================================================
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (!file.name.endsWith('.txt')) {
+        setExtractError('Only .txt files are supported at this time.')
+        return
+      }
+      setUploadedFile(file)
+      setExtractError(null)
+    }
+  }
+
+  const handleExtractFAQs = async () => {
+    setExtracting(true)
+    setExtractError(null)
+
+    try {
+      let textContent = ''
+
+      if (importMethod === 'paste') {
+        textContent = pasteText
+      } else if (importMethod === 'file' && uploadedFile) {
+        textContent = await readFileAsText(uploadedFile)
+      }
+
+      if (!textContent || textContent.trim().length < 50) {
+        setExtractError('Please provide more content to extract FAQs from (at least 50 characters).')
+        setExtracting(false)
+        return
+      }
+
+      const result = await extractFaqsFromText(textContent)
+
+      if (result.error) {
+        setExtractError(result.error)
+      } else if (result.items.length === 0) {
+        setExtractError('Could not extract any FAQ items from the provided content.')
+      } else {
+        setExtractedItems(result.items.map((item, index) => ({
+          ...item,
+          id: `temp-${index}`,
+          is_visible: true
+        })))
+        setCurrentView('review')
+      }
+    } catch (err) {
+      console.error('[ManagerFAQ] Extract error:', err)
+      setExtractError('An error occurred while extracting FAQs. Please try again.')
+    } finally {
+      setExtracting(false)
+    }
+  }
+
+  const readFileAsText = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = (e) => resolve(e.target.result)
+      reader.onerror = (e) => reject(e)
+      reader.readAsText(file)
+    })
+  }
+
+  // ============================================================================
+  // REVIEW HANDLERS
+  // ============================================================================
+
+  const handleUpdateExtractedItem = (index, field, value) => {
+    setExtractedItems(prev => prev.map((item, i) => {
+      if (i === index) {
+        return { ...item, [field]: value }
+      }
+      return item
+    }))
+  }
+
+  const handleDeleteExtractedItem = (index) => {
+    setExtractedItems(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handlePublishFAQs = async () => {
+    if (extractedItems.length === 0) {
+      showToastMessage('No FAQ items to publish.')
+      return
+    }
+
+    if (isInDemoMode) {
+      setFaqs(extractedItems.map((item, index) => ({
+        ...item,
+        id: Date.now() + index,
+        view_count: 0,
+        display_order: index
+      })))
+      setCurrentView('manage')
+      showToastMessage('FAQs published successfully!')
+      return
+    }
+
+    try {
+      const meta = {
+        createdBy: userProfile?.id,
+        sourceType: importMethod,
+        sourceName: uploadedFile?.name || null
+      }
+
+      await replaceFaqItems(userProfile.building_id, extractedItems, meta)
+
+      // Reload FAQs
+      const data = await getFaqItems(userProfile.building_id, true)
+      setFaqs(data || [])
+      setCurrentView('manage')
+      showToastMessage('FAQs published successfully!')
+
+      // Reset import state
+      setPasteText('')
+      setUploadedFile(null)
+      setExtractedItems([])
+    } catch (err) {
+      console.error('[ManagerFAQ] Publish error:', err)
+      showToastMessage('Failed to publish FAQs. Please try again.')
+    }
+  }
+
+  // ============================================================================
+  // MANAGEMENT HANDLERS
+  // ============================================================================
+
+  const handleAddFAQ = async () => {
+    if (isInDemoMode) {
+      const newFAQ = {
+        id: Date.now(),
+        ...faqForm,
+        view_count: 0,
+        display_order: faqs.length
+      }
+      setFaqs(prev => [...prev, newFAQ])
+    } else {
+      try {
+        await createFaqItem({
+          building_id: userProfile.building_id,
+          ...faqForm,
+          view_count: 0,
+          display_order: faqs.length
+        })
+        const data = await getFaqItems(userProfile.building_id, true)
+        setFaqs(data || [])
+      } catch (err) {
+        console.error('[ManagerFAQ] Create error:', err)
+        showToastMessage('Failed to add FAQ.')
+        return
+      }
+    }
+
+    setShowAddModal(false)
+    resetForm()
+    showToastMessage('FAQ added successfully!')
+  }
+
+  const handleEditFAQ = async () => {
+    if (isInDemoMode) {
+      setFaqs(prev => prev.map(faq => {
+        if (faq.id === selectedFAQ.id) {
+          return { ...faq, ...faqForm }
+        }
+        return faq
+      }))
+    } else {
+      try {
+        await updateFaqItem(selectedFAQ.id, faqForm)
+        const data = await getFaqItems(userProfile.building_id, true)
+        setFaqs(data || [])
+      } catch (err) {
+        console.error('[ManagerFAQ] Update error:', err)
+        showToastMessage('Failed to update FAQ.')
+        return
+      }
+    }
+
+    setShowEditModal(false)
+    setSelectedFAQ(null)
+    resetForm()
+    showToastMessage('FAQ updated!')
+  }
+
+  const handleDeleteFAQ = async () => {
+    if (isInDemoMode) {
+      setFaqs(prev => prev.filter(faq => faq.id !== selectedFAQ.id))
+    } else {
+      try {
+        await deleteFaqItem(selectedFAQ.id)
+        setFaqs(prev => prev.filter(faq => faq.id !== selectedFAQ.id))
+      } catch (err) {
+        console.error('[ManagerFAQ] Delete error:', err)
+        showToastMessage('Failed to delete FAQ.')
+        return
+      }
+    }
+
+    setShowDeleteModal(false)
+    setSelectedFAQ(null)
+    showToastMessage('FAQ deleted')
+  }
+
+  const handleToggleVisibility = async (faq) => {
+    const newVisibility = !faq.is_visible
+
+    if (isInDemoMode) {
+      setFaqs(prev => prev.map(f => f.id === faq.id ? { ...f, is_visible: newVisibility } : f))
+    } else {
+      try {
+        await updateFaqItem(faq.id, { is_visible: newVisibility })
+        setFaqs(prev => prev.map(f => f.id === faq.id ? { ...f, is_visible: newVisibility } : f))
+      } catch (err) {
+        console.error('[ManagerFAQ] Toggle visibility error:', err)
+      }
+    }
+
+    setActiveMenu(null)
+    showToastMessage(newVisibility ? 'FAQ visible to residents' : 'FAQ hidden from residents')
+  }
+
+  const resetForm = () => {
+    setFaqForm({
+      category: 'General',
+      question: '',
+      answer: '',
+      is_visible: true
+    })
+  }
+
+  const openEditModal = (faq) => {
+    setSelectedFAQ(faq)
+    setFaqForm({
+      category: faq.category,
+      question: faq.question,
+      answer: faq.answer,
+      is_visible: faq.is_visible
+    })
+    setActiveMenu(null)
+    setShowEditModal(true)
+  }
+
+  const openDeleteModal = (faq) => {
+    setSelectedFAQ(faq)
+    setActiveMenu(null)
+    setShowDeleteModal(true)
   }
 
   // Filter FAQs
   const getFilteredFAQs = () => {
     let filtered = [...faqs]
 
-    // Apply search
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
       filtered = filtered.filter(faq =>
@@ -284,14 +493,8 @@ function ManagerFAQ() {
       )
     }
 
-    // Apply category filter
     if (activeCategory !== 'all') {
       filtered = filtered.filter(faq => faq.category === activeCategory)
-    }
-
-    // In preview mode, only show visible FAQs
-    if (showPreview) {
-      filtered = filtered.filter(faq => faq.visible)
     }
 
     return filtered
@@ -302,221 +505,290 @@ function ManagerFAQ() {
     const filtered = getFilteredFAQs()
     const grouped = {}
 
-    categories.forEach(cat => {
+    CATEGORIES.forEach(cat => {
       const catFaqs = filtered.filter(faq => faq.category === cat.id)
       if (catFaqs.length > 0) {
         grouped[cat.id] = catFaqs
       }
     })
 
+    // Add any FAQs with unknown categories to 'General'
+    const unknownFaqs = filtered.filter(faq => !CATEGORIES.find(c => c.id === faq.category))
+    if (unknownFaqs.length > 0) {
+      grouped['General'] = [...(grouped['General'] || []), ...unknownFaqs]
+    }
+
     return grouped
   }
 
-  // Toggle FAQ expansion
   const toggleFAQ = (id) => {
     setExpandedFAQs(prev =>
       prev.includes(id) ? prev.filter(faqId => faqId !== id) : [...prev, id]
     )
   }
 
-  // Show toast
-  const showToastMessage = (message) => {
-    setToastMessage(message)
-    setShowToast(true)
-    setTimeout(() => setShowToast(false), 3000)
-  }
-
-  // Reset form
-  const resetForm = () => {
-    setFaqForm({
-      category: 'general',
-      question: '',
-      answer: '',
-      link: '',
-      visible: true
-    })
-  }
-
-  // Handle add FAQ
-  const handleAddFAQ = async () => {
-    const newFAQ = {
-      id: Date.now(),
-      category: faqForm.category,
-      question: faqForm.question,
-      answer: faqForm.answer,
-      link: faqForm.link,
-      views: 0,
-      updatedAt: new Date(),
-      visible: faqForm.visible
-    }
-
-    if (isInDemoMode) {
-      // Demo mode: add to local state only
-      setFaqs(prev => [newFAQ, ...prev])
-    } else {
-      // Real mode: save to Supabase
-      try {
-        await createFAQ({
-          building_id: userProfile.building_id,
-          category: faqForm.category,
-          question: faqForm.question,
-          answer: faqForm.answer,
-          link: faqForm.link || null,
-          visible: faqForm.visible
-        })
-        // Reload FAQs
-        const data = await getFAQs(userProfile.building_id)
-        const transformedData = data.map(faq => ({
-          id: faq.id,
-          category: faq.category,
-          question: faq.question,
-          answer: faq.answer,
-          link: faq.link || '',
-          views: faq.view_count || 0,
-          updatedAt: new Date(faq.updated_at || faq.created_at),
-          visible: faq.visible !== false
-        }))
-        setFaqs(transformedData)
-      } catch (err) {
-        console.error('Error creating FAQ:', err)
-      }
-    }
-
-    setShowAddModal(false)
-    resetForm()
-    showToastMessage('FAQ added successfully!')
-  }
-
-  // Handle edit FAQ
-  const handleEditFAQ = async () => {
-    if (isInDemoMode) {
-      // Demo mode: update local state only
-      setFaqs(prev => prev.map(faq => {
-        if (faq.id === selectedFAQ.id) {
-          return {
-            ...faq,
-            category: faqForm.category,
-            question: faqForm.question,
-            answer: faqForm.answer,
-            link: faqForm.link,
-            visible: faqForm.visible,
-            updatedAt: new Date()
-          }
-        }
-        return faq
-      }))
-    } else {
-      // Real mode: update in Supabase
-      try {
-        await updateFAQ(selectedFAQ.id, {
-          category: faqForm.category,
-          question: faqForm.question,
-          answer: faqForm.answer,
-          link: faqForm.link || null,
-          visible: faqForm.visible
-        })
-        // Reload FAQs
-        const data = await getFAQs(userProfile.building_id)
-        const transformedData = data.map(faq => ({
-          id: faq.id,
-          category: faq.category,
-          question: faq.question,
-          answer: faq.answer,
-          link: faq.link || '',
-          views: faq.view_count || 0,
-          updatedAt: new Date(faq.updated_at || faq.created_at),
-          visible: faq.visible !== false
-        }))
-        setFaqs(transformedData)
-      } catch (err) {
-        console.error('Error updating FAQ:', err)
-      }
-    }
-
-    setShowEditModal(false)
-    setSelectedFAQ(null)
-    resetForm()
-    showToastMessage('FAQ updated!')
-  }
-
-  // Handle delete FAQ
-  const handleDeleteFAQ = async () => {
-    if (isInDemoMode) {
-      // Demo mode: remove from local state only
-      setFaqs(prev => prev.filter(faq => faq.id !== selectedFAQ.id))
-    } else {
-      // Real mode: delete from Supabase
-      try {
-        await deleteFAQ(selectedFAQ.id)
-        setFaqs(prev => prev.filter(faq => faq.id !== selectedFAQ.id))
-      } catch (err) {
-        console.error('Error deleting FAQ:', err)
-      }
-    }
-
-    setShowDeleteModal(false)
-    setSelectedFAQ(null)
-    showToastMessage('FAQ deleted')
-  }
-
-  // Open edit modal
-  const openEditModal = (faq) => {
-    setSelectedFAQ(faq)
-    setFaqForm({
-      category: faq.category,
-      question: faq.question,
-      answer: faq.answer,
-      link: faq.link || '',
-      visible: faq.visible
-    })
-    setActiveMenu(null)
-    setShowEditModal(true)
-  }
-
-  // Open delete modal
-  const openDeleteModal = (faq) => {
-    setSelectedFAQ(faq)
-    setActiveMenu(null)
-    setShowDeleteModal(true)
-  }
-
-  // Toggle visibility
-  const toggleVisibility = (faq) => {
-    setFaqs(prev => prev.map(f => {
-      if (f.id === faq.id) {
-        return { ...f, visible: !f.visible }
-      }
-      return f
-    }))
-    setActiveMenu(null)
-    showToastMessage(faq.visible ? 'FAQ hidden from residents' : 'FAQ visible to residents')
-  }
-
-  const filteredFAQs = getFilteredFAQs()
-  const groupedFAQs = getGroupedFAQs()
-  const totalViews = faqs.reduce((sum, faq) => sum + faq.views, 0)
+  // ============================================================================
+  // RENDER HELPERS
+  // ============================================================================
 
   // Loading state
-  if (loading) {
+  if (loading || currentView === 'loading') {
     return (
       <div className="manager-faq">
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: 'rgba(255,255,255,0.7)' }}>
-          Loading FAQs...
+        <div className="faq-loading">
+          <Loader2 className="spin" size={32} />
+          <span>Loading FAQs...</span>
         </div>
       </div>
     )
   }
 
-  // Error state
-  if (error) {
+  // Setup Wizard
+  if (currentView === 'wizard') {
     return (
       <div className="manager-faq">
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: '#ef4444' }}>
-          {error}
+        <div className="faq-wizard">
+          <div className="wizard-header">
+            <HelpCircle size={48} />
+            <h2>Set Up Building FAQs</h2>
+            <p>Help your residents find answers quickly by importing your building's FAQ content.</p>
+          </div>
+
+          <div className="wizard-options">
+            <button className="wizard-option" onClick={() => handleWizardChoice('paste')}>
+              <div className="option-icon">
+                <Clipboard size={32} />
+              </div>
+              <div className="option-content">
+                <h3>Paste Text</h3>
+                <p>Copy and paste your FAQ content from any document</p>
+              </div>
+              <ChevronRight size={20} />
+            </button>
+
+            <button className="wizard-option" onClick={() => handleWizardChoice('file')}>
+              <div className="option-icon">
+                <FileUp size={32} />
+              </div>
+              <div className="option-content">
+                <h3>Upload File</h3>
+                <p>Upload a .txt file with your FAQ content</p>
+              </div>
+              <ChevronRight size={20} />
+            </button>
+
+            <button className="wizard-option skip-option" onClick={() => handleWizardChoice('skip')}>
+              <div className="option-icon">
+                <SkipForward size={32} />
+              </div>
+              <div className="option-content">
+                <h3>Skip for Now</h3>
+                <p>Set up FAQs later and add questions manually</p>
+              </div>
+              <ChevronRight size={20} />
+            </button>
+          </div>
         </div>
       </div>
     )
   }
+
+  // Import View
+  if (currentView === 'import') {
+    return (
+      <div className="manager-faq">
+        <div className="faq-import">
+          <div className="import-header">
+            <button className="back-btn" onClick={() => setCurrentView('wizard')}>
+              <ArrowLeft size={20} />
+              Back
+            </button>
+            <h2>{importMethod === 'paste' ? 'Paste FAQ Content' : 'Upload FAQ File'}</h2>
+          </div>
+
+          <div className="import-content">
+            {importMethod === 'paste' ? (
+              <div className="paste-section">
+                <label>Paste your FAQ content below</label>
+                <textarea
+                  value={pasteText}
+                  onChange={(e) => setPasteText(e.target.value)}
+                  placeholder="Paste your FAQ document content here...
+
+For best results, format as:
+Q: What are the quiet hours?
+A: Quiet hours are 10 PM to 8 AM.
+
+Q: How do I submit a maintenance request?
+A: Use the app or email maintenance@building.com..."
+                  rows={15}
+                />
+                <p className="paste-hint">
+                  The AI will analyze your text and extract FAQ items automatically.
+                </p>
+              </div>
+            ) : (
+              <div className="upload-section">
+                <div
+                  className="upload-dropzone"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {uploadedFile ? (
+                    <>
+                      <FileText size={48} />
+                      <p className="file-name">{uploadedFile.name}</p>
+                      <p className="file-size">{(uploadedFile.size / 1024).toFixed(1)} KB</p>
+                    </>
+                  ) : (
+                    <>
+                      <Upload size={48} />
+                      <p>Click to select a .txt file</p>
+                      <p className="upload-hint">Only .txt files are supported</p>
+                    </>
+                  )}
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".txt"
+                  onChange={handleFileSelect}
+                  style={{ display: 'none' }}
+                />
+              </div>
+            )}
+
+            {extractError && (
+              <div className="extract-error">
+                <AlertCircle size={18} />
+                <span>{extractError}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="import-footer">
+            <button
+              className="generate-btn"
+              onClick={handleExtractFAQs}
+              disabled={extracting || (importMethod === 'paste' ? !pasteText.trim() : !uploadedFile)}
+            >
+              {extracting ? (
+                <>
+                  <Loader2 className="spin" size={18} />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Sparkles size={18} />
+                  Generate FAQs
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Review View
+  if (currentView === 'review') {
+    return (
+      <div className="manager-faq">
+        <div className="faq-review">
+          <div className="review-header">
+            <button className="back-btn" onClick={() => setCurrentView('import')}>
+              <ArrowLeft size={20} />
+              Back
+            </button>
+            <div className="review-title">
+              <h2>Review & Edit FAQs</h2>
+              <span className="item-count">{extractedItems.length} items extracted</span>
+            </div>
+          </div>
+
+          <div className="review-content">
+            {extractedItems.length === 0 ? (
+              <div className="no-items">
+                <AlertCircle size={48} />
+                <p>No FAQ items to review. Go back and try again.</p>
+              </div>
+            ) : (
+              extractedItems.map((item, index) => (
+                <div key={item.id} className="review-item">
+                  <div className="review-item-header">
+                    <span className="item-number">#{index + 1}</span>
+                    <select
+                      value={item.category}
+                      onChange={(e) => handleUpdateExtractedItem(index, 'category', e.target.value)}
+                    >
+                      {CATEGORIES.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.label}</option>
+                      ))}
+                    </select>
+                    <label className="visibility-toggle">
+                      <input
+                        type="checkbox"
+                        checked={item.is_visible}
+                        onChange={(e) => handleUpdateExtractedItem(index, 'is_visible', e.target.checked)}
+                      />
+                      <Eye size={14} />
+                    </label>
+                    <button
+                      className="delete-item-btn"
+                      onClick={() => handleDeleteExtractedItem(index)}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                  <div className="review-item-body">
+                    <div className="form-group">
+                      <label>Question</label>
+                      <input
+                        type="text"
+                        value={item.question}
+                        onChange={(e) => handleUpdateExtractedItem(index, 'question', e.target.value)}
+                        placeholder="Enter the question..."
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Answer</label>
+                      <textarea
+                        value={item.answer}
+                        onChange={(e) => handleUpdateExtractedItem(index, 'answer', e.target.value)}
+                        placeholder="Enter the answer..."
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="review-footer">
+            <button className="cancel-btn" onClick={() => {
+              setExtractedItems([])
+              setCurrentView('wizard')
+            }}>
+              Cancel
+            </button>
+            <button
+              className="publish-btn"
+              onClick={handlePublishFAQs}
+              disabled={extractedItems.length === 0}
+            >
+              <Save size={18} />
+              Publish FAQs ({extractedItems.length})
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Management View
+  const filteredFAQs = getFilteredFAQs()
+  const groupedFAQs = getGroupedFAQs()
+  const totalViews = faqs.reduce((sum, faq) => sum + (faq.view_count || 0), 0)
 
   return (
     <div className="manager-faq">
@@ -527,15 +799,12 @@ function ManagerFAQ() {
           <p>Manage frequently asked questions for residents</p>
         </div>
         <div className="faq-header-actions">
-          <label className="preview-toggle">
-            <input
-              type="checkbox"
-              checked={showPreview}
-              onChange={e => setShowPreview(e.target.checked)}
-            />
-            <span className="toggle-slider"></span>
-            <span className="toggle-label">Preview Mode</span>
-          </label>
+          {faqs.length > 0 && (
+            <button className="reimport-btn" onClick={() => setCurrentView('wizard')}>
+              <Upload size={16} />
+              <span>Re-import</span>
+            </button>
+          )}
           <button className="add-faq-btn" onClick={() => setShowAddModal(true)}>
             <Plus size={18} />
             <span>Add Question</span>
@@ -562,14 +831,14 @@ function ManagerFAQ() {
         <div className="stat-card">
           <FileText size={20} />
           <div className="stat-content">
-            <span className="stat-value">{categories.length}</span>
+            <span className="stat-value">{Object.keys(groupedFAQs).length}</span>
             <span className="stat-label">Categories</span>
           </div>
         </div>
         <div className="stat-card">
           <EyeOff size={20} />
           <div className="stat-content">
-            <span className="stat-value">{faqs.filter(f => !f.visible).length}</span>
+            <span className="stat-value">{faqs.filter(f => !f.is_visible).length}</span>
             <span className="stat-label">Hidden</span>
           </div>
         </div>
@@ -594,7 +863,7 @@ function ManagerFAQ() {
           >
             All
           </button>
-          {categories.map(cat => (
+          {CATEGORIES.filter(cat => groupedFAQs[cat.id]).map(cat => (
             <button
               key={cat.id}
               className={`category-tab ${activeCategory === cat.id ? 'active' : ''}`}
@@ -608,14 +877,6 @@ function ManagerFAQ() {
         </div>
       </div>
 
-      {/* Preview Mode Banner */}
-      {showPreview && (
-        <div className="preview-banner">
-          <Eye size={16} />
-          <span>Preview Mode - Showing what residents will see</span>
-        </div>
-      )}
-
       {/* FAQ List */}
       <div className="faq-list">
         {filteredFAQs.length === 0 ? (
@@ -625,12 +886,18 @@ function ManagerFAQ() {
             <p>
               {searchQuery
                 ? 'Try a different search term'
-                : 'Add your first question to help residents!'}
+                : 'Add your first question or import FAQs to get started!'}
             </p>
-            <button className="add-first-btn" onClick={() => setShowAddModal(true)}>
-              <Plus size={18} />
-              Add Question
-            </button>
+            <div className="no-faqs-actions">
+              <button className="import-btn" onClick={() => setCurrentView('wizard')}>
+                <Upload size={18} />
+                Import FAQs
+              </button>
+              <button className="add-first-btn" onClick={() => setShowAddModal(true)}>
+                <Plus size={18} />
+                Add Question
+              </button>
+            </div>
           </div>
         ) : activeCategory === 'all' ? (
           // Grouped view
@@ -658,9 +925,7 @@ function ManagerFAQ() {
                       setActiveMenu={setActiveMenu}
                       onEdit={() => openEditModal(faq)}
                       onDelete={() => openDeleteModal(faq)}
-                      onToggleVisibility={() => toggleVisibility(faq)}
-                      showPreview={showPreview}
-                      formatDate={formatDate}
+                      onToggleVisibility={() => handleToggleVisibility(faq)}
                     />
                   ))}
                 </div>
@@ -683,9 +948,7 @@ function ManagerFAQ() {
                   setActiveMenu={setActiveMenu}
                   onEdit={() => openEditModal(faq)}
                   onDelete={() => openDeleteModal(faq)}
-                  onToggleVisibility={() => toggleVisibility(faq)}
-                  showPreview={showPreview}
-                  formatDate={formatDate}
+                  onToggleVisibility={() => handleToggleVisibility(faq)}
                 />
               )
             })}
@@ -711,7 +974,7 @@ function ManagerFAQ() {
                   value={faqForm.category}
                   onChange={e => setFaqForm({ ...faqForm, category: e.target.value })}
                 >
-                  {categories.map(cat => (
+                  {CATEGORIES.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.label}</option>
                   ))}
                 </select>
@@ -737,25 +1000,12 @@ function ManagerFAQ() {
                 />
               </div>
 
-              <div className="form-group">
-                <label>Link (optional)</label>
-                <div className="link-input">
-                  <ExternalLink size={16} />
-                  <input
-                    type="url"
-                    placeholder="https://..."
-                    value={faqForm.link}
-                    onChange={e => setFaqForm({ ...faqForm, link: e.target.value })}
-                  />
-                </div>
-              </div>
-
               <div className="form-group checkbox-group">
                 <label className="checkbox-label">
                   <input
                     type="checkbox"
-                    checked={faqForm.visible}
-                    onChange={e => setFaqForm({ ...faqForm, visible: e.target.checked })}
+                    checked={faqForm.is_visible}
+                    onChange={e => setFaqForm({ ...faqForm, is_visible: e.target.checked })}
                   />
                   <span>Show to residents</span>
                 </label>
@@ -797,7 +1047,7 @@ function ManagerFAQ() {
                   value={faqForm.category}
                   onChange={e => setFaqForm({ ...faqForm, category: e.target.value })}
                 >
-                  {categories.map(cat => (
+                  {CATEGORIES.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.label}</option>
                   ))}
                 </select>
@@ -823,25 +1073,12 @@ function ManagerFAQ() {
                 />
               </div>
 
-              <div className="form-group">
-                <label>Link (optional)</label>
-                <div className="link-input">
-                  <ExternalLink size={16} />
-                  <input
-                    type="url"
-                    placeholder="https://..."
-                    value={faqForm.link}
-                    onChange={e => setFaqForm({ ...faqForm, link: e.target.value })}
-                  />
-                </div>
-              </div>
-
               <div className="form-group checkbox-group">
                 <label className="checkbox-label">
                   <input
                     type="checkbox"
-                    checked={faqForm.visible}
-                    onChange={e => setFaqForm({ ...faqForm, visible: e.target.checked })}
+                    checked={faqForm.is_visible}
+                    onChange={e => setFaqForm({ ...faqForm, is_visible: e.target.checked })}
                   />
                   <span>Show to residents</span>
                 </label>
@@ -930,22 +1167,14 @@ function FAQItem({
   setActiveMenu,
   onEdit,
   onDelete,
-  onToggleVisibility,
-  showPreview,
-  formatDate
+  onToggleVisibility
 }) {
   return (
-    <div className={`faq-item ${isExpanded ? 'expanded' : ''} ${!faq.visible ? 'hidden-faq' : ''}`}>
+    <div className={`faq-item ${isExpanded ? 'expanded' : ''} ${!faq.is_visible ? 'hidden-faq' : ''}`}>
       <div className="faq-item-header" onClick={onToggle}>
-        {!showPreview && (
-          <div className="drag-handle">
-            <GripVertical size={16} />
-          </div>
-        )}
-
         <div className="faq-question">
           <span className="question-text">{faq.question}</span>
-          {!faq.visible && !showPreview && (
+          {!faq.is_visible && (
             <span className="hidden-badge">
               <EyeOff size={12} />
               Hidden
@@ -954,42 +1183,38 @@ function FAQItem({
         </div>
 
         <div className="faq-item-actions">
-          {!showPreview && (
-            <>
-              <span className="faq-views">
-                <Eye size={12} />
-                {faq.views}
-              </span>
-              <div className="faq-menu-wrapper">
-                <button
-                  className="faq-menu-btn"
-                  onClick={e => {
-                    e.stopPropagation()
-                    setActiveMenu(activeMenu === faq.id ? null : faq.id)
-                  }}
-                >
-                  <MoreVertical size={16} />
+          <span className="faq-views">
+            <Eye size={12} />
+            {faq.view_count || 0}
+          </span>
+          <div className="faq-menu-wrapper">
+            <button
+              className="faq-menu-btn"
+              onClick={e => {
+                e.stopPropagation()
+                setActiveMenu(activeMenu === faq.id ? null : faq.id)
+              }}
+            >
+              <MoreVertical size={16} />
+            </button>
+            {activeMenu === faq.id && (
+              <div className="faq-menu-dropdown">
+                <button onClick={e => { e.stopPropagation(); onEdit() }}>
+                  <Edit3 size={14} />
+                  Edit Question
                 </button>
-                {activeMenu === faq.id && (
-                  <div className="faq-menu-dropdown">
-                    <button onClick={e => { e.stopPropagation(); onEdit() }}>
-                      <Edit3 size={14} />
-                      Edit Question
-                    </button>
-                    <button onClick={e => { e.stopPropagation(); onToggleVisibility() }}>
-                      {faq.visible ? <EyeOff size={14} /> : <Eye size={14} />}
-                      {faq.visible ? 'Hide from Residents' : 'Show to Residents'}
-                    </button>
-                    <div className="menu-divider"></div>
-                    <button className="delete-btn" onClick={e => { e.stopPropagation(); onDelete() }}>
-                      <Trash2 size={14} />
-                      Delete Question
-                    </button>
-                  </div>
-                )}
+                <button onClick={e => { e.stopPropagation(); onToggleVisibility() }}>
+                  {faq.is_visible ? <EyeOff size={14} /> : <Eye size={14} />}
+                  {faq.is_visible ? 'Hide from Residents' : 'Show to Residents'}
+                </button>
+                <div className="menu-divider"></div>
+                <button className="delete-btn" onClick={e => { e.stopPropagation(); onDelete() }}>
+                  <Trash2 size={14} />
+                  Delete Question
+                </button>
               </div>
-            </>
-          )}
+            )}
+          </div>
           <button className="expand-btn">
             {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
           </button>
@@ -999,20 +1224,6 @@ function FAQItem({
       {isExpanded && (
         <div className="faq-answer">
           <p>{faq.answer}</p>
-          {faq.link && (
-            <a href={faq.link} target="_blank" rel="noopener noreferrer" className="faq-link">
-              <ExternalLink size={14} />
-              Learn more
-            </a>
-          )}
-          {!showPreview && (
-            <div className="faq-meta">
-              <span>
-                <Clock size={12} />
-                Updated {formatDate(faq.updatedAt)}
-              </span>
-            </div>
-          )}
         </div>
       )}
     </div>

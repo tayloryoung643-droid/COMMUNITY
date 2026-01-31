@@ -104,7 +104,7 @@ function Building({ onNavigate }) {
               <span className="list-item-label">Bulletin Board</span>
               <ChevronRight size={18} className="list-item-arrow" />
             </button>
-            <button className="list-item" onClick={() => handleFeatureClick('BuildingInfo')}>
+            <button className="list-item" onClick={() => handleFeatureClick('FAQ')}>
               <div className="list-item-icon">
                 <HelpCircle size={20} />
               </div>
