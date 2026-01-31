@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getResidents } from './services/messageService'
+import { getPackages, addPackage, updatePackageStatus, deletePackage, updatePackage } from './services/packageService'
 import './ManagerPackages.css'
 
 // Demo residents list for dropdown
@@ -258,8 +259,61 @@ function ManagerPackages() {
     { id: 'xlarge', name: 'Extra Large', icon: Package }
   ]
 
-  // Packages data - use demo data for demo users, empty for real users
+  // Packages data - use demo data for demo users, loaded from Supabase for real users
   const [packages, setPackages] = useState(isInDemoMode ? DEMO_PACKAGES : [])
+  const [loadingPackages, setLoadingPackages] = useState(!isInDemoMode)
+
+  // Load packages from Supabase for real users
+  useEffect(() => {
+    async function loadPackages() {
+      if (isInDemoMode) {
+        setPackages(DEMO_PACKAGES)
+        setLoadingPackages(false)
+        return
+      }
+
+      if (!userProfile?.building_id) {
+        setLoadingPackages(false)
+        return
+      }
+
+      try {
+        console.log('[ManagerPackages] Loading packages for building:', userProfile.building_id)
+        const data = await getPackages(userProfile.building_id)
+        console.log('[ManagerPackages] Loaded packages:', data)
+
+        // Transform Supabase data to UI format
+        const transformedPackages = (data || []).map(pkg => {
+          // Find resident info from residents array
+          const resident = residents.find(r => String(r.id) === String(pkg.resident_id))
+          return {
+            id: pkg.id,
+            residentName: resident?.name || pkg.resident_name || 'Unknown',
+            residentId: pkg.resident_id,
+            unit: resident?.unit || pkg.unit_number || 'N/A',
+            carrier: pkg.carrier,
+            size: pkg.size,
+            quantity: pkg.package_count || 1,
+            arrivalDate: new Date(pkg.arrival_date || pkg.created_at),
+            status: pkg.status || 'pending',
+            notes: pkg.notes || '',
+            pickedUpAt: pkg.pickup_date ? new Date(pkg.pickup_date) : null
+          }
+        })
+        setPackages(transformedPackages)
+      } catch (err) {
+        console.error('[ManagerPackages] Error loading packages:', err)
+        setPackages([])
+      } finally {
+        setLoadingPackages(false)
+      }
+    }
+
+    // Wait for residents to load first so we can map resident names
+    if (!loadingResidents) {
+      loadPackages()
+    }
+  }, [isInDemoMode, userProfile?.building_id, residents, loadingResidents])
 
   // Calculate stats
   const pendingPackages = packages.filter(p => p.status === 'pending')
@@ -416,46 +470,116 @@ function ManagerPackages() {
   }
 
   // Handle log new package
-  const handleLogPackage = () => {
+  const handleLogPackage = async () => {
     // Compare as string or number (handles both UUID strings and demo integer IDs)
     const resident = residents.find(r =>
       String(r.id) === String(packageForm.residentId)
     )
     if (!resident) return
 
-    const newPackage = {
-      id: Date.now(),
-      residentName: resident.name,
-      unit: resident.unit,
-      carrier: packageForm.carrier,
-      size: packageForm.size,
-      quantity: packageForm.quantity,
-      arrivalDate: new Date(),
-      status: 'pending',
-      notes: packageForm.notes
-    }
+    if (isInDemoMode) {
+      // Demo mode: just update local state
+      const newPackage = {
+        id: Date.now(),
+        residentName: resident.name,
+        unit: resident.unit,
+        carrier: packageForm.carrier,
+        size: packageForm.size,
+        quantity: packageForm.quantity,
+        arrivalDate: new Date(),
+        status: 'pending',
+        notes: packageForm.notes
+      }
+      setPackages(prev => [newPackage, ...prev])
+      setShowLogModal(false)
+      resetForm()
+      showToastMessage(`Package logged for ${resident.name} (Unit ${resident.unit})${packageForm.sendNotification ? ' - Notification sent!' : ''}`)
+    } else {
+      // Real mode: save to Supabase
+      try {
+        const packageData = {
+          building_id: userProfile.building_id,
+          resident_id: packageForm.residentId,
+          carrier: packageForm.carrier,
+          size: packageForm.size,
+          package_count: packageForm.quantity,
+          notes: packageForm.notes,
+          status: 'pending',
+          arrival_date: new Date().toISOString()
+        }
 
-    setPackages(prev => [newPackage, ...prev])
-    setShowLogModal(false)
-    resetForm()
-    showToastMessage(`Package logged for ${resident.name} (Unit ${resident.unit})${packageForm.sendNotification ? ' - Notification sent!' : ''}`)
+        console.log('[ManagerPackages] Creating package:', packageData)
+        const created = await addPackage(packageData)
+        console.log('[ManagerPackages] Package created:', created)
+
+        // Add to local state with UI format
+        const newPackage = {
+          id: created.id,
+          residentName: resident.name,
+          residentId: created.resident_id,
+          unit: resident.unit,
+          carrier: created.carrier,
+          size: created.size,
+          quantity: created.package_count || 1,
+          arrivalDate: new Date(created.arrival_date || created.created_at),
+          status: created.status || 'pending',
+          notes: created.notes || ''
+        }
+        setPackages(prev => [newPackage, ...prev])
+        setShowLogModal(false)
+        resetForm()
+        showToastMessage(`Package logged for ${resident.name} (Unit ${resident.unit})${packageForm.sendNotification ? ' - Notification sent!' : ''}`)
+      } catch (err) {
+        console.error('[ManagerPackages] Error creating package:', err)
+        showToastMessage('Failed to log package. Please try again.')
+      }
+    }
   }
 
   // Handle mark as picked up
-  const handleMarkPickedUp = () => {
-    setPackages(prev => prev.map(p => {
-      if (p.id === selectedPackage.id) {
-        return {
-          ...p,
-          status: 'picked_up',
-          pickedUpAt: new Date()
+  const handleMarkPickedUp = async () => {
+    const pickupDate = new Date()
+
+    if (isInDemoMode) {
+      // Demo mode: just update local state
+      setPackages(prev => prev.map(p => {
+        if (p.id === selectedPackage.id) {
+          return {
+            ...p,
+            status: 'picked_up',
+            pickedUpAt: pickupDate
+          }
         }
+        return p
+      }))
+      setShowPickupConfirm(false)
+      setSelectedPackage(null)
+      showToastMessage('Package marked as picked up!')
+    } else {
+      // Real mode: update in Supabase
+      try {
+        console.log('[ManagerPackages] Marking package as picked up:', selectedPackage.id)
+        await updatePackageStatus(selectedPackage.id, 'picked_up', pickupDate.toISOString())
+
+        // Update local state
+        setPackages(prev => prev.map(p => {
+          if (p.id === selectedPackage.id) {
+            return {
+              ...p,
+              status: 'picked_up',
+              pickedUpAt: pickupDate
+            }
+          }
+          return p
+        }))
+        setShowPickupConfirm(false)
+        setSelectedPackage(null)
+        showToastMessage('Package marked as picked up!')
+      } catch (err) {
+        console.error('[ManagerPackages] Error updating package status:', err)
+        showToastMessage('Failed to update package. Please try again.')
       }
-      return p
-    }))
-    setShowPickupConfirm(false)
-    setSelectedPackage(null)
-    showToastMessage('Package marked as picked up!')
+    }
   }
 
   // Handle send reminder
@@ -465,11 +589,28 @@ function ManagerPackages() {
   }
 
   // Handle delete package
-  const handleDeletePackage = () => {
-    setPackages(prev => prev.filter(p => p.id !== selectedPackage.id))
-    setShowDeleteConfirm(false)
-    setSelectedPackage(null)
-    showToastMessage('Package deleted')
+  const handleDeletePackage = async () => {
+    if (isInDemoMode) {
+      // Demo mode: just update local state
+      setPackages(prev => prev.filter(p => p.id !== selectedPackage.id))
+      setShowDeleteConfirm(false)
+      setSelectedPackage(null)
+      showToastMessage('Package deleted')
+    } else {
+      // Real mode: delete from Supabase
+      try {
+        console.log('[ManagerPackages] Deleting package:', selectedPackage.id)
+        await deletePackage(selectedPackage.id)
+
+        setPackages(prev => prev.filter(p => p.id !== selectedPackage.id))
+        setShowDeleteConfirm(false)
+        setSelectedPackage(null)
+        showToastMessage('Package deleted')
+      } catch (err) {
+        console.error('[ManagerPackages] Error deleting package:', err)
+        showToastMessage('Failed to delete package. Please try again.')
+      }
+    }
   }
 
   // Open edit modal
@@ -489,31 +630,72 @@ function ManagerPackages() {
   }
 
   // Handle edit package
-  const handleEditPackage = () => {
+  const handleEditPackage = async () => {
     // Compare as string or number (handles both UUID strings and demo integer IDs)
     const resident = residents.find(r =>
       String(r.id) === String(packageForm.residentId)
     )
     if (!resident) return
 
-    setPackages(prev => prev.map(p => {
-      if (p.id === selectedPackage.id) {
-        return {
-          ...p,
-          residentName: resident.name,
-          unit: resident.unit,
+    if (isInDemoMode) {
+      // Demo mode: just update local state
+      setPackages(prev => prev.map(p => {
+        if (p.id === selectedPackage.id) {
+          return {
+            ...p,
+            residentName: resident.name,
+            unit: resident.unit,
+            carrier: packageForm.carrier,
+            size: packageForm.size,
+            quantity: packageForm.quantity,
+            notes: packageForm.notes
+          }
+        }
+        return p
+      }))
+      setShowEditModal(false)
+      setSelectedPackage(null)
+      resetForm()
+      showToastMessage('Package updated!')
+    } else {
+      // Real mode: update in Supabase
+      try {
+        const updateData = {
+          resident_id: packageForm.residentId,
           carrier: packageForm.carrier,
           size: packageForm.size,
-          quantity: packageForm.quantity,
+          package_count: packageForm.quantity,
           notes: packageForm.notes
         }
+
+        console.log('[ManagerPackages] Updating package:', selectedPackage.id, updateData)
+        await updatePackage(selectedPackage.id, updateData)
+
+        // Update local state
+        setPackages(prev => prev.map(p => {
+          if (p.id === selectedPackage.id) {
+            return {
+              ...p,
+              residentName: resident.name,
+              residentId: packageForm.residentId,
+              unit: resident.unit,
+              carrier: packageForm.carrier,
+              size: packageForm.size,
+              quantity: packageForm.quantity,
+              notes: packageForm.notes
+            }
+          }
+          return p
+        }))
+        setShowEditModal(false)
+        setSelectedPackage(null)
+        resetForm()
+        showToastMessage('Package updated!')
+      } catch (err) {
+        console.error('[ManagerPackages] Error updating package:', err)
+        showToastMessage('Failed to update package. Please try again.')
       }
-      return p
-    }))
-    setShowEditModal(false)
-    setSelectedPackage(null)
-    resetForm()
-    showToastMessage('Package updated!')
+    }
   }
 
   const filteredPackages = getFilteredPackages()
