@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 export async function getListings(buildingId) {
   const { data, error } = await supabase
     .from('bulletin_listings')
-    .select('*, author:users(*)')
+    .select('*, author:author_id(id, full_name, first_name, last_name, unit_number)')
     .eq('building_id', buildingId)
     .order('created_at', { ascending: false })
 
@@ -14,7 +14,7 @@ export async function getListings(buildingId) {
 export async function getListingsByCategory(buildingId, category) {
   const { data, error } = await supabase
     .from('bulletin_listings')
-    .select('*, author:users(*)')
+    .select('*, author:author_id(id, full_name, first_name, last_name, unit_number)')
     .eq('building_id', buildingId)
     .eq('category', category)
     .order('created_at', { ascending: false })
@@ -57,7 +57,7 @@ export async function deleteListing(listingId) {
 export async function getActiveListings(buildingId) {
   const { data, error } = await supabase
     .from('bulletin_listings')
-    .select('*, author:users(*)')
+    .select('*, author:author_id(id, full_name, first_name, last_name, unit_number)')
     .eq('building_id', buildingId)
     .eq('status', 'active')
     .order('created_at', { ascending: false })

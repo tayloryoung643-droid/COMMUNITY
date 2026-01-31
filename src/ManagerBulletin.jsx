@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   ClipboardList,
   Plus,
@@ -29,6 +29,8 @@ import {
   Archive
 } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
+import { getListings, createListing, updateListing, deleteListing } from './services/bulletinService'
+import { getResidents } from './services/messageService'
 import './ManagerBulletin.css'
 
 // Demo residents list for posting on behalf of
@@ -355,8 +357,9 @@ function ManagerBulletin() {
   const { userProfile, isDemoMode } = useAuth()
   const isInDemoMode = isDemoMode || userProfile?.is_demo === true
 
-  // Use demo data for demo users, empty arrays for real users
-  const residents = isInDemoMode ? DEMO_RESIDENTS : []
+  // Residents state - fetched from Supabase for real users
+  const [residents, setResidents] = useState(isInDemoMode ? DEMO_RESIDENTS : [])
+  const [loadingResidents, setLoadingResidents] = useState(!isInDemoMode)
 
   const [activeFilter, setActiveFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -367,6 +370,7 @@ function ManagerBulletin() {
   const [activeMenu, setActiveMenu] = useState(null)
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
+  const [loading, setLoading] = useState(!isInDemoMode)
 
   // Form state
   const [listingForm, setListingForm] = useState({
@@ -410,6 +414,75 @@ function ManagerBulletin() {
 
   // Listings data - use demo data for demo users, empty for real users
   const [listings, setListings] = useState(isInDemoMode ? DEMO_LISTINGS : [])
+
+  // Load residents from Supabase for real users
+  useEffect(() => {
+    async function loadResidents() {
+      if (isInDemoMode) return
+
+      const buildingId = userProfile?.building_id
+      if (!buildingId) return
+
+      try {
+        const data = await getResidents(buildingId)
+        const transformedResidents = (data || []).map(r => ({
+          id: r.id,
+          name: r.full_name || `${r.first_name || ''} ${r.last_name || ''}`.trim() || 'Unknown',
+          unit: r.unit_number || 'Unknown'
+        }))
+        setResidents(transformedResidents)
+      } catch (err) {
+        console.error('[ManagerBulletin] Error loading residents:', err)
+      } finally {
+        setLoadingResidents(false)
+      }
+    }
+    loadResidents()
+  }, [isInDemoMode, userProfile?.building_id])
+
+  // Load listings from Supabase for real users
+  useEffect(() => {
+    async function loadListings() {
+      if (isInDemoMode) return
+
+      const buildingId = userProfile?.building_id
+      console.log('[ManagerBulletin] Loading listings for building:', buildingId)
+
+      if (!buildingId) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const data = await getListings(buildingId)
+        const transformedListings = (data || []).map(listing => ({
+          id: listing.id,
+          title: listing.title,
+          category: listing.category,
+          price: listing.price,
+          description: listing.description,
+          posterName: listing.author?.full_name || listing.author?.first_name || 'Unknown',
+          posterUnit: listing.author?.unit_number || 'Unknown',
+          postedAt: new Date(listing.created_at),
+          contactMethod: 'message',
+          views: listing.views_count || 0,
+          pinned: listing.is_pinned || false,
+          flagged: false,
+          sold: listing.status === 'sold' || listing.status === 'completed',
+          hasImage: listing.images && listing.images.length > 0,
+          imageUrl: listing.images?.[0] || null,
+          dbStatus: listing.status
+        }))
+        setListings(transformedListings)
+        console.log('[ManagerBulletin] Listings loaded:', transformedListings.length)
+      } catch (err) {
+        console.error('[ManagerBulletin] Error loading listings:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadListings()
+  }, [isInDemoMode, userProfile?.building_id])
 
   // Calculate stats
   const activeListings = listings.filter(l => !l.sold)
@@ -508,56 +581,133 @@ function ManagerBulletin() {
   }
 
   // Handle create listing
-  const handleCreateListing = () => {
+  const handleCreateListing = async () => {
     let posterName = 'Property Manager'
     let posterUnit = 'Management'
+    let authorId = userProfile.id  // Default to manager's ID
 
     if (listingForm.postedAs !== 'manager') {
-      const resident = residents.find(r => r.id === parseInt(listingForm.postedAs))
+      const resident = residents.find(r => String(r.id) === String(listingForm.postedAs))
       if (resident) {
         posterName = resident.name
         posterUnit = resident.unit
+        authorId = resident.id
       }
     }
 
-    const newListing = {
-      id: Date.now(),
-      title: listingForm.title,
-      category: listingForm.category,
-      price: listingForm.price ? parseFloat(listingForm.price) : null,
-      description: listingForm.description,
-      posterName,
-      posterUnit,
-      postedAt: new Date(),
-      contactMethod: listingForm.contactMethod,
-      views: 0,
-      pinned: false,
-      flagged: false,
-      sold: false,
-      hasImage: false
+    if (isInDemoMode) {
+      // Demo mode: add to local state only
+      const newListing = {
+        id: Date.now(),
+        title: listingForm.title,
+        category: listingForm.category,
+        price: listingForm.price ? parseFloat(listingForm.price) : null,
+        description: listingForm.description,
+        posterName,
+        posterUnit,
+        postedAt: new Date(),
+        contactMethod: listingForm.contactMethod,
+        views: 0,
+        pinned: false,
+        flagged: false,
+        sold: false,
+        hasImage: false
+      }
+      setListings(prev => [newListing, ...prev])
+    } else {
+      // Real mode: save to Supabase
+      try {
+        await createListing({
+          building_id: userProfile.building_id,
+          author_id: authorId,  // Schema uses author_id
+          category: listingForm.category,
+          title: listingForm.title,
+          description: listingForm.description,
+          price: listingForm.price ? parseFloat(listingForm.price) : null,
+          status: 'active',
+          is_pinned: false,
+          views_count: 0
+        })
+
+        // Reload listings
+        const data = await getListings(userProfile.building_id)
+        const transformedListings = (data || []).map(listing => ({
+          id: listing.id,
+          title: listing.title,
+          category: listing.category,
+          price: listing.price,
+          description: listing.description,
+          posterName: listing.author?.full_name || listing.author?.first_name || 'Unknown',
+          posterUnit: listing.author?.unit_number || 'Unknown',
+          postedAt: new Date(listing.created_at),
+          contactMethod: 'message',
+          views: listing.views_count || 0,
+          pinned: listing.is_pinned || false,
+          flagged: false,
+          sold: listing.status === 'sold' || listing.status === 'completed',
+          hasImage: listing.images && listing.images.length > 0,
+          imageUrl: listing.images?.[0] || null,
+          dbStatus: listing.status
+        }))
+        setListings(transformedListings)
+      } catch (err) {
+        console.error('[ManagerBulletin] Error creating listing:', err)
+        showToastMessage('Failed to create listing')
+        return
+      }
     }
 
-    setListings(prev => [newListing, ...prev])
     setShowCreateModal(false)
     resetForm()
     showToastMessage('Listing posted successfully!')
   }
 
   // Handle edit listing
-  const handleEditListing = () => {
-    setListings(prev => prev.map(l => {
-      if (l.id === selectedListing.id) {
-        return {
-          ...l,
+  const handleEditListing = async () => {
+    if (isInDemoMode) {
+      setListings(prev => prev.map(l => {
+        if (l.id === selectedListing.id) {
+          return {
+            ...l,
+            title: listingForm.title,
+            category: listingForm.category,
+            price: listingForm.price ? parseFloat(listingForm.price) : null,
+            description: listingForm.description,
+            contactMethod: listingForm.contactMethod
+          }
+        }
+        return l
+      }))
+    } else {
+      try {
+        await updateListing(selectedListing.id, {
           title: listingForm.title,
           category: listingForm.category,
           price: listingForm.price ? parseFloat(listingForm.price) : null,
-          description: listingForm.description,
-          contactMethod: listingForm.contactMethod
-        }
+          description: listingForm.description
+        })
+
+        // Update local state
+        setListings(prev => prev.map(l => {
+          if (l.id === selectedListing.id) {
+            return {
+              ...l,
+              title: listingForm.title,
+              category: listingForm.category,
+              price: listingForm.price ? parseFloat(listingForm.price) : null,
+              description: listingForm.description,
+              contactMethod: listingForm.contactMethod
+            }
+          }
+          return l
+        }))
+      } catch (err) {
+        console.error('[ManagerBulletin] Error updating listing:', err)
+        showToastMessage('Failed to update listing')
+        return
       }
-      return l
-    }))
+    }
+
     setShowEditModal(false)
     setSelectedListing(null)
     resetForm()
@@ -565,7 +715,7 @@ function ManagerBulletin() {
   }
 
   // Handle pin listing
-  const handlePinListing = (listing) => {
+  const handlePinListing = async (listing) => {
     const pinnedCount = listings.filter(l => l.pinned).length
 
     if (!listing.pinned && pinnedCount >= 3) {
@@ -574,9 +724,22 @@ function ManagerBulletin() {
       return
     }
 
+    const newPinned = !listing.pinned
+
+    if (!isInDemoMode) {
+      try {
+        await updateListing(listing.id, { is_pinned: newPinned })
+      } catch (err) {
+        console.error('[ManagerBulletin] Error pinning listing:', err)
+        showToastMessage('Failed to pin listing')
+        setActiveMenu(null)
+        return
+      }
+    }
+
     setListings(prev => prev.map(l => {
       if (l.id === listing.id) {
-        return { ...l, pinned: !l.pinned }
+        return { ...l, pinned: newPinned }
       }
       return l
     }))
@@ -585,10 +748,21 @@ function ManagerBulletin() {
   }
 
   // Handle mark as sold
-  const handleMarkSold = (listing) => {
+  const handleMarkSold = async (listing) => {
+    if (!isInDemoMode) {
+      try {
+        await updateListing(listing.id, { status: 'sold' })
+      } catch (err) {
+        console.error('[ManagerBulletin] Error marking as sold:', err)
+        showToastMessage('Failed to mark as sold')
+        setActiveMenu(null)
+        return
+      }
+    }
+
     setListings(prev => prev.map(l => {
       if (l.id === listing.id) {
-        return { ...l, sold: true }
+        return { ...l, sold: true, dbStatus: 'sold' }
       }
       return l
     }))
@@ -609,7 +783,19 @@ function ManagerBulletin() {
   }
 
   // Handle delete listing
-  const handleDeleteListing = () => {
+  const handleDeleteListing = async () => {
+    if (!isInDemoMode) {
+      try {
+        await deleteListing(selectedListing.id)
+      } catch (err) {
+        console.error('[ManagerBulletin] Error deleting listing:', err)
+        showToastMessage('Failed to delete listing')
+        setShowDeleteModal(false)
+        setSelectedListing(null)
+        return
+      }
+    }
+
     setListings(prev => prev.filter(l => l.id !== selectedListing.id))
     setShowDeleteModal(false)
     setSelectedListing(null)
@@ -639,6 +825,23 @@ function ManagerBulletin() {
   }
 
   const filteredListings = getFilteredListings()
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="manager-bulletin">
+        <div className="bulletin-header">
+          <div className="bulletin-header-left">
+            <h2>Bulletin Board</h2>
+            <p>Manage community marketplace listings</p>
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '40vh', color: '#9CA3AF' }}>
+          Loading listings...
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="manager-bulletin">

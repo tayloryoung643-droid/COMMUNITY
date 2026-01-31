@@ -134,13 +134,35 @@ const DEMO_LISTINGS = [
   },
 ]
 
-// Category color mapping
+// Category color mapping - using DB category names
 const categoryColors = {
   parking: '#3b82f6',
   storage: '#8b5cf6',
-  items: '#10b981',
+  for_sale: '#10b981',
+  free: '#22c55e',
   services: '#f59e0b',
-  iso: '#ec4899'
+  wanted: '#ec4899',
+  events: '#6366f1'
+}
+
+// Map UI category IDs to DB category values
+const categoryToDb = {
+  parking: 'parking',
+  storage: 'storage',
+  items: 'for_sale',
+  services: 'services',
+  iso: 'wanted'
+}
+
+// Map DB category values back to UI category IDs
+const dbToCategory = {
+  parking: 'parking',
+  storage: 'storage',
+  for_sale: 'items',
+  free: 'items',
+  services: 'services',
+  wanted: 'iso',
+  events: 'services'
 }
 
 function BulletinBoard({ onBack }) {
@@ -231,16 +253,21 @@ function BulletinBoard({ onBack }) {
 
       try {
         const data = await getListings(buildingId)
-        const transformedData = (data || []).map(listing => ({
-          id: listing.id,
-          category: listing.category,
-          title: listing.title,
-          details: listing.description,
-          price: listing.price,
-          unit: `Unit ${listing.author?.unit_number || 'Unknown'}`,
-          timestamp: new Date(listing.created_at).getTime(),
-          color: categoryColors[listing.category] || '#6b7280'
-        }))
+        const transformedData = (data || []).map(listing => {
+          // Map DB category to UI category
+          const uiCategory = dbToCategory[listing.category] || listing.category
+          return {
+            id: listing.id,
+            category: uiCategory,
+            dbCategory: listing.category,
+            title: listing.title,
+            details: listing.description,
+            price: listing.price,
+            unit: `Unit ${listing.author?.unit_number || 'Unknown'}`,
+            timestamp: new Date(listing.created_at).getTime(),
+            color: categoryColors[listing.category] || '#6b7280'
+          }
+        })
         setListings(transformedData)
         console.log('[BulletinBoard] Listings fetched:', transformedData.length)
       } catch (err) {
@@ -298,26 +325,34 @@ function BulletinBoard({ onBack }) {
     } else {
       // Real mode: save to Supabase
       try {
+        // Map UI category to DB category value
+        const dbCategory = categoryToDb[postForm.category] || postForm.category
+
         await createListing({
           building_id: userProfile.building_id,
-          user_id: userProfile.id,
-          category: postForm.category,
+          author_id: userProfile.id,  // Schema uses author_id, not user_id
+          category: dbCategory,
           title: postForm.title,
           description: postForm.details,
-          price: postForm.price
+          price: postForm.price ? parseFloat(postForm.price.replace(/[^0-9.]/g, '')) : null,
+          status: 'active'
         })
         // Reload listings
         const data = await getListings(userProfile.building_id)
-        const transformedData = data.map(listing => ({
-          id: listing.id,
-          category: listing.category,
-          title: listing.title,
-          details: listing.description,
-          price: listing.price,
-          unit: `Unit ${listing.author?.unit_number || 'Unknown'}`,
-          timestamp: new Date(listing.created_at).getTime(),
-          color: categoryColors[listing.category] || '#6b7280'
-        }))
+        const transformedData = data.map(listing => {
+          const uiCategory = dbToCategory[listing.category] || listing.category
+          return {
+            id: listing.id,
+            category: uiCategory,
+            dbCategory: listing.category,
+            title: listing.title,
+            details: listing.description,
+            price: listing.price,
+            unit: `Unit ${listing.author?.unit_number || 'Unknown'}`,
+            timestamp: new Date(listing.created_at).getTime(),
+            color: categoryColors[listing.category] || '#6b7280'
+          }
+        })
         setListings(transformedData)
       } catch (err) {
         console.error('Error creating listing:', err)
