@@ -156,13 +156,13 @@ function Events({ onBack }) {
         // data will be [] if table is empty - this is SUCCESS, not an error
         const transformedData = (data || []).map(event => ({
           id: event.id,
-          title: event.title,
-          date: event.start_time?.split('T')[0],
-          time: event.event_time,
-          location: event.location,
-          description: event.description,
+          title: event.title || 'Untitled Event',
+          date: event.start_time?.split('T')[0] || event.date,
+          time: event.event_time || (event.start_time ? new Date(event.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : 'TBD'),
+          location: event.location || 'TBD',
+          description: event.description || '',
           attendees: event.attendee_count || 0,
-          isUpcoming: new Date(event.start_time) >= new Date(),
+          isUpcoming: event.start_time ? new Date(event.start_time) >= new Date() : true,
           userRSVPd: event.user_rsvpd || false
         }))
         setEvents(transformedData)

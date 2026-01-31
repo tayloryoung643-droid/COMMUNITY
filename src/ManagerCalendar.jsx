@@ -259,16 +259,16 @@ function ManagerCalendar() {
         const data = await getEvents(buildingId)
         const transformedEvents = (data || []).map(event => ({
           id: event.id,
-          date: event.start_time ? event.start_time.split('T')[0] : event.date,
+          date: event.start_time ? event.start_time.split('T')[0] : (event.date || new Date().toISOString().split('T')[0]),
           time: event.start_time ? new Date(event.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'All Day',
           endTime: event.end_time ? new Date(event.end_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
-          title: event.title,
+          title: event.title || 'Untitled Event',
           description: event.description || '',
           category: event.category || 'social',
           categoryLabel: event.category ? event.category.charAt(0).toUpperCase() + event.category.slice(1) : 'Social',
           icon: event.category === 'maintenance' ? Wrench : event.category === 'meeting' ? Users : Wine,
           color: event.category === 'maintenance' ? '#f59e0b' : event.category === 'meeting' ? '#3b82f6' : '#8b5cf6',
-          location: event.location || '',
+          location: event.location || 'TBD',
           allowRsvp: true,
           rsvpLimit: null,
           rsvps: [],
@@ -322,6 +322,7 @@ function ManagerCalendar() {
     date.setHours(0, 0, 0, 0)
     const diffDays = Math.floor((date - today) / (1000 * 60 * 60 * 24))
 
+    if (diffDays < 0) return 'Past event'
     if (diffDays === 0) return 'Today'
     if (diffDays === 1) return 'Tomorrow'
     if (diffDays < 7) return `In ${diffDays} days`
@@ -385,16 +386,16 @@ function ManagerCalendar() {
         const data = await getEvents(userProfile.building_id)
         const transformedEvents = (data || []).map(event => ({
           id: event.id,
-          date: event.start_time ? event.start_time.split('T')[0] : event.date,
+          date: event.start_time ? event.start_time.split('T')[0] : (event.date || new Date().toISOString().split('T')[0]),
           time: event.start_time ? new Date(event.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'All Day',
           endTime: event.end_time ? new Date(event.end_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
-          title: event.title,
+          title: event.title || 'Untitled Event',
           description: event.description || '',
           category: event.category || 'social',
           categoryLabel: event.category ? event.category.charAt(0).toUpperCase() + event.category.slice(1) : 'Social',
           icon: event.category === 'maintenance' ? Wrench : event.category === 'meeting' ? Users : Wine,
           color: event.category === 'maintenance' ? '#f59e0b' : event.category === 'meeting' ? '#3b82f6' : '#8b5cf6',
-          location: event.location || '',
+          location: event.location || 'TBD',
           allowRsvp: true,
           rsvpLimit: null,
           rsvps: [],
@@ -424,16 +425,16 @@ function ManagerCalendar() {
         const data = await getEvents(userProfile.building_id)
         const transformedEvents = (data || []).map(event => ({
           id: event.id,
-          date: event.start_time ? event.start_time.split('T')[0] : event.date,
+          date: event.start_time ? event.start_time.split('T')[0] : (event.date || new Date().toISOString().split('T')[0]),
           time: event.start_time ? new Date(event.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'All Day',
           endTime: event.end_time ? new Date(event.end_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
-          title: event.title,
+          title: event.title || 'Untitled Event',
           description: event.description || '',
           category: event.category || 'social',
           categoryLabel: event.category ? event.category.charAt(0).toUpperCase() + event.category.slice(1) : 'Social',
           icon: event.category === 'maintenance' ? Wrench : event.category === 'meeting' ? Users : Wine,
           color: event.category === 'maintenance' ? '#f59e0b' : event.category === 'meeting' ? '#3b82f6' : '#8b5cf6',
-          location: event.location || '',
+          location: event.location || 'TBD',
           allowRsvp: true,
           rsvpLimit: null,
           rsvps: [],

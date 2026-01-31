@@ -97,11 +97,11 @@ function CalendarView({ onNavigate }) {
         // data will be [] if table is empty - this is SUCCESS, not an error
         const transformedData = (data || []).map(event => ({
           id: event.id,
-          title: event.title,
-          date: event.start_time?.split('T')[0],
-          time: event.event_time,
-          location: event.location,
-          description: event.description,
+          title: event.title || 'Untitled Event',
+          date: event.start_time?.split('T')[0] || event.date,
+          time: event.event_time || (event.start_time ? new Date(event.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : 'TBD'),
+          location: event.location || 'TBD',
+          description: event.description || '',
           category: event.category || 'social',
           color: event.category === 'maintenance' ? '#f59e0b' : '#3b82f6',
           icon: Calendar,
@@ -180,7 +180,7 @@ function CalendarView({ onNavigate }) {
   // Group events by temporal period
   const groupEventsByTime = (items) => {
     const groups = {}
-    const groupOrder = ['Today', 'Tomorrow', 'This Week', 'Next Week', 'Coming Up']
+    const groupOrder = ['Today', 'Tomorrow', 'This Week', 'Next Week', 'Coming Up', 'Past']
 
     items.forEach(item => {
       const group = getTemporalGroup(item.date)
