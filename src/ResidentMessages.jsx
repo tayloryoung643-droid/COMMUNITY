@@ -2,11 +2,10 @@ import { useState, useEffect, useRef } from 'react'
 import { ChevronLeft, Send, Sun, Cloud, Moon, MessageCircle } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getConversation, sendMessage, getBuildingManager, markConversationAsRead } from './services/messageService'
-import { getBuildingBackgroundImage } from './services/buildingService'
 import './ResidentMessages.css'
 
 function ResidentMessages({ onBack, onNavigate }) {
-  const { userProfile, isDemoMode } = useAuth()
+  const { userProfile, isDemoMode, buildingBackgroundUrl } = useAuth()
   const isInDemoMode = isDemoMode || userProfile?.is_demo === true
 
   const [messages, setMessages] = useState([])
@@ -15,7 +14,6 @@ function ResidentMessages({ onBack, onNavigate }) {
   const [sending, setSending] = useState(false)
   const [manager, setManager] = useState(null)
   const [error, setError] = useState(null)
-  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
   const messagesEndRef = useRef(null)
 
   // Weather and time state - matches other pages
@@ -30,20 +28,6 @@ function ResidentMessages({ onBack, onNavigate }) {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000)
     return () => clearInterval(timer)
   }, [])
-
-  // Fetch building background image
-  useEffect(() => {
-    async function fetchBuildingBackground() {
-      if (isInDemoMode || !userProfile?.building_id) return
-      try {
-        const url = await getBuildingBackgroundImage(userProfile.building_id)
-        if (url) setBuildingBgUrl(url)
-      } catch (err) {
-        console.error('[ResidentMessages] Error fetching building background:', err)
-      }
-    }
-    fetchBuildingBackground()
-  }, [isInDemoMode, userProfile?.building_id])
 
   const getWeatherIcon = () => {
     const hour = currentTime.getHours()
@@ -204,7 +188,7 @@ function ResidentMessages({ onBack, onNavigate }) {
   // Check if message is from current user
   const isFromMe = (msg) => msg.from_user_id === userProfile?.id
 
-  const bgStyle = buildingBgUrl ? { '--building-bg-image': `url(${buildingBgUrl})` } : {}
+  const bgStyle = buildingBackgroundUrl ? { '--building-bg-image': `url(${buildingBackgroundUrl})` } : {}
 
   if (loading) {
     return (

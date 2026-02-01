@@ -2,15 +2,13 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Plus, Check, Calendar, Clock, Home, ArrowUpDown, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getBookings, createBooking } from './services/elevatorBookingService'
-import { getBuildingBackgroundImage } from './services/buildingService'
 import EmptyState from './components/EmptyState'
 import './ElevatorBooking.css'
 
 function ElevatorBooking({ onBack }) {
-  const { userProfile, isDemoMode } = useAuth()
+  const { userProfile, isDemoMode, buildingBackgroundUrl } = useAuth()
 
   const [reservations, setReservations] = useState([])
-  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showForm, setShowForm] = useState(false)
@@ -33,20 +31,6 @@ function ElevatorBooking({ onBack }) {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000)
     return () => clearInterval(timer)
   }, [])
-
-  // Fetch building background image
-  useEffect(() => {
-    async function fetchBuildingBackground() {
-      if (isDemoMode || !userProfile?.building_id) return
-      try {
-        const url = await getBuildingBackgroundImage(userProfile.building_id)
-        if (url) setBuildingBgUrl(url)
-      } catch (err) {
-        console.error('[ElevatorBooking] Error fetching building background:', err)
-      }
-    }
-    fetchBuildingBackground()
-  }, [isDemoMode, userProfile?.building_id])
 
   const getWeatherIcon = (condition) => {
     const hour = currentTime.getHours()
@@ -233,7 +217,7 @@ function ElevatorBooking({ onBack }) {
     setShowSuccess(false)
   }
 
-  const bgStyle = buildingBgUrl ? { '--building-bg-image': `url(${buildingBgUrl})` } : {}
+  const bgStyle = buildingBackgroundUrl ? { '--building-bg-image': `url(${buildingBackgroundUrl})` } : {}
 
   // Loading state
   if (loading) {

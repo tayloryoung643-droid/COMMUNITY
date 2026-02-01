@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, Clock, FileText, Truck, Recycle, CalendarCheck, ChevronDown, ChevronUp, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
-import { getBuildingBackgroundImage } from './services/buildingService'
+import { useAuth } from './contexts/AuthContext'
 import './BuildingInfo.css'
 
 function BuildingInfo({ onBack, isDemoMode, userProfile }) {
+  // Get cached building background URL from context
+  const { buildingBackgroundUrl } = useAuth()
   const [expandedSections, setExpandedSections] = useState(['hours'])
-  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
 
   // Log which mode we're in
   useEffect(() => {
@@ -15,20 +16,6 @@ function BuildingInfo({ onBack, isDemoMode, userProfile }) {
       console.log('[BuildingInfo] MODE: REAL - building:', userProfile?.building_id)
     }
   }, [isDemoMode, userProfile])
-
-  // Fetch building background image
-  useEffect(() => {
-    async function fetchBuildingBackground() {
-      if (isDemoMode || !userProfile?.building_id) return
-      try {
-        const url = await getBuildingBackgroundImage(userProfile.building_id)
-        if (url) setBuildingBgUrl(url)
-      } catch (err) {
-        console.error('[BuildingInfo] Error fetching building background:', err)
-      }
-    }
-    fetchBuildingBackground()
-  }, [isDemoMode, userProfile?.building_id])
 
   // Weather and time state - matches Home exactly
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -223,7 +210,7 @@ function BuildingInfo({ onBack, isDemoMode, userProfile }) {
   // Use demo sections in demo mode, empty sections for real users
   const sections = isDemoMode ? demoSections : emptySections
 
-  const bgStyle = buildingBgUrl ? { '--building-bg-image': `url(${buildingBgUrl})` } : {}
+  const bgStyle = buildingBackgroundUrl ? { '--building-bg-image': `url(${buildingBackgroundUrl})` } : {}
 
   return (
     <div className="building-info-container resident-inner-page" style={bgStyle}>

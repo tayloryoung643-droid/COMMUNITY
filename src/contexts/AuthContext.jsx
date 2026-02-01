@@ -3,6 +3,39 @@ import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext({})
 
+// Helper to create signed URL for building background image
+const createSignedBackgroundUrl = async (filePath) => {
+  if (!filePath) return null
+
+  try {
+    const { data, error } = await supabase.storage
+      .from('building-images')
+      .createSignedUrl(filePath, 3600) // 1 hour expiry
+
+    if (error) {
+      console.warn('[AuthContext] Error creating signed URL:', error)
+      return null
+    }
+
+    return data?.signedUrl || null
+  } catch (err) {
+    console.warn('[AuthContext] Failed to create signed URL:', err)
+    return null
+  }
+}
+
+// Preload an image to cache it in browser memory
+const preloadImage = (url) => {
+  if (!url) return Promise.resolve()
+
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => resolve()
+    img.onerror = () => resolve() // Resolve even on error to not block
+    img.src = url
+  })
+}
+
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (!context) {
@@ -16,6 +49,7 @@ export const AuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isDemoMode, setIsDemoMode] = useState(false)
+  const [buildingBackgroundUrl, setBuildingBackgroundUrl] = useState(null)
 
   useEffect(() => {
     // Check active session
@@ -77,6 +111,17 @@ export const AuthProvider = ({ children }) => {
 
         if (!buildingError && building) {
           profileWithBuilding.buildings = building
+
+          // If building has a background image, create signed URL and preload it
+          if (building.background_image_url) {
+            const signedUrl = await createSignedBackgroundUrl(building.background_image_url)
+            if (signedUrl) {
+              setBuildingBackgroundUrl(signedUrl)
+              // Preload the image so it's cached for instant display
+              preloadImage(signedUrl)
+              console.log('[AuthContext] Building background preloaded:', signedUrl)
+            }
+          }
         }
       }
 
@@ -146,6 +191,7 @@ export const AuthProvider = ({ children }) => {
       // Clear user state immediately to prevent race conditions
       setUser(null)
       setUserProfile(null)
+      setBuildingBackgroundUrl(null)
       const { error } = await supabase.auth.signOut()
       if (error) throw error
     } catch (error) {
@@ -198,6 +244,7 @@ export const AuthProvider = ({ children }) => {
     userProfile,
     loading,
     isDemoMode,
+    buildingBackgroundUrl,
     signUp,
     signIn,
     signOut,

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Pin, Car, Box, ShoppingBag, Briefcase, Search, Plus, X, Send, MessageCircle, Clock, ChevronRight, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getListings, createListing } from './services/bulletinService'
-import { getBuildingBackgroundImage } from './services/buildingService'
 import EmptyState from './components/EmptyState'
 import './BulletinBoard.css'
 
@@ -167,11 +166,10 @@ const dbToCategory = {
 }
 
 function BulletinBoard({ onBack }) {
-  const { userProfile, isDemoMode } = useAuth()
+  const { userProfile, isDemoMode, buildingBackgroundUrl } = useAuth()
   const isInDemoMode = isDemoMode || userProfile?.is_demo === true
 
   const [listings, setListings] = useState([])
-  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [activeCategory, setActiveCategory] = useState('all')
@@ -198,20 +196,6 @@ function BulletinBoard({ onBack }) {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000)
     return () => clearInterval(timer)
   }, [])
-
-  // Fetch building background image
-  useEffect(() => {
-    async function fetchBuildingBackground() {
-      if (isInDemoMode || !userProfile?.building_id) return
-      try {
-        const url = await getBuildingBackgroundImage(userProfile.building_id)
-        if (url) setBuildingBgUrl(url)
-      } catch (err) {
-        console.error('[BulletinBoard] Error fetching building background:', err)
-      }
-    }
-    fetchBuildingBackground()
-  }, [isInDemoMode, userProfile?.building_id])
 
   const getWeatherIcon = (condition) => {
     const hour = currentTime.getHours()
@@ -385,7 +369,7 @@ function BulletinBoard({ onBack }) {
     })
   }
 
-  const bgStyle = buildingBgUrl ? { '--building-bg-image': `url(${buildingBgUrl})` } : {}
+  const bgStyle = buildingBackgroundUrl ? { '--building-bg-image': `url(${buildingBackgroundUrl})` } : {}
 
   // Loading state
   if (loading) {

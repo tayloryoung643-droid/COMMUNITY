@@ -1,32 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Calendar, Wrench, ClipboardList, HelpCircle, FileText, User, Settings, Phone, ChevronRight, Home as HomeIcon, MessageSquare, Building2, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
-import { getBuildingBackgroundImage } from './services/buildingService'
 import HamburgerMenu from './HamburgerMenu'
 import './Building.css'
 
 function Building({ onNavigate }) {
-  const { userProfile, isDemoMode } = useAuth()
+  const { userProfile, isDemoMode, buildingBackgroundUrl } = useAuth()
   const isInDemoMode = isDemoMode || userProfile?.is_demo === true
-
-  // Building background image
-  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
-
-  // Fetch building background image
-  useEffect(() => {
-    const fetchBuildingBg = async () => {
-      if (isInDemoMode) return
-      const buildingId = userProfile?.building_id
-      if (!buildingId) return
-      try {
-        const url = await getBuildingBackgroundImage(buildingId)
-        if (url) setBuildingBgUrl(url)
-      } catch (err) {
-        console.warn('[Building] Failed to load building background:', err)
-      }
-    }
-    fetchBuildingBg()
-  }, [isInDemoMode, userProfile?.building_id])
 
   // Weather and time state - matches Home exactly
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -72,7 +52,7 @@ function Building({ onNavigate }) {
   }
 
   // CSS variable for building background image
-  const bgStyle = buildingBgUrl ? { '--building-bg-image': `url(${buildingBgUrl})` } : {}
+  const bgStyle = buildingBackgroundUrl ? { '--building-bg-image': `url(${buildingBackgroundUrl})` } : {}
 
   return (
     <div className="building-container resident-inner-page" style={bgStyle}>

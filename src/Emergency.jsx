@@ -1,26 +1,9 @@
-import { useState, useEffect } from 'react'
 import { ArrowLeft, Building2, Wrench, Phone, Briefcase, Siren, Skull, Shield } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
-import { getBuildingBackgroundImage } from './services/buildingService'
 import './Emergency.css'
 
 function Emergency({ onBack }) {
-  const { userProfile, isDemoMode } = useAuth()
-  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
-
-  // Fetch building background image
-  useEffect(() => {
-    async function fetchBuildingBackground() {
-      if (isDemoMode || !userProfile?.building_id) return
-      try {
-        const url = await getBuildingBackgroundImage(userProfile.building_id)
-        if (url) setBuildingBgUrl(url)
-      } catch (err) {
-        console.error('[Emergency] Error fetching building background:', err)
-      }
-    }
-    fetchBuildingBackground()
-  }, [isDemoMode, userProfile?.building_id])
+  const { buildingBackgroundUrl } = useAuth()
 
   // Emergency contact data organized by category
   const emergencyContacts = {
@@ -91,7 +74,7 @@ function Emergency({ onBack }) {
     window.location.href = `tel:${phone}`
   }
 
-  const bgStyle = buildingBgUrl ? { '--building-bg-image': `url(${buildingBgUrl})` } : {}
+  const bgStyle = buildingBackgroundUrl ? { '--building-bg-image': `url(${buildingBackgroundUrl})` } : {}
 
   return (
     <div className="emergency-container resident-inner-page" style={bgStyle}>

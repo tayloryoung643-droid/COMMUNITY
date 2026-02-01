@@ -1,36 +1,16 @@
 import { useState, useEffect } from 'react'
 import { ChevronLeft, Check, HelpCircle, X, CalendarPlus, Send, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
-import { getBuildingBackgroundImage } from './services/buildingService'
 import './EventDetail.css'
 
 function EventDetail({ event, onBack, onNavigate }) {
-  const { userProfile, isDemoMode } = useAuth()
+  const { userProfile, isDemoMode, buildingBackgroundUrl } = useAuth()
   const isInDemoMode = isDemoMode || userProfile?.is_demo === true
 
   const [rsvpStatus, setRsvpStatus] = useState(event?.rsvpStatus || null)
   const [comments, setComments] = useState(event?.comments || [])
   const [newComment, setNewComment] = useState('')
   const [acknowledged, setAcknowledged] = useState(false)
-
-  // Building background image
-  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
-
-  // Fetch building background image
-  useEffect(() => {
-    const fetchBuildingBg = async () => {
-      if (isInDemoMode) return
-      const buildingId = userProfile?.building_id
-      if (!buildingId) return
-      try {
-        const url = await getBuildingBackgroundImage(buildingId)
-        if (url) setBuildingBgUrl(url)
-      } catch (err) {
-        console.warn('[EventDetail] Failed to load building background:', err)
-      }
-    }
-    fetchBuildingBg()
-  }, [isInDemoMode, userProfile?.building_id])
 
   // Weather and time state - matches Calendar/Home exactly
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -118,7 +98,7 @@ function EventDetail({ event, onBack, onNavigate }) {
   }
 
   // CSS variable for building background image
-  const bgStyle = buildingBgUrl ? { '--building-bg-image': `url(${buildingBgUrl})` } : {}
+  const bgStyle = buildingBackgroundUrl ? { '--building-bg-image': `url(${buildingBackgroundUrl})` } : {}
 
   return (
     <div className="event-detail-container resident-inner-page" style={bgStyle}>

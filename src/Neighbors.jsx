@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, Hand, Users, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { supabase } from './lib/supabase'
-import { getBuildingBackgroundImage } from './services/buildingService'
+import { useAuth } from './contexts/AuthContext'
 import './Neighbors.css'
 
 // Demo neighbor data
@@ -24,23 +24,8 @@ const DEMO_NEIGHBORS = [
 const COLORS = ["blue", "purple", "cyan", "green", "pink", "orange"]
 
 function Neighbors({ onBack, isDemoMode, userProfile }) {
-  // Building background image
-  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
-
-  useEffect(() => {
-    const fetchBuildingBg = async () => {
-      if (isDemoMode) return
-      const buildingId = userProfile?.building_id
-      if (!buildingId) return
-      try {
-        const url = await getBuildingBackgroundImage(buildingId)
-        if (url) setBuildingBgUrl(url)
-      } catch (err) {
-        console.warn('[Neighbors] Failed to load building background:', err)
-      }
-    }
-    fetchBuildingBg()
-  }, [isDemoMode, userProfile?.building_id])
+  // Get cached building background URL from context
+  const { buildingBackgroundUrl } = useAuth()
 
   // Weather and time state - matches Home exactly
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -178,7 +163,7 @@ function Neighbors({ onBack, isDemoMode, userProfile }) {
     })
 
   // CSS variable for building background image
-  const bgStyle = buildingBgUrl ? { '--building-bg-image': `url(${buildingBgUrl})` } : {}
+  const bgStyle = buildingBackgroundUrl ? { '--building-bg-image': `url(${buildingBackgroundUrl})` } : {}
 
   return (
     <div className="neighbors-container resident-inner-page" style={bgStyle}>

@@ -5,10 +5,13 @@ import { eventsData } from './eventsData'
 import { supabase } from './lib/supabase'
 import { getHomeIntelligence, logEngagementEvent } from './services/homeIntelligenceService'
 import { getActiveListings } from './services/bulletinService'
-import { getBuildingBackgroundImage } from './services/buildingService'
+import { useAuth } from './contexts/AuthContext'
 import './Home.css'
 
 function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
+  // Get cached building background URL from context
+  const { buildingBackgroundUrl } = useAuth()
+
   const floor = "12"
   const userUnit = userProfile?.unit_number || "1201"
 
@@ -30,9 +33,6 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
   const [newJoiners, setNewJoiners] = useState([])
   const [bulletinListings, setBulletinListings] = useState([])
   const [dataLoading, setDataLoading] = useState(false)
-
-  // Building background image (custom uploaded by manager)
-  const [buildingBackgroundUrl, setBuildingBackgroundUrl] = useState(null)
 
   // Home Intelligence state (context lines)
   const [contextLine1, setContextLine1] = useState(null)
@@ -208,28 +208,6 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
 
     fetchHomeIntelligence()
   }, [isDemoMode, userProfile])
-
-  // Fetch building background image (for real users)
-  useEffect(() => {
-    const fetchBuildingBackground = async () => {
-      if (isDemoMode) return
-
-      const buildingId = userProfile?.building_id
-      if (!buildingId) return
-
-      try {
-        const imageUrl = await getBuildingBackgroundImage(buildingId)
-        if (imageUrl) {
-          setBuildingBackgroundUrl(imageUrl)
-          console.log('[Home] Building background image loaded:', imageUrl)
-        }
-      } catch (err) {
-        console.warn('[Home] Failed to load building background:', err.message)
-      }
-    }
-
-    fetchBuildingBackground()
-  }, [isDemoMode, userProfile?.building_id])
 
   // Log home_view engagement event on mount (for real users)
   useEffect(() => {
