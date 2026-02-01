@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Calendar, Clock, MapPin, Users, Check, Sun, Cloud, CloudRain, Snowflake, Moon, Plus, X } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getEvents, addRSVP, removeRSVP, createEvent, getUserRSVPs } from './services/eventService'
+import { getBuildingBackgroundImage } from './services/buildingService'
 import EmptyState from './components/EmptyState'
 import './Events.css'
 
@@ -82,6 +83,25 @@ function Events({ onBack }) {
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // Building background image
+  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
+
+  // Fetch building background image
+  useEffect(() => {
+    const fetchBuildingBg = async () => {
+      if (isInDemoMode) return
+      const buildingId = userProfile?.building_id
+      if (!buildingId) return
+      try {
+        const url = await getBuildingBackgroundImage(buildingId)
+        if (url) setBuildingBgUrl(url)
+      } catch (err) {
+        console.warn('[Events] Failed to load building background:', err)
+      }
+    }
+    fetchBuildingBg()
+  }, [isInDemoMode, userProfile?.building_id])
 
   // Create event modal state
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -306,10 +326,13 @@ function Events({ onBack }) {
   const upcomingEvents = events.filter(event => event.isUpcoming)
   const pastEvents = events.filter(event => !event.isUpcoming)
 
+  // CSS variable for building background image
+  const bgStyle = buildingBgUrl ? { '--building-bg-image': `url(${buildingBgUrl})` } : {}
+
   // Loading state
   if (loading) {
     return (
-      <div className="events-container resident-inner-page">
+      <div className="events-container resident-inner-page" style={bgStyle}>
         <div className="inner-page-hero">
           <button className="inner-page-back-btn" onClick={onBack}>
             <ArrowLeft size={20} />
@@ -336,7 +359,7 @@ function Events({ onBack }) {
   // Error state
   if (error) {
     return (
-      <div className="events-container resident-inner-page">
+      <div className="events-container resident-inner-page" style={bgStyle}>
         <div className="inner-page-hero">
           <button className="inner-page-back-btn" onClick={onBack}>
             <ArrowLeft size={20} />
@@ -361,7 +384,7 @@ function Events({ onBack }) {
   }
 
   return (
-    <div className="events-container resident-inner-page">
+    <div className="events-container resident-inner-page" style={bgStyle}>
       {/* Hero Section with Weather and Title */}
       <div className="inner-page-hero">
         <button className="inner-page-back-btn" onClick={onBack}>

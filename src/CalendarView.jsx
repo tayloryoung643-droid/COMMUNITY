@@ -4,6 +4,7 @@ import HamburgerMenu from './HamburgerMenu'
 import { useAuth } from './contexts/AuthContext'
 import { eventsData } from './eventsData'
 import { getEvents } from './services/eventService'
+import { getBuildingBackgroundImage } from './services/buildingService'
 import EmptyState from './components/EmptyState'
 import './CalendarView.css'
 
@@ -17,6 +18,24 @@ function CalendarView({ onNavigate }) {
   const [calendarItems, setCalendarItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // Building background image
+  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
+
+  useEffect(() => {
+    const fetchBuildingBg = async () => {
+      if (isInDemoMode) return
+      const buildingId = userProfile?.building_id
+      if (!buildingId) return
+      try {
+        const url = await getBuildingBackgroundImage(buildingId)
+        if (url) setBuildingBgUrl(url)
+      } catch (err) {
+        console.warn('[CalendarView] Failed to load building background:', err)
+      }
+    }
+    fetchBuildingBg()
+  }, [isInDemoMode, userProfile?.building_id])
 
   // Detect mobile viewport and default to list view
   useEffect(() => {
@@ -244,8 +263,11 @@ function CalendarView({ onNavigate }) {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))
   }
 
+  // CSS variable for building background image
+  const bgStyle = buildingBgUrl ? { '--building-bg-image': `url(${buildingBgUrl})` } : {}
+
   return (
-    <div className="calendar-view-container resident-inner-page">
+    <div className="calendar-view-container resident-inner-page" style={bgStyle}>
       {/* Hero Section with Weather and Title */}
       <div className="inner-page-hero">
         {/* Hamburger Menu */}

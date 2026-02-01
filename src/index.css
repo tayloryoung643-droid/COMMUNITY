@@ -305,6 +305,8 @@ p {
 }
 
 /* Building image - compact hero for tighter spacing */
+/* Uses CSS variable --building-bg-image set by each page component */
+/* Falls back to default if variable is not set */
 .resident-inner-page::before {
   content: "";
   position: absolute;
@@ -314,7 +316,7 @@ p {
   height: 28vh;
   min-height: 200px;
   max-height: 280px;
-  background-image: url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80');
+  background-image: var(--building-bg-image, url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80'));
   background-size: cover;
   background-position: center;
   z-index: 0;

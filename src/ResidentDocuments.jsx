@@ -23,6 +23,7 @@ import {
   DOC_TYPE_LABELS,
   DOC_TYPE_COLORS
 } from './services/buildingDocumentsService'
+import { getBuildingBackgroundImage } from './services/buildingService'
 import './ResidentDocuments.css'
 
 // Demo documents for demo mode
@@ -84,6 +85,7 @@ function ResidentDocuments({ onBack }) {
   const [selectedDocument, setSelectedDocument] = useState(null)
   const [viewUrl, setViewUrl] = useState('')
   const [loadingView, setLoadingView] = useState(false)
+  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
 
   // Weather and time state
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -97,6 +99,20 @@ function ResidentDocuments({ onBack }) {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000)
     return () => clearInterval(timer)
   }, [])
+
+  // Fetch building background image
+  useEffect(() => {
+    async function fetchBuildingBackground() {
+      if (isInDemoMode || !userProfile?.building_id) return
+      try {
+        const url = await getBuildingBackgroundImage(userProfile.building_id)
+        if (url) setBuildingBgUrl(url)
+      } catch (err) {
+        console.error('[ResidentDocuments] Error fetching building background:', err)
+      }
+    }
+    fetchBuildingBackground()
+  }, [isInDemoMode, userProfile?.building_id])
 
   const getWeatherIcon = (condition) => {
     const hour = currentTime.getHours()
@@ -249,10 +265,12 @@ function ResidentDocuments({ onBack }) {
   const groupedDocuments = filterType === 'all' ? getGroupedDocuments() : null
   const availableTypes = getAvailableTypes()
 
+  const bgStyle = buildingBgUrl ? { '--building-bg-image': `url(${buildingBgUrl})` } : {}
+
   // Loading state
   if (loading) {
     return (
-      <div className="resident-documents resident-inner-page">
+      <div className="resident-documents resident-inner-page" style={bgStyle}>
         <div className="inner-page-hero">
           <button className="inner-page-back-btn" onClick={onBack}>
             <ArrowLeft size={20} />
@@ -278,7 +296,7 @@ function ResidentDocuments({ onBack }) {
   }
 
   return (
-    <div className="resident-documents resident-inner-page">
+    <div className="resident-documents resident-inner-page" style={bgStyle}>
       {/* Hero Section */}
       <div className="inner-page-hero">
         <button className="inner-page-back-btn" onClick={onBack}>

@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ArrowLeft, Camera, User, Home, Calendar, FileText, Eye, EyeOff, Hand, Bell, Mail, Package, PartyPopper, MessageSquare, LogOut, ChevronRight, AlertTriangle, Phone, HelpCircle } from 'lucide-react'
+import { getBuildingBackgroundImage } from './services/buildingService'
 import './Settings.css'
 
 function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
@@ -25,6 +26,21 @@ function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
 
   // Profile state - use demo or real based on mode
   const [profile, setProfile] = useState(isDemoMode ? demoProfile : realProfile)
+  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
+
+  // Fetch building background image
+  useEffect(() => {
+    async function fetchBuildingBackground() {
+      if (isDemoMode || !userProfile?.building_id) return
+      try {
+        const url = await getBuildingBackgroundImage(userProfile.building_id)
+        if (url) setBuildingBgUrl(url)
+      } catch (err) {
+        console.error('[Settings] Error fetching building background:', err)
+      }
+    }
+    fetchBuildingBackground()
+  }, [isDemoMode, userProfile?.building_id])
 
   // Privacy state
   const [privacy, setPrivacy] = useState({
@@ -52,8 +68,10 @@ function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
     setNotifications(prev => ({ ...prev, [field]: !prev[field] }))
   }
 
+  const bgStyle = buildingBgUrl ? { '--building-bg-image': `url(${buildingBgUrl})` } : {}
+
   return (
-    <div className="settings-container resident-inner-page">
+    <div className="settings-container resident-inner-page" style={bgStyle}>
       <header className="settings-header">
         <button className="back-button-glass" onClick={onBack}>
           <ArrowLeft size={20} />

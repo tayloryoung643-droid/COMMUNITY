@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getFaqItems, incrementViewCount } from './services/faqService'
+import { getBuildingBackgroundImage } from './services/buildingService'
 import './ResidentFAQ.css'
 
 // Demo FAQs for demo mode
@@ -115,6 +116,7 @@ function ResidentFAQ({ onBack }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedFAQs, setExpandedFAQs] = useState([])
   const [activeCategory, setActiveCategory] = useState('all')
+  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
 
   // Weather and time state
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -128,6 +130,20 @@ function ResidentFAQ({ onBack }) {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000)
     return () => clearInterval(timer)
   }, [])
+
+  // Fetch building background image
+  useEffect(() => {
+    async function fetchBuildingBackground() {
+      if (isInDemoMode || !userProfile?.building_id) return
+      try {
+        const url = await getBuildingBackgroundImage(userProfile.building_id)
+        if (url) setBuildingBgUrl(url)
+      } catch (err) {
+        console.error('[ResidentFAQ] Error fetching building background:', err)
+      }
+    }
+    fetchBuildingBackground()
+  }, [isInDemoMode, userProfile?.building_id])
 
   const getWeatherIcon = (condition) => {
     const hour = currentTime.getHours()
@@ -255,10 +271,12 @@ function ResidentFAQ({ onBack }) {
   const groupedFAQs = getGroupedFAQs()
   const availableCategories = getAvailableCategories()
 
+  const bgStyle = buildingBgUrl ? { '--building-bg-image': `url(${buildingBgUrl})` } : {}
+
   // Loading state
   if (loading) {
     return (
-      <div className="resident-faq resident-inner-page">
+      <div className="resident-faq resident-inner-page" style={bgStyle}>
         <div className="inner-page-hero">
           <button className="inner-page-back-btn" onClick={onBack}>
             <ArrowLeft size={20} />
@@ -283,7 +301,7 @@ function ResidentFAQ({ onBack }) {
   }
 
   return (
-    <div className="resident-faq resident-inner-page">
+    <div className="resident-faq resident-inner-page" style={bgStyle}>
       {/* Hero Section */}
       <div className="inner-page-hero">
         <button className="inner-page-back-btn" onClick={onBack}>

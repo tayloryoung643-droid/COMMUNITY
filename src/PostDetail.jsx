@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { ChevronLeft, Heart, MessageCircle, Share2, Send, Sun, Cloud, CloudRain, Snowflake, Moon, MessageSquare, HelpCircle, Flag } from 'lucide-react'
 import { addComment, getComments, likePost, unlikePost, hasUserLikedPost } from './services/communityPostService'
+import { getBuildingBackgroundImage } from './services/buildingService'
 import './PostDetail.css'
 
 function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
@@ -12,6 +13,25 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLiking, setIsLiking] = useState(false)
   const commentInputRef = useRef(null)
+
+  // Building background image
+  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
+
+  // Fetch building background image
+  useEffect(() => {
+    const fetchBuildingBg = async () => {
+      if (isDemoMode) return
+      const buildingId = userProfile?.building_id
+      if (!buildingId) return
+      try {
+        const url = await getBuildingBackgroundImage(buildingId)
+        if (url) setBuildingBgUrl(url)
+      } catch (err) {
+        console.warn('[PostDetail] Failed to load building background:', err)
+      }
+    }
+    fetchBuildingBg()
+  }, [isDemoMode, userProfile?.building_id])
 
   // Weather and time state - matches other pages exactly
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -268,8 +288,11 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
     setNewComment('')
   }
 
+  // CSS variable for building background image
+  const bgStyle = buildingBgUrl ? { '--building-bg-image': `url(${buildingBgUrl})` } : {}
+
   return (
-    <div className="post-detail-container resident-inner-page">
+    <div className="post-detail-container resident-inner-page" style={bgStyle}>
       {/* Hero Section */}
       <div className="inner-page-hero">
         {/* Back Button */}

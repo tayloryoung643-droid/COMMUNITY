@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { MessageSquare, HelpCircle, Flag, Heart, MessageCircle, Share2, MoreHorizontal, Send, X, Sparkles, Users, Hand, ChevronDown, ChevronUp, Search, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getPosts, createPost, likePost, unlikePost, getUserLikes } from './services/communityPostService'
+import { getBuildingBackgroundImage } from './services/buildingService'
 import HamburgerMenu from './HamburgerMenu'
 import EmptyState from './components/EmptyState'
 import './CommunityFeed.css'
@@ -154,6 +155,25 @@ function CommunityFeed({ onNavigate }) {
   const [activeFilter, setActiveFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileNeighborsExpanded, setMobileNeighborsExpanded] = useState(false)
+
+  // Building background image
+  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
+
+  // Fetch building background image
+  useEffect(() => {
+    const fetchBuildingBg = async () => {
+      if (isInDemoMode) return
+      const buildingId = userProfile?.building_id
+      if (!buildingId) return
+      try {
+        const url = await getBuildingBackgroundImage(buildingId)
+        if (url) setBuildingBgUrl(url)
+      } catch (err) {
+        console.warn('[CommunityFeed] Failed to load building background:', err)
+      }
+    }
+    fetchBuildingBg()
+  }, [isInDemoMode, userProfile?.building_id])
 
   // Neighbors data and state
   const currentUserFloor = userProfile?.unit_number
@@ -432,10 +452,13 @@ function CommunityFeed({ onNavigate }) {
     return `${days}d ago`
   }
 
+  // CSS variable for building background image
+  const bgStyle = buildingBgUrl ? { '--building-bg-image': `url(${buildingBgUrl})` } : {}
+
   // Loading state
   if (loading) {
     return (
-      <div className="community-feed-container resident-inner-page">
+      <div className="community-feed-container resident-inner-page" style={bgStyle}>
         <div className="inner-page-hero">
           <HamburgerMenu onNavigate={onNavigate} currentScreen="community" />
           <div className="inner-page-weather">
@@ -460,7 +483,7 @@ function CommunityFeed({ onNavigate }) {
   // Error state
   if (error) {
     return (
-      <div className="community-feed-container resident-inner-page">
+      <div className="community-feed-container resident-inner-page" style={bgStyle}>
         <div className="inner-page-hero">
           <HamburgerMenu onNavigate={onNavigate} currentScreen="community" />
           <div className="inner-page-weather">
@@ -483,7 +506,7 @@ function CommunityFeed({ onNavigate }) {
   }
 
   return (
-    <div className="community-feed-container resident-inner-page">
+    <div className="community-feed-container resident-inner-page" style={bgStyle}>
       {/* Hero Section with Weather and Title */}
       <div className="inner-page-hero">
         {/* Hamburger Menu */}

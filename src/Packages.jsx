@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Package, Truck, Mail, CheckCircle, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getPackages } from './services/packageService'
+import { getBuildingBackgroundImage } from './services/buildingService'
 import EmptyState from './components/EmptyState'
 import './Packages.css'
 
@@ -86,6 +87,24 @@ function Packages({ onBack }) {
   const [packages, setPackages] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // Building background image
+  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
+
+  useEffect(() => {
+    const fetchBuildingBg = async () => {
+      if (isDemoMode) return
+      const buildingId = userProfile?.building_id
+      if (!buildingId) return
+      try {
+        const url = await getBuildingBackgroundImage(buildingId)
+        if (url) setBuildingBgUrl(url)
+      } catch (err) {
+        console.warn('[Packages] Failed to load building background:', err)
+      }
+    }
+    fetchBuildingBg()
+  }, [isDemoMode, userProfile?.building_id])
 
   // Weather and time state - matches Home exactly
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -194,10 +213,13 @@ function Packages({ onBack }) {
     return `${diffDays} days ago`
   }
 
+  // CSS variable for building background image
+  const bgStyle = buildingBgUrl ? { '--building-bg-image': `url(${buildingBgUrl})` } : {}
+
   // Loading state
   if (loading) {
     return (
-      <div className="packages-container resident-inner-page">
+      <div className="packages-container resident-inner-page" style={bgStyle}>
         <div className="inner-page-hero">
           <button className="inner-page-back-btn" onClick={onBack}>
             <ArrowLeft size={20} />
@@ -224,7 +246,7 @@ function Packages({ onBack }) {
   // Error state
   if (error) {
     return (
-      <div className="packages-container resident-inner-page">
+      <div className="packages-container resident-inner-page" style={bgStyle}>
         <div className="inner-page-hero">
           <button className="inner-page-back-btn" onClick={onBack}>
             <ArrowLeft size={20} />
@@ -249,7 +271,7 @@ function Packages({ onBack }) {
   }
 
   return (
-    <div className="packages-container resident-inner-page">
+    <div className="packages-container resident-inner-page" style={bgStyle}>
       {/* Hero Section with Weather and Title */}
       <div className="inner-page-hero">
         <button className="inner-page-back-btn" onClick={onBack}>

@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, Wrench, AlertTriangle, Megaphone, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
+import { useAuth } from './contexts/AuthContext'
+import { getBuildingBackgroundImage } from './services/buildingService'
 import './Announcements.css'
 
 function Announcements({ onBack }) {
+  const { userProfile, isDemoMode } = useAuth()
+
   // Weather and time state - matches Home exactly
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
   const weatherData = {
     temp: 58,
     condition: 'clear',
@@ -15,6 +20,20 @@ function Announcements({ onBack }) {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000)
     return () => clearInterval(timer)
   }, [])
+
+  // Fetch building background image
+  useEffect(() => {
+    async function fetchBuildingBackground() {
+      if (isDemoMode || !userProfile?.building_id) return
+      try {
+        const url = await getBuildingBackgroundImage(userProfile.building_id)
+        if (url) setBuildingBgUrl(url)
+      } catch (err) {
+        console.error('[Announcements] Error fetching building background:', err)
+      }
+    }
+    fetchBuildingBackground()
+  }, [isDemoMode, userProfile?.building_id])
 
   const getWeatherIcon = (condition) => {
     const hour = currentTime.getHours()
@@ -102,8 +121,10 @@ function Announcements({ onBack }) {
     }
   }
 
+  const bgStyle = buildingBgUrl ? { '--building-bg-image': `url(${buildingBgUrl})` } : {}
+
   return (
-    <div className="announcements-container resident-inner-page">
+    <div className="announcements-container resident-inner-page" style={bgStyle}>
       {/* Hero Section with Weather and Title */}
       <div className="inner-page-hero">
         <button className="inner-page-back-btn" onClick={onBack}>

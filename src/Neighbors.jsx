@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, Hand, Users, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { supabase } from './lib/supabase'
+import { getBuildingBackgroundImage } from './services/buildingService'
 import './Neighbors.css'
 
 // Demo neighbor data
@@ -23,6 +24,24 @@ const DEMO_NEIGHBORS = [
 const COLORS = ["blue", "purple", "cyan", "green", "pink", "orange"]
 
 function Neighbors({ onBack, isDemoMode, userProfile }) {
+  // Building background image
+  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
+
+  useEffect(() => {
+    const fetchBuildingBg = async () => {
+      if (isDemoMode) return
+      const buildingId = userProfile?.building_id
+      if (!buildingId) return
+      try {
+        const url = await getBuildingBackgroundImage(buildingId)
+        if (url) setBuildingBgUrl(url)
+      } catch (err) {
+        console.warn('[Neighbors] Failed to load building background:', err)
+      }
+    }
+    fetchBuildingBg()
+  }, [isDemoMode, userProfile?.building_id])
+
   // Weather and time state - matches Home exactly
   const [currentTime, setCurrentTime] = useState(new Date())
   const weatherData = {
@@ -158,8 +177,11 @@ function Neighbors({ onBack, isDemoMode, userProfile }) {
       return b - a
     })
 
+  // CSS variable for building background image
+  const bgStyle = buildingBgUrl ? { '--building-bg-image': `url(${buildingBgUrl})` } : {}
+
   return (
-    <div className="neighbors-container resident-inner-page">
+    <div className="neighbors-container resident-inner-page" style={bgStyle}>
       {/* Hero Section with Weather and Title */}
       <div className="inner-page-hero">
         <button className="inner-page-back-btn" onClick={onBack}>
