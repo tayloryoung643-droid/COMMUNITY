@@ -392,6 +392,17 @@
   z-index: 1;
 }
 
+/* Minimal top bar - notifications only, overlays on header */
+.top-bar.top-bar-minimal {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: auto;
+  padding: 16px 24px;
+  justify-content: flex-end;
+  z-index: 10;
+}
+
 /* Greeting - Welcoming, editorial tone */
 .greeting {
   display: flex;
@@ -1725,62 +1736,6 @@
   padding-bottom: var(--spacing-xl);
 }
 
-/* Hero Header with Building Background */
-.dashboard-hero {
-  position: relative;
-  height: 200px;
-  margin: calc(-1 * var(--spacing-lg)) calc(-1 * var(--spacing-lg)) 0;
-  border-radius: 0 0 24px 24px;
-  overflow: hidden;
-  background-image: var(--hero-bg);
-  background-size: cover;
-  background-position: center;
-}
-
-.dashboard-hero .hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(30, 40, 50, 0.3) 0%,
-    rgba(30, 40, 50, 0.5) 50%,
-    rgba(30, 40, 50, 0.85) 100%
-  );
-}
-
-.dashboard-hero .hero-content {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: var(--spacing-lg) var(--spacing-xl);
-}
-
-.dashboard-hero .hero-greeting {
-  font-size: 28px;
-  font-weight: 600;
-  color: white;
-  margin: 0 0 4px;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.dashboard-hero .hero-subtitle {
-  font-size: var(--font-size-sm);
-  color: rgba(255, 255, 255, 0.8);
-  margin: 0 0 8px;
-}
-
-.dashboard-hero .hero-building {
-  display: inline-block;
-  font-size: var(--font-size-xs);
-  color: rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(8px);
-  padding: 4px 12px;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
 /* Two Column Layout */
 .dashboard-columns {
   display: grid;
@@ -2207,15 +2162,6 @@
 }
 
 @media (max-width: 768px) {
-  .dashboard-hero {
-    height: 180px;
-    margin: calc(-1 * var(--spacing-md)) calc(-1 * var(--spacing-md)) 0;
-  }
-
-  .dashboard-hero .hero-greeting {
-    font-size: 24px;
-  }
-
   .dashboard-columns {
     padding: 0;
     gap: var(--spacing-md);
@@ -2232,19 +2178,6 @@
 }
 
 @media (max-width: 480px) {
-  .dashboard-hero {
-    height: 160px;
-    border-radius: 0 0 20px 20px;
-  }
-
-  .dashboard-hero .hero-content {
-    padding: var(--spacing-md);
-  }
-
-  .dashboard-hero .hero-greeting {
-    font-size: 22px;
-  }
-
   .status-pills {
     flex-direction: column;
   }

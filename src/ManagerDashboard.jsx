@@ -58,6 +58,7 @@ import ManagerSettings from './ManagerSettings'
 import AnnouncementModal from './components/AnnouncementModal'
 import EventModal from './components/EventModal'
 import PackageModal from './components/PackageModal'
+import BmPageHeader from './components/BmPageHeader'
 
 function ManagerDashboard({ onLogout, buildingData }) {
   // Auth context for demo detection and user info
@@ -223,6 +224,66 @@ function ManagerDashboard({ onLogout, buildingData }) {
     if (hour < 12) return 'Good morning'
     if (hour < 18) return 'Good afternoon'
     return 'Good evening'
+  }
+
+  // Get page header info based on active nav
+  const getPageHeaderInfo = () => {
+    const managerName = building.manager?.name?.split(' ')[0] || 'Manager'
+    const buildingName = building.name || 'Your Building'
+
+    const pageHeaders = {
+      'dashboard': {
+        title: `${getGreeting()}, ${managerName}`,
+        subtitle: buildingName,
+        isGreeting: true
+      },
+      'ai-assistant': {
+        title: 'AI Assistant',
+        subtitle: 'Your building management copilot'
+      },
+      'residents': {
+        title: 'Residents',
+        subtitle: `${building.stats?.totalResidents || 0} residents in ${buildingName}`
+      },
+      'messages': {
+        title: 'Messages',
+        subtitle: 'Resident communications'
+      },
+      'community': {
+        title: 'Community',
+        subtitle: 'Posts and discussions'
+      },
+      'calendar': {
+        title: 'Calendar',
+        subtitle: 'Events and maintenance'
+      },
+      'packages': {
+        title: 'Packages',
+        subtitle: 'Deliveries and pickups'
+      },
+      'elevator': {
+        title: 'Elevator Booking',
+        subtitle: 'Move-in and move-out reservations'
+      },
+      'bulletin': {
+        title: 'Bulletin Board',
+        subtitle: 'Resident listings'
+      },
+      'faq': {
+        title: 'Building FAQ',
+        subtitle: 'Common questions and answers'
+      },
+      'documents': {
+        title: 'Documents',
+        subtitle: 'Building files and resources'
+      },
+      'settings': {
+        title: 'Settings',
+        subtitle: 'Building configuration'
+      }
+    }
+
+    return pageHeaders[activeNav] || { title: 'Dashboard', subtitle: '' }
   }
 
   // Navigation items
@@ -501,10 +562,6 @@ function ManagerDashboard({ onLogout, buildingData }) {
     }
 
     if (activeNav === 'dashboard') {
-      // Default hero image for fallback
-      const defaultHeroImage = 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80'
-      const heroImageUrl = buildingBgUrl || defaultHeroImage
-
       // Generate narrative summary based on real data
       const statsData = dashboardData?.stats || {}
       const newResidents = dashboardData?.newResidents || []
@@ -547,16 +604,6 @@ function ManagerDashboard({ onLogout, buildingData }) {
 
       return (
         <div className="dashboard-home-v2">
-          {/* Hero Header with Building Background */}
-          <div className="dashboard-hero" style={{ '--hero-bg': `url(${heroImageUrl})` }}>
-            <div className="hero-overlay" />
-            <div className="hero-content">
-              <h1 className="hero-greeting">{getGreeting()}, {building.manager.name.split(' ')[0]}</h1>
-              <p className="hero-subtitle">Property Manager</p>
-              <span className="hero-building">{building.name}</span>
-            </div>
-          </div>
-
           {/* Two Column Layout */}
           <div className="dashboard-columns">
             {/* LEFT COLUMN - Primary Narrative */}
@@ -836,14 +883,16 @@ function ManagerDashboard({ onLogout, buildingData }) {
 
       {/* Main Content */}
       <main className="main-content">
-        {/* Top Bar */}
-        <div className="top-bar">
-          {activeNav !== 'dashboard' && (
-            <div className="greeting">
-              <h1>{getGreeting()}, {building.manager.name.split(' ')[0]}</h1>
-              <p>Here's what's happening at {building.name}</p>
-            </div>
-          )}
+        {/* Page Header with Building Background */}
+        <BmPageHeader
+          title={getPageHeaderInfo().title}
+          subtitle={getPageHeaderInfo().subtitle}
+          backgroundUrl={buildingBgUrl}
+          isGreeting={getPageHeaderInfo().isGreeting}
+        />
+
+        {/* Top Bar - Notifications only */}
+        <div className="top-bar top-bar-minimal">
           <div className="top-bar-actions">
             <div className="notification-wrapper">
               <button

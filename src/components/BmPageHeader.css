@@ -1,0 +1,135 @@
+/* ============================================
+   BM PAGE HEADER - Consistent Hero Background
+   Matches Resident side pattern, dark theme adapted
+   ============================================ */
+
+.bm-page-header {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  min-height: 180px;
+  max-height: 240px;
+  overflow: hidden;
+  margin-bottom: -40px; /* Overlap content slightly for seamless blend */
+}
+
+/* Background image layer */
+.bm-header-image {
+  position: absolute;
+  inset: 0;
+  background-image: var(--header-bg);
+  background-size: cover;
+  background-position: center;
+}
+
+/* Subtle warm overlay for consistency with resident side */
+.bm-header-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.25) 50%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+  pointer-events: none;
+}
+
+/* Gradient fade to dark theme background */
+.bm-header-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(15, 23, 42, 0.3) 55%,
+    rgba(15, 23, 42, 0.6) 70%,
+    rgba(15, 23, 42, 0.85) 85%,
+    #0f172a 100%
+  );
+  pointer-events: none;
+}
+
+/* Content container - centered text */
+.bm-header-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 24px;
+  padding-top: 30px;
+  text-align: center;
+  z-index: 1;
+}
+
+/* Page title */
+.bm-header-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.02em;
+}
+
+/* Greeting variant - slightly larger */
+.bm-header-title.greeting {
+  font-size: 32px;
+  font-weight: 500;
+}
+
+/* Subtitle */
+.bm-header-subtitle {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 8px 0 0 0;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+  .bm-page-header {
+    height: 180px;
+    min-height: 160px;
+    max-height: 200px;
+    margin-bottom: -30px;
+  }
+
+  .bm-header-title {
+    font-size: 24px;
+  }
+
+  .bm-header-title.greeting {
+    font-size: 26px;
+  }
+
+  .bm-header-subtitle {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bm-page-header {
+    height: 160px;
+    min-height: 140px;
+    max-height: 180px;
+  }
+
+  .bm-header-title {
+    font-size: 22px;
+  }
+
+  .bm-header-title.greeting {
+    font-size: 24px;
+  }
+
+  .bm-header-content {
+    padding: 16px 20px;
+  }
+}
