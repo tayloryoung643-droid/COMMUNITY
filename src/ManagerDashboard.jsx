@@ -43,6 +43,7 @@ import {
 import './ManagerDashboard.css'
 import { useAuth } from './contexts/AuthContext'
 import { loadDashboardData, getIsDemoUser } from './services/managerDashboardService'
+import { getBuildingBackgroundImage } from './services/buildingService'
 import ManagerMessages from './ManagerMessages'
 import ManagerResidents from './ManagerResidents'
 import ManagerAIAssistant from './ManagerAIAssistant'
@@ -82,6 +83,9 @@ function ManagerDashboard({ onLogout, buildingData }) {
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
 
+  // Building background image
+  const [buildingBgUrl, setBuildingBgUrl] = useState(null)
+
   // Form states
   const [inviteForm, setInviteForm] = useState({
     firstName: '',
@@ -93,6 +97,26 @@ function ManagerDashboard({ onLogout, buildingData }) {
 
   // Notifications state (will be populated from dashboardData)
   const [notifications, setNotifications] = useState([])
+
+  // Fetch building background image when building data is available
+  useEffect(() => {
+    async function fetchBuildingBackground() {
+      if (getIsDemoUser(userProfile, isDemoMode)) return
+
+      const buildingId = dashboardData?.building?.id || userProfile?.building_id
+      if (!buildingId) return
+
+      try {
+        const url = await getBuildingBackgroundImage(buildingId)
+        if (url) {
+          setBuildingBgUrl(url)
+        }
+      } catch (err) {
+        console.warn('[ManagerDashboard] Failed to load building background:', err)
+      }
+    }
+    fetchBuildingBackground()
+  }, [dashboardData?.building?.id, userProfile?.building_id, isDemoMode, userProfile])
 
   // Load dashboard data on mount
   useEffect(() => {
@@ -477,119 +501,242 @@ function ManagerDashboard({ onLogout, buildingData }) {
     }
 
     if (activeNav === 'dashboard') {
+      // Default hero image for fallback
+      const defaultHeroImage = 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80'
+      const heroImageUrl = buildingBgUrl || defaultHeroImage
+
+      // Generate narrative summary based on real data
+      const statsData = dashboardData?.stats || {}
+      const newResidents = dashboardData?.newResidents || []
+
+      const getNarrativeSummary = () => {
+        const parts = []
+        if (statsData.packagesPending > 0) parts.push('packages')
+        if (statsData.unreadMessages > 0) parts.push('messages')
+        if (statsData.postsToday > 0) parts.push('new posts')
+
+        if (parts.length === 0) {
+          return "A quiet morning. Check back for new activity."
+        } else if (parts.length === 1) {
+          return `You have ${parts[0]} to review.`
+        } else {
+          return `You have ${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]} to review.`
+        }
+      }
+
+      // Transform activity to impact-based copy
+      const getImpactActivityText = (item) => {
+        switch (item.type) {
+          case 'community_post':
+            if (item.text.includes('You') || item.text.includes('posted')) {
+              return item.text.replace('posted in Community', 'shared with the community')
+            }
+            return item.text
+          case 'resident_joined':
+            return `${item.text.split(' joined')[0]} joined your building`
+          case 'package':
+            return item.text
+          case 'event_created':
+            return `New event "${item.text.replace('New event: ', '')}" is live`
+          case 'event_rsvp':
+            return item.text
+          default:
+            return item.text
+        }
+      }
+
       return (
-        <div className="dashboard-home">
-          {/* Stats Row */}
-          <div className="stats-row">
-            {stats.map((stat, index) => (
-              <div
-                key={index}
-                className={`stat-card stat-${stat.color} clickable`}
-                onClick={() => handleStatClick(stat)}
-              >
-                <div className="stat-icon">
-                  <stat.icon size={20} />
-                </div>
-                <div className="stat-content">
-                  <span className="stat-value">{stat.value}</span>
-                  <span className="stat-label">{stat.label}</span>
-                  <span className="stat-subtitle">{stat.subtitle}</span>
-                </div>
-                <ChevronRight size={16} className="stat-arrow" />
-              </div>
-            ))}
+        <div className="dashboard-home-v2">
+          {/* Hero Header with Building Background */}
+          <div className="dashboard-hero" style={{ '--hero-bg': `url(${heroImageUrl})` }}>
+            <div className="hero-overlay" />
+            <div className="hero-content">
+              <h1 className="hero-greeting">{getGreeting()}, {building.manager.name.split(' ')[0]}</h1>
+              <p className="hero-subtitle">Property Manager</p>
+              <span className="hero-building">{building.name}</span>
+            </div>
           </div>
 
-          {/* Main Content Grid */}
-          <div className="dashboard-grid">
-            {/* Recent Activity */}
-            <div className="dashboard-card activity-card">
-              <div className="card-header">
-                <h3>Recent Activity</h3>
-                <button className="view-all-btn" onClick={() => setShowActivityModal(true)}>
-                  View all
-                </button>
-              </div>
-              <div className="activity-list">
-                {recentActivity.length > 0 ? (
-                  recentActivity.map(item => (
-                    <div
-                      key={item.id}
-                      className="activity-item clickable"
-                      onClick={() => handleActivityClick(item)}
-                    >
-                      <div className={`activity-icon activity-${item.color}`}>
-                        <item.icon size={16} />
-                      </div>
-                      <div className="activity-content">
-                        <span className="activity-text">{item.text}</span>
-                        <span className="activity-time">{item.time}</span>
-                      </div>
-                      <ChevronRight size={16} className="activity-arrow" />
-                    </div>
-                  ))
-                ) : (
-                  <div className="activity-empty-state">
-                    <Bell size={24} style={{ opacity: 0.4 }} />
-                    <p>No recent activity</p>
-                    <span>Activity from your building will appear here</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="dashboard-card actions-card">
-              <div className="card-header">
-                <h3>Quick Actions</h3>
-              </div>
-              <div className="quick-actions">
-                {quickActions.map(action => (
+          {/* Two Column Layout */}
+          <div className="dashboard-columns">
+            {/* LEFT COLUMN - Primary Narrative */}
+            <div className="dashboard-column-left">
+              {/* Today at Building Card */}
+              <div className="narrative-card today-card-v2">
+                <h2 className="card-title-v2">Today at {building.name}</h2>
+                <p className="narrative-summary">{getNarrativeSummary()}</p>
+                <div className="status-pills">
                   <button
-                    key={action.id}
-                    className="quick-action-btn"
-                    onClick={() => handleQuickAction(action.id)}
+                    className={`status-pill ${statsData.packagesPending > 0 ? 'has-items' : 'all-clear'}`}
+                    onClick={() => setActiveNav('packages')}
                   >
-                    <action.icon size={20} />
-                    <span>{action.label}</span>
+                    <Package size={14} />
+                    <span>{statsData.packagesPending > 0 ? `${statsData.packagesPending} pending` : 'All on time'}</span>
                   </button>
-                ))}
+                  <button
+                    className={`status-pill ${statsData.postsToday > 0 ? 'has-items' : 'all-clear'}`}
+                    onClick={() => setActiveNav('community')}
+                  >
+                    <MessageSquare size={14} />
+                    <span>{statsData.postsToday > 0 ? `${statsData.postsToday} today` : 'Quiet so far'}</span>
+                  </button>
+                  <button
+                    className={`status-pill ${statsData.unreadMessages > 0 ? 'needs-attention' : 'all-clear'}`}
+                    onClick={() => setActiveNav('messages')}
+                  >
+                    <Mail size={14} />
+                    <span>{statsData.unreadMessages > 0 ? `${statsData.unreadMessages} unread` : 'All caught up'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Welcome New Residents Tile */}
+              {newResidents.length > 0 && (
+                <button className="narrative-card welcome-card-v2" onClick={() => setActiveNav('residents')}>
+                  <div className="welcome-content">
+                    <div className="welcome-icon">
+                      <UserPlus size={20} />
+                    </div>
+                    <div className="welcome-text">
+                      <span className="welcome-headline">
+                        Welcome {newResidents.slice(0, 2).map(r => r.name.split(' ')[0]).join(' & ')}
+                        {newResidents.length > 2 ? ` +${newResidents.length - 2} more` : ''}!
+                      </span>
+                      <span className="welcome-subtext">
+                        {newResidents.length} new {newResidents.length === 1 ? 'resident' : 'residents'} joined this week
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight size={18} className="welcome-arrow" />
+                </button>
+              )}
+
+              {/* Activity Moments */}
+              <div className="narrative-card activity-card-v2">
+                <div className="card-header-v2">
+                  <h3 className="card-title-v2">Activity Moments</h3>
+                  <button className="view-all-link" onClick={() => setShowActivityModal(true)}>
+                    View all
+                  </button>
+                </div>
+                <div className="activity-list-v2">
+                  {recentActivity.length > 0 ? (
+                    recentActivity.slice(0, 5).map(item => (
+                      <div
+                        key={item.id}
+                        className="activity-item-v2"
+                        onClick={() => handleActivityClick(item)}
+                      >
+                        <div className={`activity-avatar activity-${item.color}`}>
+                          <item.icon size={14} />
+                        </div>
+                        <div className="activity-content-v2">
+                          <span className="activity-text-v2">{getImpactActivityText(item)}</span>
+                          <span className="activity-time-v2">{item.time}</span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="activity-empty-v2">
+                      <Bell size={20} />
+                      <p>No recent activity</p>
+                      <span>Activity from your building will appear here</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Coming Up This Week */}
-            <div className="dashboard-card events-card">
-              <div className="card-header">
-                <h3>Coming Up This Week</h3>
-                <button className="view-all-btn" onClick={() => setActiveNav('calendar')}>
-                  View calendar
-                </button>
+            {/* RIGHT COLUMN - Controls + Summary */}
+            <div className="dashboard-column-right">
+              {/* Quick Actions Card */}
+              <div className="narrative-card actions-card-v2">
+                <h3 className="card-title-v2">Quick Actions</h3>
+                <div className="quick-actions-v2">
+                  {quickActions.map(action => (
+                    <button
+                      key={action.id}
+                      className="quick-action-v2"
+                      onClick={() => handleQuickAction(action.id)}
+                    >
+                      <div className="action-icon-v2">
+                        <action.icon size={18} />
+                      </div>
+                      <span className="action-label-v2">{action.label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="events-list">
-                {upcomingEvents.map(event => (
-                  <div
-                    key={event.id}
-                    className={`event-item clickable ${event.type === 'maintenance' ? 'maintenance' : ''}`}
-                    onClick={() => handleEventClick(event)}
-                  >
-                    <div className="event-date">
-                      <span className="event-day">{event.date.split(',')[0]}</span>
-                      <span className="event-date-full">{event.date.split(', ')[1]}</span>
+
+              {/* Building Snapshot Card */}
+              <div className="narrative-card snapshot-card">
+                <h3 className="card-title-v2">Building Snapshot</h3>
+                <div className="snapshot-rows">
+                  <button className="snapshot-row" onClick={() => setActiveNav('residents')}>
+                    <div className="snapshot-info">
+                      <Users size={16} />
+                      <span className="snapshot-label">{statsData.newResidentsThisWeek || 0} neighbors joined</span>
                     </div>
-                    <div className="event-details">
-                      <span className="event-title">{event.title}</span>
-                      <span className="event-meta">
-                        <Clock size={12} />
-                        {event.time} • {event.location}
-                      </span>
-                      {event.rsvps && (
-                        <span className="event-rsvps">{event.rsvps} RSVPs</span>
-                      )}
+                    <span className="snapshot-stat">{statsData.engagementRate || 0}% engaged</span>
+                  </button>
+                  <button className="snapshot-row" onClick={() => setActiveNav('packages')}>
+                    <div className="snapshot-info">
+                      <Package size={16} />
+                      <span className="snapshot-label">{statsData.packagesPending || 0} packages pending</span>
                     </div>
-                    <ChevronRight size={18} className="event-arrow" />
+                    <span className={`snapshot-stat ${statsData.packagesOverdue > 0 ? 'warning' : ''}`}>
+                      {statsData.packagesOverdue > 0 ? `${statsData.packagesOverdue} overdue` : 'All on time'}
+                    </span>
+                  </button>
+                  <button className="snapshot-row" onClick={() => setActiveNav('calendar')}>
+                    <div className="snapshot-info">
+                      <Calendar size={16} />
+                      <span className="snapshot-label">{statsData.eventsThisWeek || 0} events this week</span>
+                    </div>
+                    <span className="snapshot-stat">
+                      {statsData.nextEvent ? statsData.nextEvent : 'No upcoming'}
+                    </span>
+                  </button>
+                  <button className="snapshot-row" onClick={() => setActiveNav('messages')}>
+                    <div className="snapshot-info">
+                      <MessageSquare size={16} />
+                      <span className="snapshot-label">{statsData.unreadMessages || 0} messages</span>
+                    </div>
+                    <span className={`snapshot-stat ${statsData.unreadMessages > 0 ? 'needs-attention' : ''}`}>
+                      {statsData.unreadMessages > 0 ? 'Needs attention' : 'All caught up'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Coming Up This Week */}
+              {upcomingEvents.length > 0 && (
+                <div className="narrative-card events-card-v2">
+                  <div className="card-header-v2">
+                    <h3 className="card-title-v2">Coming Up</h3>
+                    <button className="view-all-link" onClick={() => setActiveNav('calendar')}>
+                      View calendar
+                    </button>
                   </div>
-                ))}
-              </div>
+                  <div className="events-list-v2">
+                    {upcomingEvents.slice(0, 3).map(event => (
+                      <div
+                        key={event.id}
+                        className="event-item-v2"
+                        onClick={() => handleEventClick(event)}
+                      >
+                        <div className="event-date-v2">
+                          <span className="event-day-v2">{event.date.split(',')[0].slice(0, 3)}</span>
+                        </div>
+                        <div className="event-details-v2">
+                          <span className="event-title-v2">{event.title}</span>
+                          <span className="event-meta-v2">{event.time} • {event.location}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -691,10 +838,12 @@ function ManagerDashboard({ onLogout, buildingData }) {
       <main className="main-content">
         {/* Top Bar */}
         <div className="top-bar">
-          <div className="greeting">
-            <h1>{getGreeting()}, {building.manager.name.split(' ')[0]}</h1>
-            <p>Here's what's happening at {building.name}</p>
-          </div>
+          {activeNav !== 'dashboard' && (
+            <div className="greeting">
+              <h1>{getGreeting()}, {building.manager.name.split(' ')[0]}</h1>
+              <p>Here's what's happening at {building.name}</p>
+            </div>
+          )}
           <div className="top-bar-actions">
             <div className="notification-wrapper">
               <button

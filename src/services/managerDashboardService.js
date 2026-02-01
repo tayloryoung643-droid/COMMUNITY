@@ -43,6 +43,7 @@ export function loadDemoDashboardData() {
       address: '123 Demo Street, San Francisco, CA 94102',
       totalUnits: 50,
       totalFloors: 12,
+      backgroundImagePath: null, // Demo uses default image
     },
     manager: {
       id: 'demo-manager-id',
@@ -58,7 +59,16 @@ export function loadDemoDashboardData() {
       nextEvent: 'Wine Social',
       unreadMessages: 2,
       newMessagesToday: 1,
+      postsToday: 3,
+      engagementRate: 68,
+      newResidentsThisWeek: 4,
     },
+    newResidents: [
+      { id: 'demo-1', name: 'Brittany Chen', unit: '1205', joinedAt: new Date(Date.now() - 86400000).toISOString() },
+      { id: 'demo-2', name: 'Taylor Kim', unit: '908', joinedAt: new Date(Date.now() - 172800000).toISOString() },
+      { id: 'demo-3', name: 'Jordan Lee', unit: '1402', joinedAt: new Date(Date.now() - 259200000).toISOString() },
+      { id: 'demo-4', name: 'Alex Rivera', unit: '605', joinedAt: new Date(Date.now() - 345600000).toISOString() },
+    ],
     recentActivity: [
       {
         id: 1,
@@ -393,6 +403,10 @@ export async function loadRealDashboardData(userId) {
       console.log('[Dashboard] Resolved buildingId:', buildingId)
     }
 
+    // Calculate date for "new residents this week"
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
     // Fetch all dashboard data in parallel
     const [
       residentsResult,
@@ -400,6 +414,8 @@ export async function loadRealDashboardData(userId) {
       eventsResult,
       messagesResult,
       recentActivityResult,
+      newResidentsResult,
+      postsCountResult,
     ] = await Promise.all([
       // Get residents count
       supabase
@@ -434,6 +450,22 @@ export async function loadRealDashboardData(userId) {
 
       // Get recent activity from all tables
       fetchRecentActivity(buildingId),
+
+      // Get new residents who joined this week
+      supabase
+        .from('users')
+        .select('id, full_name, unit_number, created_at')
+        .eq('building_id', buildingId)
+        .eq('role', 'resident')
+        .gte('created_at', sevenDaysAgo.toISOString())
+        .order('created_at', { ascending: false }),
+
+      // Get community posts from today
+      supabase
+        .from('community_posts')
+        .select('id', { count: 'exact', head: true })
+        .eq('building_id', buildingId)
+        .gte('created_at', new Date().toISOString().split('T')[0]),
     ])
 
     // Calculate stats
@@ -442,12 +474,19 @@ export async function loadRealDashboardData(userId) {
     const pendingPackages = packagesResult.data || []
     const upcomingEvents = eventsResult.data || []
     const unreadMessages = messagesResult.data || []
+    const newResidents = newResidentsResult.data || []
+    const postsToday = postsCountResult.count || 0
 
     // Calculate overdue packages (older than 48 hours)
     const overdueThreshold = Date.now() - (48 * 60 * 60 * 1000)
     const packagesOverdue = pendingPackages.filter(pkg =>
       new Date(pkg.arrival_date).getTime() < overdueThreshold
     ).length
+
+    // Calculate engagement rate (residents who joined / total units)
+    const engagementRate = totalResidents > 0
+      ? Math.round((residentsJoined / totalResidents) * 100)
+      : 0
 
     // Format upcoming events for display
     const formattedEvents = upcomingEvents.map(event => {
@@ -474,6 +513,7 @@ export async function loadRealDashboardData(userId) {
         address: building.address,
         totalUnits: building.total_units || totalResidents,
         totalFloors: building.total_floors,
+        backgroundImagePath: building.background_image_url || null,
       },
       manager: {
         id: userProfile.id,
@@ -491,7 +531,16 @@ export async function loadRealDashboardData(userId) {
         newMessagesToday: unreadMessages.filter(m =>
           new Date(m.created_at).toDateString() === new Date().toDateString()
         ).length,
+        postsToday,
+        engagementRate,
+        newResidentsThisWeek: newResidents.length,
       },
+      newResidents: newResidents.map(r => ({
+        id: r.id,
+        name: r.full_name || 'New Resident',
+        unit: r.unit_number,
+        joinedAt: r.created_at,
+      })),
       recentActivity: recentActivityResult || [],
       upcomingEvents: formattedEvents,
       notifications: [], // Real notifications would come from a notifications table
