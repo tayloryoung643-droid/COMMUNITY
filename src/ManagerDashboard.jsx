@@ -603,7 +603,13 @@ function ManagerDashboard({ onLogout, buildingData }) {
 
       return (
         <div className="dashboard-home-v2">
-          {/* Two Column Layout */}
+          {/* Greeting Section - Sits on the full-page background */}
+          <div className="dashboard-greeting">
+            <h1 className="greeting-title">{getGreeting()}, {building.manager.name.split(' ')[0]}</h1>
+            <p className="greeting-building">{building.name}</p>
+          </div>
+
+          {/* Two Column Layout - Cards float on faded background */}
           <div className="dashboard-columns">
             {/* LEFT COLUMN - Primary Narrative */}
             <div className="dashboard-column-left">
@@ -881,16 +887,20 @@ function ManagerDashboard({ onLogout, buildingData }) {
       </aside>
 
       {/* Main Content */}
-      <main className="main-content">
-        {/* Page Header with Building Background - EXACT COPY of Resident hero */}
-        <BmPageHeader
-          title={getPageHeaderInfo().title}
-          subtitle={getPageHeaderInfo().subtitle}
-          backgroundUrl={buildingBgUrl}
-        />
+      <main className={`main-content ${activeNav === 'dashboard' ? 'dashboard-fullbg' : ''}`}
+        style={activeNav === 'dashboard' ? { '--dashboard-bg': `url(${buildingBgUrl || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80'})` } : {}}
+      >
+        {/* Page Header - Only for non-dashboard pages */}
+        {activeNav !== 'dashboard' && (
+          <BmPageHeader
+            title={getPageHeaderInfo().title}
+            subtitle={getPageHeaderInfo().subtitle}
+            backgroundUrl={buildingBgUrl}
+          />
+        )}
 
         {/* Top Bar - Notifications only */}
-        <div className="top-bar top-bar-minimal">
+        <div className={`top-bar ${activeNav === 'dashboard' ? 'top-bar-dashboard' : 'top-bar-minimal'}`}>
           <div className="top-bar-actions">
             <div className="notification-wrapper">
               <button
