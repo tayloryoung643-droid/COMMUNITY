@@ -7,11 +7,34 @@ import { supabase } from '../lib/supabase'
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
+// Signed URL expiration time (1 hour in seconds)
+const SIGNED_URL_EXPIRY = 3600
+
+/**
+ * Create a signed URL for a building image path
+ * @param {string} filePath - The storage path (e.g., "building-id/background.jpg")
+ * @returns {Promise<string|null>} - Signed URL or null if failed
+ */
+async function createSignedImageUrl(filePath) {
+  if (!filePath) return null
+
+  const { data, error } = await supabase.storage
+    .from('building-images')
+    .createSignedUrl(filePath, SIGNED_URL_EXPIRY)
+
+  if (error) {
+    console.error('[buildingService] Error creating signed URL:', error)
+    return null
+  }
+
+  return data?.signedUrl || null
+}
+
 /**
  * Upload a background image for a building
  * @param {string} buildingId - Building UUID
  * @param {File} file - Image file to upload
- * @returns {Promise<{url: string}>} - Public URL of the uploaded image
+ * @returns {Promise<{url: string, path: string}>} - Signed URL and storage path
  */
 export async function uploadBuildingBackgroundImage(buildingId, file) {
   // Validate file type
@@ -43,17 +66,11 @@ export async function uploadBuildingBackgroundImage(buildingId, file) {
     throw new Error('Failed to upload image. Please try again.')
   }
 
-  // Get public URL
-  const { data: urlData } = supabase.storage
-    .from('building-images')
-    .getPublicUrl(filePath)
-
-  const publicUrl = urlData.publicUrl
-
-  // Update the building record with the image URL
+  // Store just the file PATH in the database (not the full URL)
+  // This allows us to generate signed URLs on demand for private buckets
   const { error: updateError } = await supabase
     .from('buildings')
-    .update({ background_image_url: publicUrl })
+    .update({ background_image_url: filePath })
     .eq('id', buildingId)
 
   if (updateError) {
@@ -61,8 +78,11 @@ export async function uploadBuildingBackgroundImage(buildingId, file) {
     throw new Error('Image uploaded but failed to save to building. Please try again.')
   }
 
-  console.log('[buildingService] Background image saved:', publicUrl)
-  return { url: publicUrl }
+  // Generate a signed URL for immediate display
+  const signedUrl = await createSignedImageUrl(filePath)
+
+  console.log('[buildingService] Background image saved, path:', filePath)
+  return { url: signedUrl, path: filePath }
 }
 
 /**
@@ -72,7 +92,7 @@ export async function uploadBuildingBackgroundImage(buildingId, file) {
 export async function removeBuildingBackgroundImage(buildingId) {
   console.log('[buildingService] Removing background image for building:', buildingId)
 
-  // First get the current URL to determine the file path
+  // First get the current path
   const { data: building, error: fetchError } = await supabase
     .from('buildings')
     .select('background_image_url')
@@ -84,25 +104,21 @@ export async function removeBuildingBackgroundImage(buildingId) {
     throw new Error('Failed to fetch building data.')
   }
 
-  // Delete from storage if file exists
+  // Delete from storage if file path exists
+  // background_image_url now stores just the path (e.g., "building-id/background.jpg")
   if (building?.background_image_url) {
-    // Extract file path from URL
-    const url = new URL(building.background_image_url)
-    const pathParts = url.pathname.split('/building-images/')
-    if (pathParts.length > 1) {
-      const filePath = pathParts[1]
-      const { error: deleteError } = await supabase.storage
-        .from('building-images')
-        .remove([filePath])
+    const filePath = building.background_image_url
+    const { error: deleteError } = await supabase.storage
+      .from('building-images')
+      .remove([filePath])
 
-      if (deleteError) {
-        console.warn('[buildingService] Storage delete warning:', deleteError)
-        // Continue anyway - we still want to clear the URL
-      }
+    if (deleteError) {
+      console.warn('[buildingService] Storage delete warning:', deleteError)
+      // Continue anyway - we still want to clear the path
     }
   }
 
-  // Clear the URL in the database
+  // Clear the path in the database
   const { error: updateError } = await supabase
     .from('buildings')
     .update({ background_image_url: null })
@@ -118,9 +134,9 @@ export async function removeBuildingBackgroundImage(buildingId) {
 }
 
 /**
- * Get the background image URL for a building
+ * Get the background image signed URL for a building
  * @param {string} buildingId - Building UUID
- * @returns {Promise<string|null>} - Background image URL or null
+ * @returns {Promise<string|null>} - Signed URL for the background image or null
  */
 export async function getBuildingBackgroundImage(buildingId) {
   const { data, error } = await supabase
@@ -134,11 +150,16 @@ export async function getBuildingBackgroundImage(buildingId) {
     return null
   }
 
-  return data?.background_image_url || null
+  // background_image_url stores just the path - generate a signed URL
+  const filePath = data?.background_image_url
+  if (!filePath) return null
+
+  const signedUrl = await createSignedImageUrl(filePath)
+  return signedUrl
 }
 
 /**
- * Get building details including background image
+ * Get building details including background image (with signed URL)
  * @param {string} buildingId - Building UUID
  */
 export async function getBuildingById(buildingId) {
@@ -151,6 +172,16 @@ export async function getBuildingById(buildingId) {
   if (error) {
     console.error('[buildingService] Error fetching building:', error)
     throw error
+  }
+
+  // If there's a background image path, generate a signed URL
+  if (data?.background_image_url) {
+    const signedUrl = await createSignedImageUrl(data.background_image_url)
+    return {
+      ...data,
+      background_image_path: data.background_image_url, // Keep original path
+      background_image_url: signedUrl // Replace with signed URL for display
+    }
   }
 
   return data
