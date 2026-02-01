@@ -372,32 +372,6 @@
   z-index: 1;
 }
 
-/* Dashboard Full-Page Background Mode */
-.main-content.dashboard-fullbg {
-  background-image: var(--dashboard-bg);
-  background-size: cover;
-  background-position: center top;
-  background-repeat: no-repeat;
-  background-attachment: scroll;
-}
-
-/* Gradient overlay that fades building image to dark theme */
-.main-content.dashboard-fullbg::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(15, 23, 42, 0.2) 0%,
-    rgba(15, 23, 42, 0.4) 25%,
-    rgba(15, 23, 42, 0.7) 45%,
-    rgba(15, 23, 42, 0.9) 60%,
-    #0f172a 75%
-  );
-  pointer-events: none;
-  z-index: 0;
-}
-
 /* Page Content wrapper */
 .page-content {
   flex: 1;
@@ -405,11 +379,6 @@
   overflow-y: auto;
   position: relative;
   z-index: 2;
-}
-
-/* Dashboard page content - no extra padding, content handles it */
-.dashboard-fullbg .page-content {
-  padding-top: 0;
 }
 
 /* Top Bar - Soft, editorial header */
@@ -430,20 +399,7 @@
   right: 0;
 }
 
-/* Dashboard top bar - notifications float over full-page bg */
-.top-bar.top-bar-dashboard {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: auto;
-  padding: 20px 24px;
-  justify-content: flex-end;
-  z-index: 10;
-  background: transparent;
-}
-
-.top-bar.top-bar-minimal,
-.top-bar.top-bar-dashboard {
+.top-bar.top-bar-minimal {
   left: auto;
   padding: 16px 24px;
   justify-content: flex-end;
@@ -1785,32 +1741,7 @@
   z-index: 1;
 }
 
-/* Greeting Section - Sits on the full-page background */
-.dashboard-greeting {
-  text-align: center;
-  padding: 80px 24px 40px;
-  position: relative;
-  z-index: 1;
-}
-
-.greeting-title {
-  font-size: 42px;
-  font-weight: 300;
-  color: white;
-  margin: 0 0 8px;
-  letter-spacing: -0.02em;
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
-}
-
-.greeting-building {
-  font-size: 18px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.85);
-  margin: 0;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.3);
-}
-
-/* Two Column Layout - Cards float on the faded background */
+/* Two Column Layout - Cards below BmPageHeader */
 .dashboard-columns {
   display: grid;
   grid-template-columns: 1fr 380px;
