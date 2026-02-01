@@ -1,135 +1,134 @@
 /* ============================================
-   BM PAGE HEADER - Consistent Hero Background
-   Matches Resident side pattern, dark theme adapted
+   BM PAGE HEADER - EXACT COPY of Resident hero
+   Only difference: gradient fades to dark theme
    ============================================ */
 
-.bm-page-header {
-  position: relative;
+/* EXACT COPY from Home.css .hero-section */
+.bm-hero-section {
   width: 100%;
-  height: 200px;
-  min-height: 180px;
-  max-height: 240px;
-  overflow: hidden;
-  margin-bottom: -40px; /* Overlap content slightly for seamless blend */
+  padding: 0 !important;
+  margin: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box;
 }
 
-/* Background image layer */
-.bm-header-image {
+/* EXACT COPY from Home.css .hero-image-container */
+.bm-hero-image-container {
+  position: relative;
+  height: 28vh;
+  min-height: 200px;
+  max-height: 280px;
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* EXACT COPY from Home.css .hero-image */
+.bm-hero-image {
   position: absolute;
   inset: 0;
-  background-image: var(--header-bg);
-  background-size: cover;
-  background-position: center;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
-/* Subtle warm overlay for consistency with resident side */
-.bm-header-overlay {
+/* EXACT COPY from Home.css .hero-warm-overlay */
+.bm-hero-warm-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.15) 0%,
-    rgba(0, 0, 0, 0.25) 50%,
-    rgba(0, 0, 0, 0.4) 100%
+    rgba(255, 155, 50, 0.38) 0%,
+    rgba(255, 165, 70, 0.28) 50%,
+    rgba(255, 175, 90, 0.15) 100%
   );
   pointer-events: none;
 }
 
-/* Gradient fade to dark theme background */
-.bm-header-gradient {
+/* MODIFIED: Same structure as Home.css .hero-gradient-overlay
+   but fades to dark theme (#0f172a) instead of cream (#F3EDE3) */
+.bm-hero-gradient-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
     transparent 0%,
-    transparent 40%,
-    rgba(15, 23, 42, 0.3) 55%,
-    rgba(15, 23, 42, 0.6) 70%,
-    rgba(15, 23, 42, 0.85) 85%,
+    transparent 35%,
+    rgba(15, 23, 42, 0.3) 48%,
+    rgba(15, 23, 42, 0.6) 60%,
+    rgba(15, 23, 42, 0.88) 75%,
+    rgba(15, 23, 42, 0.98) 88%,
     #0f172a 100%
   );
   pointer-events: none;
 }
 
-/* Content container - centered text */
-.bm-header-content {
+/* Text container - similar to Home.css .hero-text-container */
+.bm-hero-text-container {
   position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 20px 24px;
-  padding-top: 30px;
+  bottom: 48px;
+  left: 0;
+  right: 0;
   text-align: center;
-  z-index: 1;
 }
 
-/* Page title */
-.bm-header-title {
-  font-size: 28px;
-  font-weight: 600;
-  color: white;
-  margin: 0;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  letter-spacing: -0.02em;
-}
-
-/* Greeting variant - slightly larger */
-.bm-header-title.greeting {
+/* Page title - similar to Home.css .hero-building-name */
+.bm-hero-title {
   font-size: 32px;
   font-weight: 500;
+  color: white;
+  letter-spacing: -0.01em;
+  margin: 0;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
 }
 
 /* Subtitle */
-.bm-header-subtitle {
+.bm-hero-subtitle {
   font-size: 15px;
+  font-weight: 400;
   color: rgba(255, 255, 255, 0.85);
   margin: 8px 0 0 0;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* ============================================
-   RESPONSIVE ADJUSTMENTS
+   RESPONSIVE - Match Resident side breakpoints
    ============================================ */
 
 @media (max-width: 768px) {
-  .bm-page-header {
-    height: 180px;
-    min-height: 160px;
-    max-height: 200px;
-    margin-bottom: -30px;
+  .bm-hero-image-container {
+    height: 24vh;
+    min-height: 180px;
+    max-height: 220px;
   }
 
-  .bm-header-title {
-    font-size: 24px;
+  .bm-hero-title {
+    font-size: 28px;
   }
 
-  .bm-header-title.greeting {
-    font-size: 26px;
-  }
-
-  .bm-header-subtitle {
-    font-size: 14px;
+  .bm-hero-text-container {
+    bottom: 40px;
   }
 }
 
 @media (max-width: 480px) {
-  .bm-page-header {
-    height: 160px;
-    min-height: 140px;
-    max-height: 180px;
+  .bm-hero-image-container {
+    height: 22vh;
+    min-height: 160px;
+    max-height: 200px;
   }
 
-  .bm-header-title {
-    font-size: 22px;
-  }
-
-  .bm-header-title.greeting {
+  .bm-hero-title {
     font-size: 24px;
   }
 
-  .bm-header-content {
-    padding: 16px 20px;
+  .bm-hero-subtitle {
+    font-size: 14px;
+  }
+
+  .bm-hero-text-container {
+    bottom: 32px;
   }
 }

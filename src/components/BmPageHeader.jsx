@@ -1,30 +1,37 @@
 import './BmPageHeader.css'
 
 /**
- * Shared Building Manager Page Header
- * Displays building background image as a hero header across all BM pages
- * Matches the Resident side pattern for consistency
+ * BM Page Header - EXACT COPY of Resident hero section
+ * Only difference: gradient fades to dark theme instead of cream
  */
 function BmPageHeader({
   title,
   subtitle,
-  backgroundUrl,
-  isGreeting = false
+  backgroundUrl
 }) {
-  // Default fallback image
+  // Default fallback image (same as Resident side)
   const defaultImage = 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80'
-  const imageUrl = backgroundUrl || defaultImage
+  const heroImageUrl = backgroundUrl || defaultImage
 
   return (
-    <header className="bm-page-header" style={{ '--header-bg': `url(${imageUrl})` }}>
-      <div className="bm-header-image" />
-      <div className="bm-header-overlay" />
-      <div className="bm-header-gradient" />
-      <div className="bm-header-content">
-        <h1 className={`bm-header-title ${isGreeting ? 'greeting' : ''}`}>{title}</h1>
-        {subtitle && <p className="bm-header-subtitle">{subtitle}</p>}
+    <section className="bm-hero-section">
+      <div className="bm-hero-image-container">
+        {/* THE SAME building image - sharp in the hero */}
+        <img
+          src={heroImageUrl}
+          alt="Building"
+          className="bm-hero-image"
+        />
+        <div className="bm-hero-warm-overlay"></div>
+        <div className="bm-hero-gradient-overlay"></div>
+
+        {/* Page Title - Centered in Hero */}
+        <div className="bm-hero-text-container">
+          <h1 className="bm-hero-title">{title}</h1>
+          {subtitle && <p className="bm-hero-subtitle">{subtitle}</p>}
+        </div>
       </div>
-    </header>
+    </section>
   )
 }
 

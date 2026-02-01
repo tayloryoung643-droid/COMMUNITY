@@ -234,8 +234,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
     const pageHeaders = {
       'dashboard': {
         title: `${getGreeting()}, ${managerName}`,
-        subtitle: buildingName,
-        isGreeting: true
+        subtitle: buildingName
       },
       'ai-assistant': {
         title: 'AI Assistant',
@@ -883,12 +882,11 @@ function ManagerDashboard({ onLogout, buildingData }) {
 
       {/* Main Content */}
       <main className="main-content">
-        {/* Page Header with Building Background */}
+        {/* Page Header with Building Background - EXACT COPY of Resident hero */}
         <BmPageHeader
           title={getPageHeaderInfo().title}
           subtitle={getPageHeaderInfo().subtitle}
           backgroundUrl={buildingBgUrl}
-          isGreeting={getPageHeaderInfo().isGreeting}
         />
 
         {/* Top Bar - Notifications only */}
