@@ -5,6 +5,7 @@ import { eventsData } from './eventsData'
 import { supabase } from './lib/supabase'
 import { getHomeIntelligence, logEngagementEvent } from './services/homeIntelligenceService'
 import { getActiveListings } from './services/bulletinService'
+import { getBuildingBackgroundImage } from './services/buildingService'
 import './Home.css'
 
 function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
@@ -29,6 +30,9 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
   const [newJoiners, setNewJoiners] = useState([])
   const [bulletinListings, setBulletinListings] = useState([])
   const [dataLoading, setDataLoading] = useState(false)
+
+  // Building background image (custom uploaded by manager)
+  const [buildingBackgroundUrl, setBuildingBackgroundUrl] = useState(null)
 
   // Home Intelligence state (context lines)
   const [contextLine1, setContextLine1] = useState(null)
@@ -205,6 +209,28 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
     fetchHomeIntelligence()
   }, [isDemoMode, userProfile])
 
+  // Fetch building background image (for real users)
+  useEffect(() => {
+    const fetchBuildingBackground = async () => {
+      if (isDemoMode) return
+
+      const buildingId = userProfile?.building_id
+      if (!buildingId) return
+
+      try {
+        const imageUrl = await getBuildingBackgroundImage(buildingId)
+        if (imageUrl) {
+          setBuildingBackgroundUrl(imageUrl)
+          console.log('[Home] Building background image loaded:', imageUrl)
+        }
+      } catch (err) {
+        console.warn('[Home] Failed to load building background:', err.message)
+      }
+    }
+
+    fetchBuildingBackground()
+  }, [isDemoMode, userProfile?.building_id])
+
   // Log home_view engagement event on mount (for real users)
   useEffect(() => {
     if (isDemoMode) return
@@ -300,8 +326,12 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
     }
   }
 
-  // Hero image URL - used in BOTH the hero card AND the ambient background
-  const heroImageUrl = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80"
+  // Default hero image URL
+  const defaultHeroImageUrl = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80"
+
+  // Hero image URL - use building's custom background if available, otherwise default
+  // Used in BOTH the hero card AND the ambient background
+  const heroImageUrl = buildingBackgroundUrl || defaultHeroImageUrl
 
   // Building name - use real building name for authenticated users
   const buildingName = isDemoMode

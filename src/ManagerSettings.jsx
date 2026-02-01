@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   User,
   Building2,
@@ -37,17 +37,48 @@ import {
   Trash2,
   ExternalLink,
   Copy,
-  Info
+  Info,
+  ImageIcon,
+  Loader2
 } from 'lucide-react'
+import { uploadBuildingBackgroundImage, removeBuildingBackgroundImage, getBuildingById } from './services/buildingService'
+import { useAuth } from './contexts/AuthContext'
 import './ManagerSettings.css'
 
 function ManagerSettings() {
+  const { userProfile } = useAuth()
+  const buildingId = userProfile?.building_id
+
   const [activeTab, setActiveTab] = useState('profile')
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
   const [hasChanges, setHasChanges] = useState(false)
   const [showUnsavedModal, setShowUnsavedModal] = useState(false)
   const [pendingTab, setPendingTab] = useState(null)
+
+  // Background image state
+  const [backgroundImageUrl, setBackgroundImageUrl] = useState(null)
+  const [backgroundImagePreview, setBackgroundImagePreview] = useState(null)
+  const [selectedBackgroundFile, setSelectedBackgroundFile] = useState(null)
+  const [isUploadingBackground, setIsUploadingBackground] = useState(false)
+  const [backgroundUploadError, setBackgroundUploadError] = useState('')
+  const backgroundFileInputRef = useRef(null)
+
+  // Fetch building data on mount
+  useEffect(() => {
+    const fetchBuildingData = async () => {
+      if (!buildingId) return
+      try {
+        const building = await getBuildingById(buildingId)
+        if (building?.background_image_url) {
+          setBackgroundImageUrl(building.background_image_url)
+        }
+      } catch (err) {
+        console.error('[ManagerSettings] Error fetching building:', err)
+      }
+    }
+    fetchBuildingData()
+  }, [buildingId])
 
   // Profile Settings State
   const [profileData, setProfileData] = useState({
@@ -253,6 +284,85 @@ function ManagerSettings() {
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text)
     showToastMessage('Copied to clipboard!')
+  }
+
+  // Background image handlers
+  const handleBackgroundFileSelect = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setBackgroundUploadError('')
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      setBackgroundUploadError('Please upload a JPG, PNG, or WebP image.')
+      return
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setBackgroundUploadError('Image must be less than 5MB.')
+      return
+    }
+
+    // Create preview
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setBackgroundImagePreview(reader.result)
+    }
+    reader.readAsDataURL(file)
+
+    setSelectedBackgroundFile(file)
+  }
+
+  const handleBackgroundUpload = async () => {
+    if (!selectedBackgroundFile || !buildingId) return
+
+    setIsUploadingBackground(true)
+    setBackgroundUploadError('')
+
+    try {
+      const { url } = await uploadBuildingBackgroundImage(buildingId, selectedBackgroundFile)
+      setBackgroundImageUrl(url)
+      setBackgroundImagePreview(null)
+      setSelectedBackgroundFile(null)
+      showToastMessage('Building photo uploaded successfully!')
+    } catch (err) {
+      console.error('[ManagerSettings] Upload error:', err)
+      setBackgroundUploadError(err.message || 'Failed to upload image.')
+    } finally {
+      setIsUploadingBackground(false)
+    }
+  }
+
+  const handleCancelBackgroundUpload = () => {
+    setBackgroundImagePreview(null)
+    setSelectedBackgroundFile(null)
+    setBackgroundUploadError('')
+    if (backgroundFileInputRef.current) {
+      backgroundFileInputRef.current.value = ''
+    }
+  }
+
+  const handleRemoveBackground = async () => {
+    if (!buildingId) return
+
+    if (!window.confirm('Are you sure you want to remove the building photo? The default image will be shown to residents.')) {
+      return
+    }
+
+    setIsUploadingBackground(true)
+    try {
+      await removeBuildingBackgroundImage(buildingId)
+      setBackgroundImageUrl(null)
+      showToastMessage('Building photo removed.')
+    } catch (err) {
+      console.error('[ManagerSettings] Remove error:', err)
+      setBackgroundUploadError(err.message || 'Failed to remove image.')
+    } finally {
+      setIsUploadingBackground(false)
+    }
   }
 
   // Render Profile Settings
@@ -473,6 +583,118 @@ function ManagerSettings() {
                 <Upload size={16} />
                 Upload Logo
               </button>
+            </div>
+          </div>
+
+          {/* Building Background Image Upload */}
+          <div className="background-image-section">
+            <div className="background-image-header">
+              <h4>Building Photo</h4>
+              <p>This image appears as the header background in the Resident app</p>
+            </div>
+
+            {/* Current or Preview Image */}
+            <div className="background-image-preview-container">
+              {backgroundImagePreview ? (
+                <img
+                  src={backgroundImagePreview}
+                  alt="Preview"
+                  className="background-image-preview"
+                />
+              ) : backgroundImageUrl ? (
+                <img
+                  src={backgroundImageUrl}
+                  alt="Building"
+                  className="background-image-preview"
+                />
+              ) : (
+                <div className="background-image-placeholder">
+                  <ImageIcon size={48} />
+                  <span>No building photo set</span>
+                  <span className="placeholder-hint">Using default image</span>
+                </div>
+              )}
+            </div>
+
+            {/* Upload Controls */}
+            <div className="background-image-controls">
+              {selectedBackgroundFile ? (
+                // Show Save/Cancel when file selected
+                <div className="background-image-actions">
+                  <button
+                    className="btn-primary"
+                    onClick={handleBackgroundUpload}
+                    disabled={isUploadingBackground}
+                  >
+                    {isUploadingBackground ? (
+                      <>
+                        <Loader2 size={16} className="spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Save size={16} />
+                        Save Photo
+                      </>
+                    )}
+                  </button>
+                  <button
+                    className="btn-secondary"
+                    onClick={handleCancelBackgroundUpload}
+                    disabled={isUploadingBackground}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                // Show Upload/Remove buttons
+                <div className="background-image-actions">
+                  <button
+                    className="btn-secondary"
+                    onClick={() => backgroundFileInputRef.current?.click()}
+                    disabled={isUploadingBackground}
+                  >
+                    <Upload size={16} />
+                    Upload Building Photo
+                  </button>
+                  {backgroundImageUrl && (
+                    <button
+                      className="btn-text-danger"
+                      onClick={handleRemoveBackground}
+                      disabled={isUploadingBackground}
+                    >
+                      <Trash2 size={16} />
+                      Remove Photo
+                    </button>
+                  )}
+                </div>
+              )}
+
+              <input
+                ref={backgroundFileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleBackgroundFileSelect}
+                style={{ display: 'none' }}
+              />
+            </div>
+
+            {/* Error Message */}
+            {backgroundUploadError && (
+              <div className="background-image-error">
+                <AlertTriangle size={14} />
+                {backgroundUploadError}
+              </div>
+            )}
+
+            {/* Guidance Text */}
+            <div className="background-image-guidance">
+              <Info size={14} />
+              <div>
+                <span>For best results, use a landscape photo (horizontal)</span>
+                <span>Recommended: 1920×1080 pixels or larger</span>
+                <span>Max file size: 5MB • Formats: JPG, PNG, WebP</span>
+              </div>
             </div>
           </div>
 
