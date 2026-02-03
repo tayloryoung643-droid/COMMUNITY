@@ -14,12 +14,14 @@ import {
   ChevronRight
 } from 'lucide-react'
 import './ManagerAIAssistant.css'
+import { sendMessage, BM_SYSTEM_PROMPT } from './services/aiService'
 
 function ManagerAIAssistant({ buildingData }) {
   const [messages, setMessages] = useState([])
   const [inputText, setInputText] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(true)
+  const [error, setError] = useState(null)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
 
@@ -40,113 +42,6 @@ function ManagerAIAssistant({ buildingData }) {
     { id: 6, text: 'Show maintenance requests', icon: ClipboardList }
   ]
 
-  // Demo AI responses
-  const getAIResponse = (question) => {
-    const q = question.toLowerCase()
-
-    if (q.includes('package') && q.includes('pending')) {
-      return `You currently have **12 packages** pending pickup. 3 of them have been waiting for over 48 hours:
-
-• **Unit 805** (Mike Thompson) - 3 days
-• **Unit 1201** (Sarah Mitchell) - 2 days
-• **Unit 402** (Jessica Kim) - 5 days
-
-Would you like me to send reminder notifications?`
-    }
-
-    if (q.includes('joined') || q.includes('new resident')) {
-      return `**3 new residents** joined ${building.name} this week:
-
-• **Sarah Mitchell** (Unit 1201) - 2 days ago
-• **Lisa Chen** (Unit 908) - 4 days ago
-• **Mike Thompson** (Unit 805) - 6 days ago
-
-You're now at **68% building adoption** (34 of 50 residents). Great progress! 🎉`
-    }
-
-    if (q.includes('unread') && q.includes('message')) {
-      return `You have **2 unread messages**:
-
-1. **Sarah Mitchell** (Unit 1201) - 1 hour ago
-   _"Hi! I'm having trouble with my key fob..."_
-
-2. **Mike Thompson** (Unit 805) - 2 hours ago
-   _"When will the gym reopen?"_
-
-Would you like me to open the Messages section?`
-    }
-
-    if (q.includes('event') && (q.includes('coming') || q.includes('upcoming'))) {
-      return `Here are your upcoming events:
-
-**This Week:**
-• 🍷 **Wine & Cheese Social** - Friday, Jan 17 at 7:00 PM
-  _Rooftop Lounge • 18 RSVPs_
-• 🔧 **Building Maintenance** - Saturday, Jan 13 at 9:00 AM
-  _All Common Areas_
-
-**Next Week:**
-• 🧘 **Yoga in the Park** - Sunday, Jan 21 at 10:00 AM
-  _Courtyard • 8 RSVPs_
-
-Would you like to create a new event?`
-    }
-
-    if (q.includes('briefing') || q.includes('daily') || q.includes('summary')) {
-      return `Good afternoon, ${managerFirstName}! Here's your daily briefing for **${building.name}**:
-
-📦 **Packages:** 12 pending (3 over 48hrs)
-✉️ **Messages:** 2 unread
-👥 **Residents:** 34 of 50 onboarded (68%)
-📅 **Today:** No events scheduled
-🎉 **This Week:** Wine & Cheese Social (Jan 17)
-
-**🔔 Alerts:**
-• Unit 805 package waiting 3 days
-• 2 pending maintenance requests
-• Emma Davis hasn't accepted invite (5 days)
-
-You're doing great! Resident engagement is up **20%** this month. 📈`
-    }
-
-    if (q.includes('maintenance') && q.includes('request')) {
-      return `You have **2 open maintenance requests**:
-
-1. **Unit 1102** - Leaky faucet in bathroom
-   _Submitted 2 days ago • Priority: Medium_
-
-2. **Unit 309** - HVAC not cooling properly
-   _Submitted today • Priority: High_
-
-Both have been assigned to maintenance staff. Would you like to see the full maintenance log?`
-    }
-
-    if (q.includes('help') || q.includes('what can you')) {
-      return `I can help you with lots of things! Here are some examples:
-
-📦 **Packages** - Check pending pickups, send reminders
-👥 **Residents** - See who's new, onboarding status
-✉️ **Messages** - View unread messages, respond to inquiries
-📅 **Events** - See upcoming events, RSVPs, create new ones
-🔧 **Maintenance** - Track requests, assign work orders
-📊 **Reports** - Generate briefings, see building stats
-
-Just ask me anything in plain English!`
-    }
-
-    // Default response for other questions
-    return `I'm not sure I understand that question yet. I can help you with:
-
-• Package tracking and notifications
-• Resident information and onboarding
-• Messages and communications
-• Events and RSVPs
-• Maintenance requests
-• Daily briefings and reports
-
-Try asking something like "How many packages are pending?" or "Generate daily briefing"!`
-  }
-
   // Scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom()
@@ -166,7 +61,7 @@ Try asking something like "How many packages are pending?" or "Generate daily br
   }
 
   // Handle sending a message
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!inputText.trim()) return
 
     const userMessage = {
@@ -180,48 +75,113 @@ Try asking something like "How many packages are pending?" or "Generate daily br
     setInputText('')
     setShowSuggestions(false)
     setIsTyping(true)
+    setError(null)
 
-    // Simulate AI thinking
-    setTimeout(() => {
-      const aiResponse = {
-        id: Date.now() + 1,
-        type: 'ai',
-        text: getAIResponse(userMessage.text),
-        timestamp: Date.now()
-      }
-      setIsTyping(false)
-      setMessages(prev => [...prev, aiResponse])
-    }, 1500)
-  }
+    // Build conversation history for context
+    const conversationHistory = [...messages, userMessage].map(msg => ({
+      role: msg.type === 'user' ? 'user' : 'assistant',
+      content: msg.text
+    }))
 
-  // Handle suggestion click
-  const handleSuggestionClick = (suggestion) => {
-    setInputText(suggestion.text)
-    inputRef.current?.focus()
-    // Auto-send after a brief delay
-    setTimeout(() => {
-      const userMessage = {
-        id: Date.now(),
-        type: 'user',
-        text: suggestion.text,
-        timestamp: Date.now()
-      }
-      setMessages(prev => [...prev, userMessage])
-      setInputText('')
-      setShowSuggestions(false)
-      setIsTyping(true)
+    // Custom system prompt with building context
+    const systemPrompt = `${BM_SYSTEM_PROMPT}
 
-      setTimeout(() => {
+Current building: ${building.name}
+Manager: ${building.manager.name}`
+
+    try {
+      const response = await sendMessage(conversationHistory, systemPrompt)
+
+      if (response.success) {
         const aiResponse = {
           id: Date.now() + 1,
           type: 'ai',
-          text: getAIResponse(suggestion.text),
+          text: response.message,
           timestamp: Date.now()
         }
-        setIsTyping(false)
         setMessages(prev => [...prev, aiResponse])
-      }, 1500)
-    }, 100)
+      } else {
+        setError(response.error || 'Failed to get response')
+        // Show error as AI message
+        const errorResponse = {
+          id: Date.now() + 1,
+          type: 'ai',
+          text: `I'm sorry, I encountered an error: ${response.error}. Please try again.`,
+          timestamp: Date.now()
+        }
+        setMessages(prev => [...prev, errorResponse])
+      }
+    } catch (err) {
+      setError('Network error')
+      const errorResponse = {
+        id: Date.now() + 1,
+        type: 'ai',
+        text: "I'm having trouble connecting. Please check your internet connection and try again.",
+        timestamp: Date.now()
+      }
+      setMessages(prev => [...prev, errorResponse])
+    } finally {
+      setIsTyping(false)
+    }
+  }
+
+  // Handle suggestion click
+  const handleSuggestionClick = async (suggestion) => {
+    const userMessage = {
+      id: Date.now(),
+      type: 'user',
+      text: suggestion.text,
+      timestamp: Date.now()
+    }
+
+    setMessages(prev => [...prev, userMessage])
+    setInputText('')
+    setShowSuggestions(false)
+    setIsTyping(true)
+    setError(null)
+
+    // Build conversation history
+    const conversationHistory = [userMessage].map(msg => ({
+      role: 'user',
+      content: msg.text
+    }))
+
+    const systemPrompt = `${BM_SYSTEM_PROMPT}
+
+Current building: ${building.name}
+Manager: ${building.manager.name}`
+
+    try {
+      const response = await sendMessage(conversationHistory, systemPrompt)
+
+      if (response.success) {
+        const aiResponse = {
+          id: Date.now() + 1,
+          type: 'ai',
+          text: response.message,
+          timestamp: Date.now()
+        }
+        setMessages(prev => [...prev, aiResponse])
+      } else {
+        const errorResponse = {
+          id: Date.now() + 1,
+          type: 'ai',
+          text: `I'm sorry, I encountered an error: ${response.error}. Please try again.`,
+          timestamp: Date.now()
+        }
+        setMessages(prev => [...prev, errorResponse])
+      }
+    } catch (err) {
+      const errorResponse = {
+        id: Date.now() + 1,
+        type: 'ai',
+        text: "I'm having trouble connecting. Please check your internet connection and try again.",
+        timestamp: Date.now()
+      }
+      setMessages(prev => [...prev, errorResponse])
+    } finally {
+      setIsTyping(false)
+    }
   }
 
   // Handle clear chat
