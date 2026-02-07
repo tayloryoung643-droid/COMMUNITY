@@ -762,6 +762,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
         isOpen={showFeedbackModal}
         onClose={() => setShowFeedbackModal(false)}
         userProfile={userProfile}
+        buildingName={buildingName}
         isDemoMode={isDemoMode}
         pageContext="home"
       />

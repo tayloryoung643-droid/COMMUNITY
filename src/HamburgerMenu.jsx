@@ -322,6 +322,7 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' 
         isOpen={showFeedbackModal}
         onClose={() => setShowFeedbackModal(false)}
         userProfile={userProfile}
+        buildingName={userProfile?.buildings?.name || userProfile?.building_name}
         isDemoMode={isDemoMode}
         pageContext="hamburger_menu"
       />

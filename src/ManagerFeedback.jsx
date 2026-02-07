@@ -19,7 +19,7 @@ const statusColors = {
   resolved: { bg: '#dcfce7', color: '#16a34a', label: 'Resolved' },
 }
 
-function ManagerFeedback() {
+function ManagerFeedback({ buildingName }) {
   const { userProfile, isDemoMode } = useAuth()
   const [feedbackList, setFeedbackList] = useState([])
   const [loading, setLoading] = useState(true)
@@ -124,6 +124,7 @@ function ManagerFeedback() {
           }
         }}
         userProfile={userProfile}
+        buildingName={buildingName}
         isDemoMode={isDemoMode}
         pageContext="manager_feedback_page"
       />

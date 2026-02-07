@@ -171,6 +171,7 @@ function Building({ onNavigate }) {
         isOpen={showFeedbackModal}
         onClose={() => setShowFeedbackModal(false)}
         userProfile={userProfile}
+        buildingName={userProfile?.buildings?.name || userProfile?.building_name}
         isDemoMode={isDemoMode}
         pageContext="building_page"
       />

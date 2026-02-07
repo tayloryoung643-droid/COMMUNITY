@@ -570,7 +570,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
     }
 
     if (activeNav === 'feedback') {
-      return <ManagerFeedback />
+      return <ManagerFeedback buildingName={building?.name} />
     }
 
     if (activeNav === 'settings') {
@@ -1145,6 +1145,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
         onClose={() => setShowFeedbackModal(false)}
         userProfile={userProfile}
         buildingId={building?.id}
+        buildingName={building?.name}
         isDemoMode={isDemoMode}
         pageContext={`manager_${activeNav}`}
       />

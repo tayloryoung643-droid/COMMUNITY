@@ -10,7 +10,7 @@ const CATEGORIES = [
   { value: 'general_feedback', label: 'Feedback', icon: MessageSquare },
 ]
 
-function FeedbackModal({ isOpen, onClose, userProfile, buildingId, pageContext, isDemoMode }) {
+function FeedbackModal({ isOpen, onClose, userProfile, buildingId, buildingName, pageContext, isDemoMode }) {
   const [category, setCategory] = useState('general_feedback')
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
@@ -61,6 +61,7 @@ function FeedbackModal({ isOpen, onClose, userProfile, buildingId, pageContext, 
         subject: subject.trim() || null,
         message: message.trim(),
         pageContext: pageContext || null,
+        buildingName: buildingName || null,
       })
       setShowSuccess(true)
     } catch (err) {
