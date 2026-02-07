@@ -35,7 +35,8 @@ import { useAuth } from './contexts/AuthContext'
 import './ManagerSettings.css'
 
 function ManagerSettings({ onNavigate }) {
-  const { userProfile, user, refreshUserProfile } = useAuth()
+  const { userProfile, user, isDemoMode, refreshUserProfile } = useAuth()
+  const isInDemoMode = isDemoMode || userProfile?.is_demo === true
   const buildingId = userProfile?.building_id
 
   const [activeTab, setActiveTab] = useState('profile')
@@ -106,8 +107,29 @@ function ManagerSettings({ onNavigate }) {
     { id: 'invite', label: 'Invite Residents', icon: Users }
   ]
 
-  // Initialize profile from userProfile
+  // Initialize profile from userProfile (or demo data)
   useEffect(() => {
+    if (isInDemoMode) {
+      setProfileData({
+        firstName: 'Alex',
+        lastName: 'Demo',
+        email: 'alex.demo@example.com',
+        phone: '(555) 123-4567'
+      })
+      setBuildingData({
+        name: 'The George',
+        address: '123 Main Street',
+        city: 'Austin',
+        state: 'TX',
+        zip: '78701',
+        description: 'A luxury high-rise in the heart of downtown Austin.',
+        totalUnits: '200'
+      })
+      setResidentCount(47)
+      setInviteStats({ total: 60, sent: 55, failed: 2, notInvited: 3 })
+      setChecklistItems({ buildingPhoto: true, buildingDescription: true, residentsInvited: true, faqSetup: true })
+      return
+    }
     if (!userProfile) return
     const nameParts = (userProfile.full_name || '').split(' ')
     const firstName = nameParts[0] || ''
@@ -118,10 +140,11 @@ function ManagerSettings({ onNavigate }) {
       email: user?.email || userProfile.email || '',
       phone: userProfile.phone || ''
     })
-  }, [userProfile, user])
+  }, [userProfile, user, isInDemoMode])
 
   // Fetch building data on mount
   useEffect(() => {
+    if (isInDemoMode) return
     const fetchBuildingData = async () => {
       if (!buildingId) return
       try {
@@ -151,11 +174,11 @@ function ManagerSettings({ onNavigate }) {
       }
     }
     fetchBuildingData()
-  }, [buildingId])
+  }, [buildingId, isInDemoMode])
 
   // Fetch invite tab data
   useEffect(() => {
-    if (!buildingId) return
+    if (isInDemoMode || !buildingId) return
     getResidentCount(buildingId).then(count => {
       setResidentCount(count)
       setChecklistItems(prev => ({ ...prev, residentsInvited: count > 0 }))
@@ -185,6 +208,11 @@ function ManagerSettings({ onNavigate }) {
 
   // Handle save
   const handleSave = async () => {
+    if (isInDemoMode) {
+      showToastMessage('Demo mode — changes not saved')
+      setHasChanges(false)
+      return
+    }
     setIsSaving(true)
     try {
       if (activeTab === 'profile') {
@@ -250,6 +278,10 @@ function ManagerSettings({ onNavigate }) {
 
   // Password change handler
   const handlePasswordChange = async () => {
+    if (isInDemoMode) {
+      showToastMessage('Demo mode — password not changed')
+      return
+    }
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       showToastMessage('Passwords do not match.')
       return
@@ -317,6 +349,11 @@ function ManagerSettings({ onNavigate }) {
   }
 
   const handleBackgroundUpload = async () => {
+    if (isInDemoMode) {
+      showToastMessage('Demo mode — upload not saved')
+      handleCancelBackgroundUpload()
+      return
+    }
     if (!selectedBackgroundFile || !buildingId) return
 
     setIsUploadingBackground(true)
@@ -347,6 +384,10 @@ function ManagerSettings({ onNavigate }) {
   }
 
   const handleRemoveBackground = async () => {
+    if (isInDemoMode) {
+      showToastMessage('Demo mode — changes not saved')
+      return
+    }
     if (!buildingId) return
 
     if (!window.confirm('Are you sure you want to remove the building photo? The default image will be shown to residents.')) {

@@ -176,7 +176,8 @@ function App() {
     try {
       const saved = localStorage.getItem('onboardingData')
       return saved ? JSON.parse(saved) : null
-    } catch {
+    } catch (e) {
+      console.error('Auth error:', e)
       return null
     }
   })

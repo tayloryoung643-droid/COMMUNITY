@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { MessageSquare, HelpCircle, Flag, Heart, MessageCircle, Share2, MoreHorizontal, Send, X, Sparkles, Users, Hand, ChevronDown, ChevronUp, Search, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
+import { MessageSquare, HelpCircle, Flag, Heart, MessageCircle, Share2, MoreHorizontal, Send, X, Sparkles, Users, Hand, ChevronDown, ChevronUp, Search, Sun, Cloud, CloudRain, Snowflake, Moon, Edit3, Trash2, Save, Check } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { supabase } from './lib/supabase'
-import { getPosts, createPost, likePost, unlikePost, getUserLikes } from './services/communityPostService'
+import { getPosts, createPost, deletePost, updatePost, likePost, unlikePost, getUserLikes } from './services/communityPostService'
 import HamburgerMenu from './HamburgerMenu'
 import EmptyState from './components/EmptyState'
 import './CommunityFeed.css'
@@ -155,6 +155,17 @@ function CommunityFeed({ onNavigate }) {
   const [activeFilter, setActiveFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileNeighborsExpanded, setMobileNeighborsExpanded] = useState(false)
+  const [openMenuId, setOpenMenuId] = useState(null)
+  const [editingPostId, setEditingPostId] = useState(null)
+  const [editPostText, setEditPostText] = useState('')
+  const [toastMessage, setToastMessage] = useState('')
+  const [showToast, setShowToast] = useState(false)
+
+  const showToastMsg = (msg) => {
+    setToastMessage(msg)
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 2000)
+  }
 
   // Neighbors data and state
   const currentUserFloor = userProfile?.unit_number
@@ -254,6 +265,7 @@ function CommunityFeed({ onNavigate }) {
           text: post.content,
           author: post.author?.full_name || 'Anonymous',
           unit: post.author?.role?.includes('manager') ? 'Management' : (post.author?.unit_number ? `Unit ${post.author.unit_number}` : ''),
+          authorId: post.author?.id || null,
           authorAvatarUrl: post.author?.id ? (avatarUrlMap[post.author.id] || null) : null,
           timestamp: new Date(post.created_at).getTime(),
           likes: post.likes_count || 0,
@@ -403,6 +415,7 @@ function CommunityFeed({ onNavigate }) {
           type: post.type || 'share',
           text: post.content,
           author: post.author?.full_name || 'Anonymous',
+          authorId: post.author?.id || null,
           unit: post.author?.role?.includes('manager') ? 'Management' : (post.author?.unit_number ? `Unit ${post.author.unit_number}` : ''),
           timestamp: new Date(post.created_at).getTime(),
           likes: post.likes_count || 0,
@@ -469,6 +482,80 @@ function CommunityFeed({ onNavigate }) {
         }))
       }
     }
+  }
+
+  // Handle edit post
+  const handleStartEdit = (post) => {
+    setEditingPostId(post.id)
+    setEditPostText(post.text)
+    setOpenMenuId(null)
+  }
+
+  const handleSaveEdit = async (postId) => {
+    const trimmed = editPostText.trim()
+    if (!trimmed) return
+
+    setPosts(prev => prev.map(p =>
+      p.id === postId ? { ...p, text: trimmed } : p
+    ))
+
+    if (!isInDemoMode) {
+      try {
+        await updatePost(postId, { content: trimmed })
+      } catch (err) {
+        console.error('[CommunityFeed] Error updating post:', err)
+      }
+    }
+
+    setEditingPostId(null)
+    setEditPostText('')
+  }
+
+  const handleCancelEdit = () => {
+    setEditingPostId(null)
+    setEditPostText('')
+  }
+
+  // Handle delete post
+  const handleDeletePost = async (post) => {
+    if (!window.confirm('Are you sure you want to delete this post? This cannot be undone.')) {
+      setOpenMenuId(null)
+      return
+    }
+
+    if (!isInDemoMode) {
+      try {
+        await deletePost(post.id)
+      } catch (err) {
+        console.error('[CommunityFeed] Error deleting post:', err)
+        alert('Failed to delete post. Please try again.')
+        setOpenMenuId(null)
+        return
+      }
+    }
+
+    setPosts(prev => prev.filter(p => p.id !== post.id))
+    if (isInDemoMode) {
+      demoPostsCache = posts.filter(p => p.id !== post.id)
+    }
+    setOpenMenuId(null)
+  }
+
+  // Handle share (copy to clipboard)
+  const handleShare = (post, e) => {
+    if (e) e.stopPropagation()
+    navigator.clipboard.writeText(post.text || '').then(() => {
+      showToastMsg('Copied!')
+    }).catch(() => {
+      showToastMsg('Failed to copy')
+    })
+  }
+
+  // Check if current user is the author of a post
+  const isOwnPost = (post) => {
+    if (isInDemoMode) return post.author === 'You'
+    if (!userProfile?.id || !post.authorId) return false
+    return post.authorId === userProfile.id
   }
 
   const formatTimeAgo = (timestamp) => {
@@ -796,10 +883,65 @@ function CommunityFeed({ onNavigate }) {
                         <span className="post-unit">{post.unit}</span>
                         <span className="header-separator">·</span>
                         <span className="post-time">{formatTimeAgo(post.timestamp)}</span>
+                        {isOwnPost(post) && (
+                          <div className="post-menu-wrapper" style={{ marginLeft: 'auto' }}>
+                            <button
+                              className="post-menu-btn"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setOpenMenuId(openMenuId === post.id ? null : post.id)
+                              }}
+                            >
+                              <MoreHorizontal size={16} />
+                            </button>
+                            {openMenuId === post.id && (
+                              <div className="post-menu" onClick={(e) => e.stopPropagation()}>
+                                <button
+                                  className="menu-item"
+                                  onClick={() => handleStartEdit(post)}
+                                >
+                                  <Edit3 size={14} />
+                                  <span>Edit Post</span>
+                                </button>
+                                <button
+                                  className="menu-item danger"
+                                  onClick={() => handleDeletePost(post)}
+                                >
+                                  <Trash2 size={14} />
+                                  <span>Delete Post</span>
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       <div className="post-content">
-                        <p>{post.text}</p>
+                        {editingPostId === post.id ? (
+                          <div className="edit-post-inline" onClick={(e) => e.stopPropagation()}>
+                            <textarea
+                              value={editPostText}
+                              onChange={(e) => setEditPostText(e.target.value)}
+                              rows={3}
+                              autoFocus
+                            />
+                            <div className="edit-post-actions">
+                              <button className="btn-secondary btn-sm" onClick={handleCancelEdit}>
+                                Cancel
+                              </button>
+                              <button
+                                className="btn-primary btn-sm"
+                                onClick={() => handleSaveEdit(post.id)}
+                                disabled={!editPostText.trim()}
+                              >
+                                <Save size={14} />
+                                Save
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p>{post.text}</p>
+                        )}
                       </div>
 
                       <div className="post-footer">
@@ -822,7 +964,7 @@ function CommunityFeed({ onNavigate }) {
                             <MessageCircle size={16} />
                             <span>{post.comments}</span>
                           </button>
-                          <button className="action-btn" onClick={(e) => e.stopPropagation()}>
+                          <button className="action-btn" onClick={(e) => handleShare(post, e)}>
                             <Share2 size={16} />
                           </button>
                         </div>
@@ -893,6 +1035,14 @@ function CommunityFeed({ onNavigate }) {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="copied-toast">
+          <Check size={14} />
+          <span>{toastMessage}</span>
         </div>
       )}
     </div>

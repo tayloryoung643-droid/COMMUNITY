@@ -15,12 +15,12 @@ import {
   PinOff,
   Edit3,
   Trash2,
-  EyeOff,
-  Check
+  Check,
+  Save
 } from 'lucide-react'
 import './ManagerCommunity.css'
 import { useAuth } from './contexts/AuthContext'
-import { getPosts, createPost, deletePost, likePost, unlikePost, getUserLikes, getComments, addComment } from './services/communityPostService'
+import { getPosts, createPost, deletePost, updatePost, likePost, unlikePost, getUserLikes, getComments, addComment } from './services/communityPostService'
 import AnnouncementModal from './components/AnnouncementModal'
 
 // Demo posts data - only shown for demo accounts
@@ -50,6 +50,20 @@ function ManagerCommunity() {
   // Posts data - demo mode gets demo data, real mode fetches from Supabase
   const [posts, setPosts] = useState(isInDemoMode ? DEMO_POSTS : [])
   const [loading, setLoading] = useState(false)
+
+  // Edit post state
+  const [editingPostId, setEditingPostId] = useState(null)
+  const [editPostText, setEditPostText] = useState('')
+
+  // Toast state
+  const [toastMessage, setToastMessage] = useState('')
+  const [showToast, setShowToast] = useState(false)
+
+  const showToastMsg = (msg) => {
+    setToastMessage(msg)
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 2000)
+  }
 
   // Comments state
   const [expandedComments, setExpandedComments] = useState(new Set())
@@ -267,12 +281,49 @@ function ManagerCommunity() {
     setOpenMenuId(null)
   }
 
-  // Handle hide post (removes from view but keeps in data)
-  const handleHidePost = (postId) => {
-    setPosts(prev => prev.map(post =>
-      post.id === postId ? { ...post, hidden: true } : post
-    ))
+  // Handle edit post
+  const handleStartEdit = (post) => {
+    setEditingPostId(post.id)
+    setEditPostText(post.text)
     setOpenMenuId(null)
+  }
+
+  const handleSaveEdit = async (postId) => {
+    const trimmed = editPostText.trim()
+    if (!trimmed) return
+
+    // Optimistic update
+    setPosts(prev => prev.map(p =>
+      p.id === postId ? { ...p, text: trimmed } : p
+    ))
+
+    if (!isInDemoMode) {
+      try {
+        await updatePost(postId, { content: trimmed })
+      } catch (err) {
+        console.error('[ManagerCommunity] Error updating post:', err)
+        alert('Failed to update post. Please try again.')
+        // Revert would require storing old text; for now just refresh
+      }
+    }
+
+    setEditingPostId(null)
+    setEditPostText('')
+  }
+
+  const handleCancelEdit = () => {
+    setEditingPostId(null)
+    setEditPostText('')
+  }
+
+  // Handle share (copy to clipboard)
+  const handleShare = (post) => {
+    const text = post.text || ''
+    navigator.clipboard.writeText(text).then(() => {
+      showToastMsg('Copied!')
+    }).catch(() => {
+      showToastMsg('Failed to copy')
+    })
   }
 
   // Handle announcement success (from modal)
@@ -368,7 +419,6 @@ function ManagerCommunity() {
 
   // Sort posts: pinned first, then by timestamp
   const sortedPosts = [...posts]
-    .filter(p => !p.hidden)
     .filter(p => activeFilter === 'all' || p.type === activeFilter)
     .sort((a, b) => {
       if (a.pinned && !b.pinned) return -1
@@ -519,16 +569,12 @@ function ManagerCommunity() {
                             {post.pinned ? <PinOff size={16} /> : <Pin size={16} />}
                             <span>{post.pinned ? 'Unpin from Top' : 'Pin to Top'}</span>
                           </button>
-                          <button className="menu-item">
-                            <Edit3 size={16} />
-                            <span>Edit Post</span>
-                          </button>
                           <button
                             className="menu-item"
-                            onClick={() => handleHidePost(post.id)}
+                            onClick={() => handleStartEdit(post)}
                           >
-                            <EyeOff size={16} />
-                            <span>Hide Post</span>
+                            <Edit3 size={16} />
+                            <span>Edit Post</span>
                           </button>
                           <div className="menu-divider" />
                           <button
@@ -548,7 +594,31 @@ function ManagerCommunity() {
                   {isAnnouncement && post.title && (
                     <h3 className="announcement-title">{post.title}</h3>
                   )}
-                  <p>{post.text}</p>
+                  {editingPostId === post.id ? (
+                    <div className="edit-post-inline">
+                      <textarea
+                        value={editPostText}
+                        onChange={(e) => setEditPostText(e.target.value)}
+                        rows={3}
+                        autoFocus
+                      />
+                      <div className="edit-post-actions">
+                        <button className="btn-secondary btn-sm" onClick={handleCancelEdit}>
+                          Cancel
+                        </button>
+                        <button
+                          className="btn-primary btn-sm"
+                          onClick={() => handleSaveEdit(post.id)}
+                          disabled={!editPostText.trim()}
+                        >
+                          <Save size={14} />
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p>{post.text}</p>
+                  )}
                 </div>
 
                 <div className="post-actions">
@@ -566,7 +636,7 @@ function ManagerCommunity() {
                     <MessageCircle size={18} />
                     <span>{post.comments}</span>
                   </button>
-                  <button className="action-btn">
+                  <button className="action-btn" onClick={() => handleShare(post)}>
                     <Share2 size={18} />
                   </button>
                 </div>
@@ -689,6 +759,14 @@ function ManagerCommunity() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="success-toast">
+          <Check size={18} />
+          <span>{toastMessage}</span>
         </div>
       )}
     </div>

@@ -878,3 +878,36 @@
     bottom: var(--spacing-lg);
   }
 }
+
+/* Inline edit */
+.edit-post-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.edit-post-inline textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 10px;
+  color: var(--text-primary, #fff);
+  font-size: 0.9rem;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.edit-post-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.btn-sm {
+  padding: 6px 12px !important;
+  font-size: 0.8rem !important;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

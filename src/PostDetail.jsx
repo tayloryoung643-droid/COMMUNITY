@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { ChevronLeft, Heart, MessageCircle, Share2, Send, Sun, Cloud, CloudRain, Snowflake, Moon, MessageSquare, HelpCircle, Flag } from 'lucide-react'
+import { ChevronLeft, Heart, MessageCircle, Share2, Send, Sun, Cloud, CloudRain, Snowflake, Moon, MessageSquare, HelpCircle, Flag, Check } from 'lucide-react'
 import { addComment, getComments, likePost, unlikePost, hasUserLikedPost } from './services/communityPostService'
 import { useAuth } from './contexts/AuthContext'
 import './PostDetail.css'
@@ -16,6 +16,22 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLiking, setIsLiking] = useState(false)
   const commentInputRef = useRef(null)
+  const [showToast, setShowToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
+
+  const showToastMsg = (msg) => {
+    setToastMessage(msg)
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 2000)
+  }
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(post?.text || '').then(() => {
+      showToastMsg('Copied!')
+    }).catch(() => {
+      showToastMsg('Failed to copy')
+    })
+  }
 
   // Weather and time state - matches other pages exactly
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -359,7 +375,7 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
             <MessageCircle size={20} />
             <span>Comment</span>
           </button>
-          <button className="post-action-btn">
+          <button className="post-action-btn" onClick={handleShare}>
             <Share2 size={20} />
             <span>Share</span>
           </button>
@@ -472,6 +488,14 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
           </div>
         </div>
       </div>
+
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="copied-toast">
+          <Check size={14} />
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </div>
   )
 }

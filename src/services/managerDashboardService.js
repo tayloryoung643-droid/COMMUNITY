@@ -339,7 +339,7 @@ async function fetchRecentActivity(buildingId) {
     // 6. Bulletin Board Posts (if table exists)
     try {
       const { data: bulletins } = await supabase
-        .from('bulletin_posts')
+        .from('bulletin_listings')
         .select('id, title, created_at, author:author_id(full_name)')
         .eq('building_id', buildingId)
         .order('created_at', { ascending: false })

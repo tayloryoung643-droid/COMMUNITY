@@ -455,7 +455,7 @@ export async function updateInvitation(invitationId, fields) {
  */
 export async function hasFAQEntries(buildingId) {
   const { count, error } = await supabase
-    .from('faqs')
+    .from('faq_items')
     .select('id', { count: 'exact', head: true })
     .eq('building_id', buildingId)
 
