@@ -165,6 +165,13 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' 
         <div className="global-menu-profile-avatar">
           {isDemoMode ? (
             <img src="/images/profile-taylor.jpg" alt="Profile" />
+          ) : userProfile?.avatar_signed_url ? (
+            <img src={userProfile.avatar_signed_url} alt="Profile" style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              borderRadius: '50%'
+            }} />
           ) : (
             <div style={{
               width: '100%',

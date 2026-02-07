@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Package, Calendar, Users, ChevronRight, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon, HelpCircle, MessageSquare, UserPlus, Sparkles, ClipboardList } from 'lucide-react'
+import { Package, Calendar, Users, ChevronRight, X, Image, Send, Check, Cloud, Sun, CloudRain, Snowflake, Moon, HelpCircle, MessageSquare, UserPlus, Sparkles, ClipboardList, Heart, MessageCircle, Share2 } from 'lucide-react'
 import HamburgerMenu from './HamburgerMenu'
 import { eventsData } from './eventsData'
 import { supabase } from './lib/supabase'
 import { getHomeIntelligence, logEngagementEvent } from './services/homeIntelligenceService'
+import { getPosts as getCommunityPosts } from './services/communityPostService'
 import { getActiveListings } from './services/bulletinService'
 import { useAuth } from './contexts/AuthContext'
 import './Home.css'
@@ -105,17 +106,13 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
           console.error('[Home] Events fetch error:', eventsError)
         }
 
-        // Fetch community posts for this building (get more for activity feed)
-        const { data: posts, error: postsError } = await supabase
-          .from('community_posts')
-          .select('*, author:author_id(full_name, unit_number)')
-          .eq('building_id', buildingId)
-          .order('created_at', { ascending: false })
-          .limit(10)
-
-        if (!postsError) {
-          setRealPosts(posts || [])
-          console.log('[Home] Posts fetched:', posts?.length || 0)
+        // Fetch community posts with dynamic like/comment counts
+        try {
+          const postsData = await getCommunityPosts(buildingId)
+          setRealPosts(postsData || [])
+          console.log('[Home] Posts fetched:', postsData?.length || 0)
+        } catch (postsError) {
+          console.error('[Home] Posts fetch error:', postsError)
         }
 
         // Fetch new joiners (users who joined in the last 7 days)
@@ -370,8 +367,8 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
     author: post.author?.full_name || 'Neighbor',
     unit: post.author?.unit_number ? `Unit ${post.author.unit_number}` : '',
     timestamp: new Date(post.created_at).getTime(),
-    likes: post.likes_count || 0,
-    comments: post.comments_count || 0,
+    likes: post.likes_count ?? post.likes ?? 0,
+    comments: post.comments_count ?? post.comments ?? 0,
     commentsList: []
   }))
 
@@ -595,6 +592,16 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
                       ? post.text.substring(0, 80) + '...'
                       : post.text}
                   </span>
+                  <div className="community-post-footer">
+                    <span className="post-stat">
+                      <Heart size={14} />
+                      <span>{post.likes}</span>
+                    </span>
+                    <span className="post-stat">
+                      <MessageCircle size={14} />
+                      <span>{post.comments}</span>
+                    </span>
+                  </div>
                 </div>
               </button>
             ))

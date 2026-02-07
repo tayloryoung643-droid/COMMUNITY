@@ -19,7 +19,7 @@ export async function getPosts(buildingId) {
   // Fetch authors, comment counts, and like counts in parallel
   const [usersResult, commentsResult, likesResult] = await Promise.all([
     authorIds.length > 0
-      ? supabase.from('users').select('id, full_name, unit_number').in('id', authorIds)
+      ? supabase.from('users').select('id, full_name, unit_number, avatar_url').in('id', authorIds)
       : { data: [], error: null },
     supabase.from('post_comments').select('post_id').in('post_id', postIds),
     supabase.from('post_likes').select('post_id').in('post_id', postIds),

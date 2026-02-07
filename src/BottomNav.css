@@ -9,7 +9,7 @@
   display: flex;
   align-items: center;
   justify-content: space-evenly;
-  height: 64px;
+  height: 72px;
   background: #FFFCF7;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   padding: 0;
@@ -23,15 +23,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
   flex: 1;
   min-width: 0;
   max-width: 25%;
-  padding: 8px 4px;
+  padding: 10px 4px;
   background: transparent;
   border: none;
   color: #8A8075;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -40,7 +40,7 @@
 
 .global-bottom-nav .nav-tab span {
   white-space: nowrap;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .global-bottom-nav .nav-tab:hover {
@@ -54,14 +54,14 @@
 /* Soft pill background behind active icon */
 .global-bottom-nav .nav-tab.active svg {
   background: rgba(0, 0, 0, 0.06);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 6px;
   margin: -6px;
 }
 
 .global-bottom-nav .nav-tab svg {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   stroke-width: 1.5;
   flex-shrink: 0;
 }
@@ -69,7 +69,7 @@
 /* Mobile specific - ensure consistent sizing */
 @media (max-width: 767px) {
   .global-bottom-nav {
-    height: 64px !important;
+    height: 72px !important;
   }
 
   .global-bottom-nav .nav-tab {
@@ -78,6 +78,6 @@
   }
 
   .global-bottom-nav .nav-tab span {
-    font-size: 9px !important;
+    font-size: 11px !important;
   }
 }

@@ -95,8 +95,9 @@ function Neighbors({ onBack, isDemoMode, userProfile }) {
       try {
         const { data, error } = await supabase
           .from('users')
-          .select('id, full_name, unit_number')
+          .select('id, full_name, unit_number, avatar_url, allow_waves')
           .eq('building_id', buildingId)
+          .eq('role', 'resident')
           .neq('id', userProfile.id) // Exclude current user
           .order('unit_number', { ascending: true })
 
@@ -104,14 +105,33 @@ function Neighbors({ onBack, isDemoMode, userProfile }) {
           console.error('[Neighbors] Error fetching:', error)
           setNeighbors([])
         } else {
-          const transformedNeighbors = (data || []).map((user, index) => ({
-            id: user.id,
-            name: user.full_name || 'Neighbor',
-            unit: user.unit_number || 'N/A',
-            floor: user.unit_number ? parseInt(user.unit_number.toString().slice(0, -2)) || 1 : 1,
-            color: COLORS[index % COLORS.length],
-            waved: false
-          }))
+          // Generate signed URLs for avatars
+          const neighborsWithAvatars = await Promise.all(
+            (data || []).map(async (user, index) => {
+              let avatarSignedUrl = null
+              if (user.avatar_url) {
+                try {
+                  const { data: urlData } = await supabase.storage
+                    .from('profile-images')
+                    .createSignedUrl(user.avatar_url, 3600)
+                  avatarSignedUrl = urlData?.signedUrl || null
+                } catch (e) {
+                  // Ignore avatar URL errors
+                }
+              }
+              return {
+                id: user.id,
+                name: user.full_name || 'Neighbor',
+                unit: user.unit_number || 'N/A',
+                floor: user.unit_number ? parseInt(user.unit_number.toString().slice(0, -2)) || 1 : 1,
+                color: COLORS[index % COLORS.length],
+                avatarSignedUrl,
+                allowWaves: user.allow_waves !== false,
+                waved: false
+              }
+            })
+          )
+          const transformedNeighbors = neighborsWithAvatars
           setNeighbors(transformedNeighbors)
           console.log('[Neighbors] Fetched:', transformedNeighbors.length, 'neighbors')
         }
@@ -212,7 +232,16 @@ function Neighbors({ onBack, isDemoMode, userProfile }) {
                 >
                   <div className={`avatar-ring avatar-ring-${neighbor.color}`}>
                     <div className="neighbor-avatar">
-                      {getInitials(neighbor.name)}
+                      {neighbor.avatarSignedUrl ? (
+                        <img src={neighbor.avatarSignedUrl} alt="" style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          borderRadius: '50%'
+                        }} />
+                      ) : (
+                        getInitials(neighbor.name)
+                      )}
                     </div>
                   </div>
                   <div className="neighbor-info">

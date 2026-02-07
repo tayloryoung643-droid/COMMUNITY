@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { MessageSquare, HelpCircle, Flag, Heart, MessageCircle, Share2, MoreHorizontal, Send, X, Sparkles, Users, Hand, ChevronDown, ChevronUp, Search, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
+import { supabase } from './lib/supabase'
 import { getPosts, createPost, likePost, unlikePost, getUserLikes } from './services/communityPostService'
 import HamburgerMenu from './HamburgerMenu'
 import EmptyState from './components/EmptyState'
@@ -168,8 +169,36 @@ function CommunityFeed({ onNavigate }) {
       console.log('[CommunityFeed] MODE: DEMO - neighbors.length:', DEMO_NEIGHBORS.length)
       setNeighbors(DEMO_NEIGHBORS)
     } else {
-      console.log('[CommunityFeed] MODE: REAL - neighbors will be fetched from DB')
-      setNeighbors([])
+      // Real mode: fetch neighbors from DB
+      const loadNeighbors = async () => {
+        const buildingId = userProfile?.building_id
+        if (!buildingId || !userProfile?.id) return
+        try {
+          const { data, error } = await supabase
+            .from('users')
+            .select('id, full_name, unit_number, avatar_url, allow_waves')
+            .eq('building_id', buildingId)
+            .eq('role', 'resident')
+            .neq('id', userProfile.id)
+            .order('unit_number', { ascending: true })
+          if (!error && data) {
+            const COLORS = ['blue', 'purple', 'cyan', 'green', 'pink', 'orange']
+            const transformed = data.map((user, index) => ({
+              id: user.id,
+              name: user.full_name || 'Neighbor',
+              unit: user.unit_number || 'N/A',
+              floor: user.unit_number ? parseInt(user.unit_number.toString().slice(0, -2)) || 1 : 1,
+              color: COLORS[index % COLORS.length],
+              waved: false
+            }))
+            setNeighbors(transformed)
+            console.log('[CommunityFeed] Neighbors fetched:', transformed.length)
+          }
+        } catch (err) {
+          console.error('[CommunityFeed] Error fetching neighbors:', err)
+        }
+      }
+      loadNeighbors()
     }
 
     async function loadPosts() {
@@ -202,12 +231,30 @@ function CommunityFeed({ onNavigate }) {
 
         const likedSet = new Set(userLikedPostIds)
 
+        // Generate signed avatar URLs for unique authors
+        const avatarUrlMap = {}
+        const authorsWithAvatars = (postsData || [])
+          .filter(p => p.author?.avatar_url)
+          .map(p => ({ id: p.author.id, avatar_url: p.author.avatar_url }))
+          .filter((a, i, arr) => arr.findIndex(x => x.id === a.id) === i) // dedupe
+        await Promise.all(
+          authorsWithAvatars.map(async (author) => {
+            try {
+              const { data: urlData } = await supabase.storage
+                .from('profile-images')
+                .createSignedUrl(author.avatar_url, 3600)
+              if (urlData?.signedUrl) avatarUrlMap[author.id] = urlData.signedUrl
+            } catch (e) { /* ignore */ }
+          })
+        )
+
         const transformedData = (postsData || []).map(post => ({
           id: post.id,
           type: post.type || 'share',
           text: post.content,
           author: post.author?.full_name || 'Anonymous',
           unit: `Unit ${post.author?.unit_number || 'N/A'}`,
+          authorAvatarUrl: post.author?.id ? (avatarUrlMap[post.author.id] || null) : null,
           timestamp: new Date(post.created_at).getTime(),
           likes: post.likes_count || 0,
           comments: post.comments_count || 0,
@@ -378,7 +425,7 @@ function CommunityFeed({ onNavigate }) {
     const isCurrentlyLiked = likedPosts.has(postId)
     console.log('[CommunityFeed] isCurrentlyLiked:', isCurrentlyLiked)
 
-    // Optimistic update
+    // Optimistic update - toggle liked state and adjust count
     setLikedPosts(prev => {
       const newSet = new Set(prev)
       if (newSet.has(postId)) {
@@ -388,19 +435,20 @@ function CommunityFeed({ onNavigate }) {
       }
       return newSet
     })
+    setPosts(prev => prev.map(p => {
+      if (p.id === postId) {
+        return { ...p, likes: p.likes + (isCurrentlyLiked ? -1 : 1) }
+      }
+      return p
+    }))
 
     if (!isInDemoMode && userProfile?.id) {
-      // Real mode: update in Supabase
-      console.log('[CommunityFeed] Calling Supabase for like action...')
       try {
         if (isCurrentlyLiked) {
-          console.log('[CommunityFeed] Calling unlikePost:', postId, userProfile.id)
           await unlikePost(postId, userProfile.id)
         } else {
-          console.log('[CommunityFeed] Calling likePost:', postId, userProfile.id)
           await likePost(postId, userProfile.id)
         }
-        console.log('[CommunityFeed] Like action successful')
       } catch (err) {
         console.error('[CommunityFeed] Error updating like:', err)
         // Revert optimistic update on error
@@ -413,9 +461,13 @@ function CommunityFeed({ onNavigate }) {
           }
           return newSet
         })
+        setPosts(prev => prev.map(p => {
+          if (p.id === postId) {
+            return { ...p, likes: p.likes + (isCurrentlyLiked ? 1 : -1) }
+          }
+          return p
+        }))
       }
-    } else {
-      console.log('[CommunityFeed] Skipping Supabase call - demo mode or no user:', { isInDemoMode, hasUserId: !!userProfile?.id })
     }
   }
 
@@ -725,8 +777,17 @@ function CommunityFeed({ onNavigate }) {
                     className="post-card"
                     onClick={handlePostClick}
                   >
-                    <div className="author-avatar" style={{ background: `linear-gradient(135deg, ${typeConfig.color}, ${typeConfig.color}88)` }}>
-                      {post.author.charAt(0)}
+                    <div className="author-avatar" style={{ background: post.authorAvatarUrl ? 'transparent' : `linear-gradient(135deg, ${typeConfig.color}, ${typeConfig.color}88)` }}>
+                      {post.authorAvatarUrl ? (
+                        <img src={post.authorAvatarUrl} alt="" style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          borderRadius: '50%'
+                        }} />
+                      ) : (
+                        post.author.charAt(0)
+                      )}
                     </div>
                     <div className="post-body">
                       <div className="post-header">
@@ -752,7 +813,7 @@ function CommunityFeed({ onNavigate }) {
                             onClick={(e) => { e.stopPropagation(); handleLike(post.id); }}
                           >
                             <Heart size={16} fill={isLiked ? '#ef4444' : 'none'} />
-                            <span>{post.likes + (isLiked ? 1 : 0)}</span>
+                            <span>{post.likes}</span>
                           </button>
                           <button
                             className="action-btn"

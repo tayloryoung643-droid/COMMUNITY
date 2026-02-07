@@ -342,7 +342,7 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
           </span>
           <span className="stat-item">
             <MessageCircle size={16} />
-            <span>{post.comments + comments.length} comments</span>
+            <span>{comments.length} comments</span>
           </span>
         </div>
 

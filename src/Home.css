@@ -454,6 +454,27 @@
   overflow: hidden;
 }
 
+.community-post-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.community-post-footer .post-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #8A8075;
+}
+
+.community-post-footer .post-stat svg {
+  opacity: 0.7;
+}
+
 .community-icon {
   display: flex;
   align-items: center;
