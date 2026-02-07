@@ -270,6 +270,7 @@ export async function sendInviteEmail(email, fullName, buildingName) {
 /**
  * Process a full batch: save to DB, send emails, update statuses
  * Calls onProgress(sent, total) as each email sends
+ * Includes rate-limit delay (600ms between sends) to avoid Resend throttling
  */
 export async function processInviteBatch(buildingId, invitedBy, residents, buildingName, onProgress) {
   // 1. Save all to database
@@ -281,9 +282,21 @@ export async function processInviteBatch(buildingId, invitedBy, residents, build
   let sentCount = 0
   let failedCount = 0
 
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
   for (let i = 0; i < withEmail.length; i++) {
     const inv = withEmail[i]
-    const result = await sendInviteEmail(inv.email, inv.name, buildingName)
+
+    // Rate-limit: wait 600ms between sends to stay under Resend's 2/sec limit
+    if (i > 0) await delay(600)
+
+    let result = await sendInviteEmail(inv.email, inv.name, buildingName)
+
+    // Retry once on failure (rate-limit or transient error)
+    if (!result.success) {
+      await delay(1500)
+      result = await sendInviteEmail(inv.email, inv.name, buildingName)
+    }
 
     if (result.success) {
       await updateInvitationStatus(inv.id, 'sent')
