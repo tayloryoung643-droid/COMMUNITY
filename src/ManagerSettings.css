@@ -1400,18 +1400,152 @@
   }
 }
 
+/* Read-only Input */
+.readonly-input {
+  background: #FAF8F5 !important;
+  color: var(--md-text-secondary) !important;
+  cursor: default;
+}
+
+/* Access Code Display (Invite Tab) */
+.access-code-display {
+  margin-bottom: 1.5rem;
+}
+
+.access-code-value {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: #FAF8F5;
+  border: 1px solid rgba(139, 115, 85, 0.08);
+  border-radius: 10px;
+}
+
+.access-code-value > svg {
+  color: var(--md-accent);
+  flex-shrink: 0;
+}
+
+.access-code-value > span {
+  flex: 1;
+  font-family: monospace;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--md-text-primary);
+}
+
+.access-code-value .code-hidden-text {
+  color: var(--md-text-secondary);
+}
+
+.access-code-value .code-revealed {
+  color: var(--md-text-primary);
+}
+
+/* Resident Counter */
+.resident-counter {
+  margin-top: 1rem;
+}
+
+.resident-counter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.resident-counter-label {
+  font-size: 0.875rem;
+  color: var(--md-text-secondary);
+}
+
+.resident-counter-label strong {
+  color: var(--md-text-primary);
+}
+
+.resident-counter-pct {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--md-accent);
+}
+
+.resident-progress-bar {
+  height: 8px;
+  background: rgba(139, 115, 85, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.resident-progress-fill {
+  height: 100%;
+  background: var(--md-accent);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  min-width: 2px;
+}
+
+/* Checklist */
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.875rem 1rem;
+  background: #FAF8F5;
+  border: 1px solid rgba(139, 115, 85, 0.08);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.checklist-item.done {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.checklist-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(139, 115, 85, 0.1);
+  color: var(--md-text-secondary);
+}
+
+.checklist-item.done .checklist-icon {
+  background: var(--md-green);
+  color: white;
+}
+
+.checklist-number {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.checklist-item span {
+  font-size: 0.875rem;
+  color: var(--md-text-secondary);
+}
+
+.checklist-item.done span {
+  color: var(--md-text-primary);
+  text-decoration: line-through;
+  text-decoration-color: rgba(0, 0, 0, 0.2);
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .settings-layout {
     grid-template-columns: 240px 1fr;
-  }
-
-  .amenities-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .access-codes-grid {
-    grid-template-columns: 1fr;
   }
 }
 
@@ -1467,24 +1601,9 @@
     grid-column: 1;
   }
 
-  .amenities-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .profile-header {
     flex-direction: column;
     text-align: center;
-  }
-
-  .hours-item {
-    flex-direction: column;
-    gap: 0.75rem;
-    align-items: flex-start;
-  }
-
-  .hours-inputs {
-    width: 100%;
-    flex-wrap: wrap;
   }
 
   .modal-footer {
@@ -1500,44 +1619,5 @@
 @media (max-width: 480px) {
   .settings-card .card-body {
     padding: 1rem;
-  }
-
-  .amenities-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-  }
-
-  .amenity-item {
-    padding: 0.75rem;
-  }
-
-  .amenity-item span {
-    font-size: 0.6875rem;
-  }
-
-  .notification-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-
-  .notification-item .toggle-switch {
-    align-self: flex-end;
-  }
-
-  .delivery-item,
-  .security-item,
-  .integration-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .delivery-item .toggle-switch,
-  .security-item .toggle-switch,
-  .security-actions,
-  .integration-item .btn-secondary,
-  .integration-actions {
-    align-self: flex-end;
   }
 }

@@ -1,34 +1,21 @@
-import { useState, useEffect } from 'react'
-import { ArrowLeft, Camera, User, Home, Calendar, FileText, Eye, EyeOff, Hand, Bell, Mail, Package, PartyPopper, MessageSquare, LogOut, ChevronRight, AlertTriangle, Phone, HelpCircle } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { ArrowLeft, Camera, User, Home, Calendar, FileText, Eye, EyeOff, Hand, Bell, Mail, Package, PartyPopper, MessageSquare, LogOut, ChevronRight, AlertTriangle, Phone, HelpCircle, CheckCircle, Save, Loader2 } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
+import { updateUserProfile, uploadProfilePhoto, getBuildingManagerContact } from './services/settingsService'
 import './Settings.css'
 
 function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
-  // Get cached building background URL from context
-  const { buildingBackgroundUrl } = useAuth()
+  const { buildingBackgroundUrl, refreshUserProfile, user } = useAuth()
 
-  // Demo profile data
-  const demoProfile = {
-    displayName: 'Taylor Young',
-    unit: '1201',
-    floor: '12',
-    moveInDate: 'March 2023',
-    bio: 'Coffee enthusiast, dog lover, and weekend hiker. Always happy to chat in the elevator!',
+  // Profile state
+  const [profile, setProfile] = useState({
+    displayName: '',
+    unit: '',
+    floor: '',
+    moveInDate: '',
+    bio: '',
     showInDirectory: true
-  }
-
-  // Real profile data from userProfile
-  const realProfile = {
-    displayName: userProfile?.full_name || '',
-    unit: userProfile?.unit_number || '',
-    floor: userProfile?.unit_number ? userProfile.unit_number.toString().slice(0, -2) || '1' : '',
-    moveInDate: userProfile?.created_at ? new Date(userProfile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '',
-    bio: userProfile?.bio || '',
-    showInDirectory: userProfile?.show_in_directory ?? true
-  }
-
-  // Profile state - use demo or real based on mode
-  const [profile, setProfile] = useState(isDemoMode ? demoProfile : realProfile)
+  })
 
   // Privacy state
   const [privacy, setPrivacy] = useState({
@@ -44,6 +31,68 @@ function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
     messages: true
   })
 
+  // Photo state
+  const [avatarPreview, setAvatarPreview] = useState(null)
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState(null)
+  const fileInputRef = useRef(null)
+
+  // Save state
+  const [isSaving, setIsSaving] = useState(false)
+  const [showToast, setShowToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
+
+  // Emergency contact state
+  const [managerContact, setManagerContact] = useState(null)
+
+  // Initialize from userProfile
+  useEffect(() => {
+    if (!userProfile) return
+
+    if (isDemoMode) {
+      setProfile({
+        displayName: 'Taylor Young',
+        unit: '1201',
+        floor: '12',
+        moveInDate: 'March 2023',
+        bio: 'Coffee enthusiast, dog lover, and weekend hiker. Always happy to chat in the elevator!',
+        showInDirectory: true
+      })
+      setPrivacy({ showUnitOnListings: true, allowWaves: true })
+      setNotifications({ announcements: true, packages: true, events: false, messages: true })
+    } else {
+      setProfile({
+        displayName: userProfile.full_name || '',
+        unit: userProfile.unit_number || '',
+        floor: userProfile.unit_number ? userProfile.unit_number.toString().slice(0, -2) || '1' : '',
+        moveInDate: userProfile.created_at ? new Date(userProfile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '',
+        bio: userProfile.bio || '',
+        showInDirectory: userProfile.show_in_directory ?? true
+      })
+      setPrivacy({
+        showUnitOnListings: userProfile.show_unit_on_bulletin ?? true,
+        allowWaves: userProfile.allow_waves ?? true
+      })
+      setNotifications({
+        announcements: userProfile.notify_announcements ?? true,
+        packages: userProfile.notify_packages ?? true,
+        events: userProfile.notify_events ?? false,
+        messages: userProfile.notify_messages ?? true
+      })
+    }
+  }, [userProfile, isDemoMode])
+
+  // Fetch manager contact for emergency section
+  useEffect(() => {
+    if (isDemoMode || !userProfile?.building_id) return
+    getBuildingManagerContact(userProfile.building_id).then(setManagerContact)
+  }, [userProfile?.building_id, isDemoMode])
+
+  const showToastMessage = (message) => {
+    setToastMessage(message)
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 3000)
+  }
+
   const handleProfileChange = (field, value) => {
     setProfile(prev => ({ ...prev, [field]: value }))
   }
@@ -54,6 +103,91 @@ function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
 
   const handleNotificationChange = (field) => {
     setNotifications(prev => ({ ...prev, [field]: !prev[field] }))
+  }
+
+  // Photo handlers
+  const handlePhotoSelect = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      showToastMessage('Please upload a JPG, PNG, or WebP image.')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showToastMessage('Image must be less than 5MB.')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onloadend = () => setAvatarPreview(reader.result)
+    reader.readAsDataURL(file)
+    setSelectedAvatarFile(file)
+  }
+
+  // Save handler
+  const handleSave = async () => {
+    if (isDemoMode) {
+      showToastMessage('Demo mode — changes not saved')
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      // Upload avatar if changed
+      if (selectedAvatarFile && user?.id) {
+        await uploadProfilePhoto(user.id, selectedAvatarFile)
+        setSelectedAvatarFile(null)
+        setAvatarPreview(null)
+      }
+
+      // Save all profile fields
+      if (user?.id) {
+        await updateUserProfile(user.id, {
+          full_name: profile.displayName,
+          bio: profile.bio,
+          show_in_directory: profile.showInDirectory,
+          show_unit_on_bulletin: privacy.showUnitOnListings,
+          allow_waves: privacy.allowWaves,
+          notify_announcements: notifications.announcements,
+          notify_packages: notifications.packages,
+          notify_events: notifications.events,
+          notify_messages: notifications.messages
+        })
+      }
+
+      await refreshUserProfile()
+      showToastMessage('Settings saved!')
+    } catch (err) {
+      console.error('[Settings] Save error:', err)
+      showToastMessage(err.message || 'Failed to save. Please try again.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  // Determine avatar display
+  const getAvatarContent = () => {
+    if (avatarPreview) {
+      return <img src={avatarPreview} alt="Preview" />
+    }
+    if (isDemoMode) {
+      return <img src="/images/profile-taylor.jpg" alt="Taylor Young" />
+    }
+    if (userProfile?.avatar_signed_url) {
+      return <img src={userProfile.avatar_signed_url} alt={userProfile.full_name} />
+    }
+    return (
+      <div style={{
+        width: '100%', height: '100%',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+        color: 'white', fontSize: '24px', fontWeight: '600'
+      }}>
+        {(userProfile?.full_name || 'U').charAt(0).toUpperCase()}
+      </div>
+    )
   }
 
   const bgStyle = buildingBackgroundUrl ? { '--building-bg-image': `url(${buildingBackgroundUrl})` } : {}
@@ -80,28 +214,19 @@ function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
             {/* Profile Photo */}
             <div className="profile-photo-section">
               <div className="profile-photo">
-                {isDemoMode ? (
-                  <img src="/images/profile-taylor.jpg" alt="Taylor Young" />
-                ) : (
-                  <div style={{
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                    color: 'white',
-                    fontSize: '24px',
-                    fontWeight: '600'
-                  }}>
-                    {(userProfile?.full_name || 'U').charAt(0).toUpperCase()}
-                  </div>
-                )}
+                {getAvatarContent()}
               </div>
-              <button className="change-photo-btn">
+              <button className="change-photo-btn" onClick={() => fileInputRef.current?.click()}>
                 <Camera size={16} />
                 <span>Change Photo</span>
               </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handlePhotoSelect}
+                style={{ display: 'none' }}
+              />
             </div>
 
             {/* Display Name */}
@@ -136,18 +261,13 @@ function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
               <div className="readonly-field">Floor {profile.floor}</div>
             </div>
 
-            {/* Move-in Date */}
+            {/* Move-in Date (read-only) */}
             <div className="form-group">
               <label>
                 <Calendar size={14} />
                 Move-in Date
               </label>
-              <input
-                type="text"
-                value={profile.moveInDate}
-                onChange={(e) => handleProfileChange('moveInDate', e.target.value)}
-                placeholder="e.g., March 2023"
-              />
+              <div className="readonly-field">{profile.moveInDate || 'Not set'}</div>
             </div>
 
             {/* Bio */}
@@ -328,35 +448,30 @@ function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
           </h2>
 
           <div className="settings-card emergency-card">
-            <div className="emergency-contact">
-              <div className="emergency-info">
-                <span className="emergency-label">Building Emergency Line</span>
-                <span className="emergency-number">416-555-0911</span>
+            {managerContact && (
+              <div className="emergency-contact">
+                <div className="emergency-info">
+                  <span className="emergency-label">Building Manager — {managerContact.full_name}</span>
+                  <span className="emergency-number">
+                    {managerContact.phone || 'Contact via the app'}
+                  </span>
+                </div>
+                {managerContact.phone && (
+                  <a href={`tel:${managerContact.phone.replace(/\D/g, '')}`} className="call-btn">
+                    <Phone size={16} />
+                  </a>
+                )}
               </div>
-              <a href="tel:4165550911" className="call-btn">
-                <Phone size={16} />
-              </a>
-            </div>
+            )}
 
-            <div className="emergency-contact">
-              <div className="emergency-info">
-                <span className="emergency-label">After-hours Maintenance</span>
-                <span className="emergency-number">416-555-0199</span>
+            {isDemoMode && (
+              <div className="emergency-contact">
+                <div className="emergency-info">
+                  <span className="emergency-label">Building Manager — Taylor Young</span>
+                  <span className="emergency-number">Contact via the app</span>
+                </div>
               </div>
-              <a href="tel:4165550199" className="call-btn">
-                <Phone size={16} />
-              </a>
-            </div>
-
-            <div className="emergency-contact">
-              <div className="emergency-info">
-                <span className="emergency-label">Building Manager</span>
-                <span className="emergency-number">416-555-0100</span>
-              </div>
-              <a href="tel:4165550100" className="call-btn">
-                <Phone size={16} />
-              </a>
-            </div>
+            )}
 
             <div className="emergency-contact emergency-911">
               <div className="emergency-info">
@@ -368,6 +483,27 @@ function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
               </a>
             </div>
           </div>
+        </section>
+
+        {/* Save Button */}
+        <section className="settings-section">
+          <button
+            className="settings-save-btn"
+            onClick={handleSave}
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <>
+                <Loader2 size={18} className="spin" />
+                <span>Saving...</span>
+              </>
+            ) : (
+              <>
+                <Save size={18} />
+                <span>Save Changes</span>
+              </>
+            )}
+          </button>
         </section>
 
         {/* Account Section */}
@@ -386,6 +522,14 @@ function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
           </div>
         </section>
       </main>
+
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="settings-toast">
+          <CheckCircle size={18} />
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </div>
   )
 }

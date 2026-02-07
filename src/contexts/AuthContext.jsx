@@ -100,6 +100,21 @@ export const AuthProvider = ({ children }) => {
         return
       }
 
+      // If user has an avatar, generate a signed URL
+      if (profile.avatar_url) {
+        try {
+          const { data: avatarData, error: avatarError } = await supabase.storage
+            .from('profile-images')
+            .createSignedUrl(profile.avatar_url, 3600)
+
+          if (!avatarError && avatarData?.signedUrl) {
+            profile.avatar_signed_url = avatarData.signedUrl
+          }
+        } catch (err) {
+          console.warn('[AuthContext] Failed to create avatar signed URL:', err)
+        }
+      }
+
       // Fetch building separately if user has a building_id
       let profileWithBuilding = { ...profile }
       if (profile.building_id) {
