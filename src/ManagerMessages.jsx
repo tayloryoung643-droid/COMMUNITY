@@ -210,9 +210,15 @@ function ManagerMessages() {
       return
     }
 
+    const buildingId = userProfile?.building_id
+    if (!buildingId) {
+      console.warn('[ManagerMessages] No building_id available to load residents')
+      return
+    }
+
     try {
-      const data = await getResidents(userProfile?.building_id)
-      setResidents(data)
+      const data = await getResidents(buildingId)
+      setResidents(data || [])
     } catch (err) {
       console.error('[ManagerMessages] Error loading residents:', err)
     }
@@ -679,7 +685,7 @@ function ManagerMessages() {
               <div className="resident-list">
                 {filteredResidents.length === 0 ? (
                   <div className="no-residents">
-                    <p>No residents found</p>
+                    <p>{residentSearch ? 'No residents match your search' : 'No residents have joined the app yet. Only residents who have signed up will appear here.'}</p>
                   </div>
                 ) : (
                   filteredResidents.map(resident => (

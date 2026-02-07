@@ -784,7 +784,7 @@ function ManagerPackages() {
       </div>
 
       {/* Packages Grid */}
-      <div className="packages-grid">
+      <div className="packages-list">
         {filteredPackages.length === 0 ? (
           <div className="no-packages">
             <Package size={48} />
@@ -798,145 +798,117 @@ function ManagerPackages() {
             </p>
           </div>
         ) : (
-          filteredPackages.map(pkg => {
-            const carrier = getCarrier(pkg.carrier)
-            const hoursWaiting = getHoursWaiting(pkg.arrivalDate)
-            const isOver48 = pkg.status === 'pending' && hoursWaiting >= 48
-            const isOver72 = pkg.status === 'pending' && hoursWaiting >= 72
+          <>
+            {/* List Header */}
+            <div className="package-list-header">
+              <span className="col-resident">Resident</span>
+              <span className="col-carrier">Carrier</span>
+              <span className="col-time">Received</span>
+              <span className="col-status">Status</span>
+              <span className="col-actions">Actions</span>
+            </div>
 
-            return (
-              <div
-                key={pkg.id}
-                className={`package-card ${pkg.status} ${isOver48 ? 'overdue' : ''} ${isOver72 ? 'critical' : ''}`}
-              >
-                {/* Status indicator */}
-                {pkg.status === 'pending' && isOver72 && (
-                  <div className="status-indicator critical">
-                    <AlertTriangle size={14} />
-                    <span>Over 72 hrs</span>
-                  </div>
-                )}
-                {pkg.status === 'pending' && isOver48 && !isOver72 && (
-                  <div className="status-indicator overdue">
-                    <span className="red-dot"></span>
-                    <span>Over 48 hrs</span>
-                  </div>
-                )}
-                {pkg.status === 'picked_up' && (
-                  <div className="status-indicator picked-up">
-                    <CheckCircle size={14} />
-                    <span>Picked Up</span>
-                  </div>
-                )}
+            {filteredPackages.map(pkg => {
+              const carrier = getCarrier(pkg.carrier)
+              const hoursWaiting = getHoursWaiting(pkg.arrivalDate)
+              const isOver48 = pkg.status === 'pending' && hoursWaiting >= 48
+              const isOver72 = pkg.status === 'pending' && hoursWaiting >= 72
 
-                {/* Card Header */}
-                <div className="package-card-header">
-                  <div className="resident-info">
+              return (
+                <div
+                  key={pkg.id}
+                  className={`package-row ${pkg.status} ${isOver48 ? 'overdue' : ''} ${isOver72 ? 'critical' : ''}`}
+                >
+                  {/* Resident */}
+                  <div className="col-resident">
                     <span className="resident-name">{pkg.residentName}</span>
                     <span className="resident-unit">Unit {pkg.unit}</span>
                   </div>
-                  <div className="package-menu-wrapper">
-                    <button
-                      className="package-menu-btn"
-                      onClick={() => setActiveMenu(activeMenu === pkg.id ? null : pkg.id)}
-                    >
-                      <MoreVertical size={18} />
-                    </button>
-                    {activeMenu === pkg.id && (
-                      <div className="package-menu-dropdown">
-                        {pkg.status === 'pending' && (
-                          <button onClick={() => {
+
+                  {/* Carrier */}
+                  <div className="col-carrier">
+                    <div className="carrier-badge" style={{ background: `${carrier.color}15`, color: carrier.color }}>
+                      <Package size={12} />
+                      <span>{carrier.name}</span>
+                    </div>
+                    {pkg.quantity > 1 && <span className="qty-badge">{pkg.quantity}x</span>}
+                  </div>
+
+                  {/* Time */}
+                  <div className="col-time">
+                    <span>{formatTimeAgo(pkg.arrivalDate)}</span>
+                    {isOver72 && <span className="overdue-tag critical"><AlertTriangle size={11} /> 72h+</span>}
+                    {isOver48 && !isOver72 && <span className="overdue-tag"><Clock size={11} /> 48h+</span>}
+                  </div>
+
+                  {/* Status */}
+                  <div className="col-status">
+                    <span className={`status-pill ${pkg.status}`}>
+                      {pkg.status === 'picked_up' ? 'Picked Up' : pkg.status === 'pending' ? 'Pending' : pkg.status}
+                    </span>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="col-actions">
+                    {pkg.status === 'pending' && (
+                      <button
+                        className="row-action-btn primary"
+                        onClick={() => { setSelectedPackage(pkg); setShowPickupConfirm(true) }}
+                        title="Mark Picked Up"
+                      >
+                        <CheckCircle size={15} />
+                      </button>
+                    )}
+                    {pkg.status === 'pending' && (
+                      <button
+                        className="row-action-btn"
+                        onClick={() => handleSendReminder(pkg)}
+                        title="Send Reminder"
+                      >
+                        <Bell size={15} />
+                      </button>
+                    )}
+                    <div className="package-menu-wrapper">
+                      <button
+                        className="row-action-btn"
+                        onClick={() => setActiveMenu(activeMenu === pkg.id ? null : pkg.id)}
+                        title="More"
+                      >
+                        <MoreVertical size={15} />
+                      </button>
+                      {activeMenu === pkg.id && (
+                        <div className="package-menu-dropdown">
+                          {pkg.status === 'pending' && (
+                            <button onClick={() => {
+                              setSelectedPackage(pkg)
+                              setActiveMenu(null)
+                              setShowPickupConfirm(true)
+                            }}>
+                              <CheckCircle size={16} />
+                              Mark as Picked Up
+                            </button>
+                          )}
+                          <button onClick={() => openEditModal(pkg)}>
+                            <Edit3 size={16} />
+                            Edit Package Info
+                          </button>
+                          <div className="menu-divider"></div>
+                          <button className="delete-btn" onClick={() => {
                             setSelectedPackage(pkg)
                             setActiveMenu(null)
-                            setShowPickupConfirm(true)
+                            setShowDeleteConfirm(true)
                           }}>
-                            <CheckCircle size={16} />
-                            Mark as Picked Up
+                            <Trash2 size={16} />
+                            Delete Package
                           </button>
-                        )}
-                        {pkg.status === 'pending' && (
-                          <button onClick={() => handleSendReminder(pkg)}>
-                            <Bell size={16} />
-                            Send Reminder
-                          </button>
-                        )}
-                        <button onClick={() => openEditModal(pkg)}>
-                          <Edit3 size={16} />
-                          Edit Package Info
-                        </button>
-                        <div className="menu-divider"></div>
-                        <button className="delete-btn" onClick={() => {
-                          setSelectedPackage(pkg)
-                          setActiveMenu(null)
-                          setShowDeleteConfirm(true)
-                        }}>
-                          <Trash2 size={16} />
-                          Delete Package
-                        </button>
-                      </div>
-                    )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-
-                {/* Package Details */}
-                <div className="package-details">
-                  <div className="carrier-badge" style={{ background: `${carrier.color}20`, color: carrier.color }}>
-                    <Package size={14} />
-                    <span>{carrier.name}</span>
-                  </div>
-
-                  <div className="package-meta">
-                    <div className="meta-item">
-                      <Clock size={14} />
-                      <span>{formatTimeAgo(pkg.arrivalDate)}</span>
-                    </div>
-                    {pkg.quantity > 1 && (
-                      <div className="meta-item">
-                        <Box size={14} />
-                        <span>{pkg.quantity} packages</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {pkg.notes && (
-                    <div className="package-notes">
-                      <span>{pkg.notes}</span>
-                    </div>
-                  )}
-
-                  {pkg.status === 'picked_up' && pkg.pickedUpAt && (
-                    <div className="pickup-time">
-                      <CheckCircle size={14} />
-                      <span>Picked up at {formatPickupTime(pkg.pickedUpAt)}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Quick Actions for pending packages */}
-                {pkg.status === 'pending' && (
-                  <div className="package-actions">
-                    <button
-                      className="action-btn primary"
-                      onClick={() => {
-                        setSelectedPackage(pkg)
-                        setShowPickupConfirm(true)
-                      }}
-                    >
-                      <CheckCircle size={16} />
-                      Mark Picked Up
-                    </button>
-                    <button
-                      className="action-btn secondary"
-                      onClick={() => handleSendReminder(pkg)}
-                    >
-                      <Bell size={16} />
-                      Remind
-                    </button>
-                  </div>
-                )}
-              </div>
-            )
-          })
+              )
+            })}
+          </>
         )}
       </div>
 

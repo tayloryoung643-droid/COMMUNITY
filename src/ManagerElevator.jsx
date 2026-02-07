@@ -279,14 +279,25 @@ function ManagerElevator() {
       filtered = filtered.filter(b => b.type === 'move_in' || b.type === 'move_out')
     }
 
-    // Sort by date and time
-    filtered.sort((a, b) => {
+    const today = getTodayString()
+    const upcoming = filtered.filter(b => b.date >= today)
+    const past = filtered.filter(b => b.date < today)
+
+    // Upcoming: nearest date first
+    upcoming.sort((a, b) => {
       const dateCompare = a.date.localeCompare(b.date)
       if (dateCompare !== 0) return dateCompare
       return a.startTime.localeCompare(b.startTime)
     })
 
-    return filtered
+    // Past: most recent first
+    past.sort((a, b) => {
+      const dateCompare = b.date.localeCompare(a.date)
+      if (dateCompare !== 0) return dateCompare
+      return b.startTime.localeCompare(a.startTime)
+    })
+
+    return [...upcoming, ...past]
   }
 
   // Format date
@@ -584,6 +595,9 @@ function ManagerElevator() {
   }
 
   const filteredBookings = getFilteredBookings()
+  const todayStr = getTodayString()
+  const upcomingBookings = filteredBookings.filter(b => b.date >= todayStr)
+  const pastBookings = filteredBookings.filter(b => b.date < todayStr)
 
   // Loading state
   if (loadingBookings || loadingResidents) {
@@ -681,16 +695,22 @@ function ManagerElevator() {
               </button>
             </div>
           ) : (
-            filteredBookings.map(booking => {
-              const bookingType = getBookingType(booking.type)
-              const IconComponent = bookingType.icon
-              const conflict = hasConflict(booking)
-
-              return (
-                <div
-                  key={booking.id}
-                  className={`booking-card ${booking.status} ${conflict ? 'has-conflict' : ''}`}
-                >
+            <>
+              {upcomingBookings.length > 0 && (
+                <div className="booking-section-header upcoming">
+                  <span>Upcoming</span>
+                  <span className="section-count">{upcomingBookings.length}</span>
+                </div>
+              )}
+              {upcomingBookings.map(booking => {
+                const bookingType = getBookingType(booking.type)
+                const IconComponent = bookingType.icon
+                const conflict = hasConflict(booking)
+                return (
+                  <div
+                    key={booking.id}
+                    className={`booking-card ${booking.status} ${conflict ? 'has-conflict' : ''}`}
+                  >
                   {/* Conflict Warning */}
                   {conflict && booking.status !== 'blocked' && (
                     <div className="conflict-badge">
@@ -805,8 +825,68 @@ function ManagerElevator() {
                     </div>
                   )}
                 </div>
-              )
-            })
+                )
+              })}
+              {pastBookings.length > 0 && (
+                <div className="booking-section-header past">
+                  <span>Past</span>
+                  <span className="section-count">{pastBookings.length}</span>
+                </div>
+              )}
+              {pastBookings.map(booking => {
+                const bookingType = getBookingType(booking.type)
+                const IconComponent = bookingType.icon
+                const conflict = hasConflict(booking)
+                return (
+                  <div
+                    key={booking.id}
+                    className={`booking-card ${booking.status} ${conflict ? 'has-conflict' : ''} past-booking`}
+                  >
+                    {conflict && booking.status !== 'blocked' && (
+                      <div className="conflict-badge">
+                        <AlertTriangle size={14} />
+                        <span>Conflict</span>
+                      </div>
+                    )}
+                    <div className="booking-card-header">
+                      <div className="booking-resident">
+                        <span className="resident-name">{booking.residentName}</span>
+                        <span className="resident-unit">Unit {booking.unit}</span>
+                      </div>
+                      <div className="booking-header-right">
+                        <span className={`status-badge ${booking.status}`}>
+                          {booking.status === 'confirmed' && <CheckCircle size={12} />}
+                          {booking.status === 'pending' && <Clock size={12} />}
+                          {booking.status === 'blocked' && <XCircle size={12} />}
+                          {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="booking-details">
+                      <div className="booking-datetime">
+                        <Calendar size={16} />
+                        <span className="booking-date">{formatDate(booking.date)}</span>
+                        <span className="booking-time">
+                          {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
+                        </span>
+                      </div>
+                      <div
+                        className="booking-type-badge"
+                        style={{ background: `${bookingType.color}20`, color: bookingType.color }}
+                      >
+                        <IconComponent size={14} />
+                        <span>{bookingType.label}</span>
+                      </div>
+                    </div>
+                    {booking.notes && (
+                      <div className="booking-notes">
+                        <span>{booking.notes}</span>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </>
           )}
         </div>
       )}

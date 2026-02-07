@@ -242,7 +242,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
       },
       'residents': {
         title: 'Residents',
-        subtitle: `${building.stats?.totalResidents || 0} residents in ${buildingName}`
+        subtitle: `${statsData.residentsJoined || 0} residents in ${buildingName}`
       },
       'messages': {
         title: 'Messages',
@@ -721,7 +721,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
                   <button className="snapshot-row" onClick={() => setActiveNav('residents')}>
                     <div className="snapshot-info">
                       <Users size={16} />
-                      <span className="snapshot-label">{statsData.newResidentsThisWeek || 0} neighbors joined</span>
+                      <span className="snapshot-label">{statsData.residentsJoined || 0} neighbors joined</span>
                     </div>
                     <span className="snapshot-stat">{statsData.engagementRate || 0}% engaged</span>
                   </button>
@@ -867,7 +867,11 @@ function ManagerDashboard({ onLogout, buildingData }) {
         <div className="sidebar-footer">
           <div className="manager-profile">
             <div className="manager-avatar">
-              {building.manager.name.split(' ').map(n => n[0]).join('')}
+              {userProfile?.avatar_signed_url ? (
+                <img src={userProfile.avatar_signed_url} alt="" className="manager-avatar-img" />
+              ) : (
+                building.manager.name.split(' ').map(n => n[0]).join('')
+              )}
             </div>
             <div className="manager-info">
               <span className="manager-name">{building.manager.name}</span>

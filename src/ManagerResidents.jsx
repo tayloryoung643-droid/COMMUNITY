@@ -461,8 +461,7 @@ function ManagerResidents() {
     }
   }
 
-  const totalUnits = 50
-  const onboardedPercentage = Math.round((joinedCount / totalUnits) * 100)
+  const buildingName = userProfile?.buildings?.name || userProfile?.building_name || 'Your Building'
 
   return (
     <div className="manager-residents" onClick={handleClickOutside}>
@@ -472,7 +471,7 @@ function ManagerResidents() {
           <h1>Residents</h1>
           <p className="residents-stats">
             <Users size={16} />
-            <span><strong>{joinedCount}</strong> of <strong>{totalUnits}</strong> residents onboarded ({onboardedPercentage}%)</span>
+            <span><strong>{allResidents.length}</strong> Residents at <strong>{buildingName}</strong> &middot; {joinedCount} joined, {invitedCount} invited, {notInvitedCount} not yet invited</span>
           </p>
         </div>
         <div className="residents-actions">

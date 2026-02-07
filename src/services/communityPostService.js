@@ -11,30 +11,42 @@ export async function getPosts(buildingId) {
   if (postsError) throw postsError
   if (!posts || posts.length === 0) return []
 
+  const postIds = posts.map(p => p.id)
+
   // Get unique author IDs
   const authorIds = [...new Set(posts.map(p => p.author_id).filter(Boolean))]
 
-  if (authorIds.length === 0) return posts
-
-  // Fetch authors separately
-  const { data: users, error: usersError } = await supabase
-    .from('users')
-    .select('id, full_name, unit_number')
-    .in('id', authorIds)
-
-  if (usersError) {
-    console.warn('[communityPostService] Error fetching post authors:', usersError)
-    return posts
-  }
+  // Fetch authors, comment counts, and like counts in parallel
+  const [usersResult, commentsResult, likesResult] = await Promise.all([
+    authorIds.length > 0
+      ? supabase.from('users').select('id, full_name, unit_number').in('id', authorIds)
+      : { data: [], error: null },
+    supabase.from('post_comments').select('post_id').in('post_id', postIds),
+    supabase.from('post_likes').select('post_id').in('post_id', postIds),
+  ])
 
   // Create user lookup map
   const userMap = {}
-  ;(users || []).forEach(u => { userMap[u.id] = u })
+  ;(usersResult.data || []).forEach(u => { userMap[u.id] = u })
 
-  // Attach author info to posts
+  // Count comments per post
+  const commentCounts = {}
+  ;(commentsResult.data || []).forEach(c => {
+    commentCounts[c.post_id] = (commentCounts[c.post_id] || 0) + 1
+  })
+
+  // Count likes per post
+  const likeCounts = {}
+  ;(likesResult.data || []).forEach(l => {
+    likeCounts[l.post_id] = (likeCounts[l.post_id] || 0) + 1
+  })
+
+  // Attach author info and dynamic counts to posts
   return posts.map(post => ({
     ...post,
-    author: userMap[post.author_id] || null
+    author: userMap[post.author_id] || null,
+    comments_count: commentCounts[post.id] || 0,
+    likes_count: likeCounts[post.id] || 0,
   }))
 }
 

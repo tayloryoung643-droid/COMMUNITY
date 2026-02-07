@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import './ManagerCommunity.css'
 import { useAuth } from './contexts/AuthContext'
-import { getPosts, createPost, deletePost } from './services/communityPostService'
+import { getPosts, createPost, deletePost, likePost, unlikePost, getUserLikes, getComments, addComment } from './services/communityPostService'
 import AnnouncementModal from './components/AnnouncementModal'
 
 // Demo posts data - only shown for demo accounts
@@ -51,6 +51,12 @@ function ManagerCommunity() {
   const [posts, setPosts] = useState(isInDemoMode ? DEMO_POSTS : [])
   const [loading, setLoading] = useState(false)
 
+  // Comments state
+  const [expandedComments, setExpandedComments] = useState(new Set())
+  const [commentsData, setCommentsData] = useState({})
+  const [newCommentText, setNewCommentText] = useState({})
+  const [loadingComments, setLoadingComments] = useState(new Set())
+
   // Fetch posts from Supabase on mount (real mode only)
   useEffect(() => {
     if (isInDemoMode) return
@@ -77,6 +83,16 @@ function ManagerCommunity() {
         }))
         setPosts(transformedPosts)
         console.log('[ManagerCommunity] Posts fetched:', transformedPosts.length)
+
+        // Load user's existing likes
+        if (userProfile?.id) {
+          try {
+            const likedPostIds = await getUserLikes(userProfile.id)
+            setLikedPosts(new Set(likedPostIds))
+          } catch (err) {
+            console.error('[ManagerCommunity] Error loading likes:', err)
+          }
+        }
       } catch (err) {
         console.error('[ManagerCommunity] Error fetching posts:', err)
       } finally {
@@ -114,16 +130,111 @@ function ManagerCommunity() {
     return `${days}d ago`
   }
 
-  const handleLike = (postId) => {
+  const handleLike = async (postId) => {
+    const wasLiked = likedPosts.has(postId)
+
+    // Optimistic update
     setLikedPosts(prev => {
       const newSet = new Set(prev)
-      if (newSet.has(postId)) {
+      if (wasLiked) {
         newSet.delete(postId)
       } else {
         newSet.add(postId)
       }
       return newSet
     })
+    setPosts(prev => prev.map(p =>
+      p.id === postId ? { ...p, likes: p.likes + (wasLiked ? -1 : 1) } : p
+    ))
+
+    if (!isInDemoMode && userProfile?.id) {
+      try {
+        if (wasLiked) {
+          await unlikePost(postId, userProfile.id)
+        } else {
+          await likePost(postId, userProfile.id)
+        }
+      } catch (err) {
+        console.error('[ManagerCommunity] Error toggling like:', err)
+        // Revert on error
+        setLikedPosts(prev => {
+          const newSet = new Set(prev)
+          if (wasLiked) newSet.add(postId)
+          else newSet.delete(postId)
+          return newSet
+        })
+        setPosts(prev => prev.map(p =>
+          p.id === postId ? { ...p, likes: p.likes + (wasLiked ? 1 : -1) } : p
+        ))
+      }
+    }
+  }
+
+  // Toggle comment section
+  const handleToggleComments = async (postId) => {
+    const isExpanding = !expandedComments.has(postId)
+    setExpandedComments(prev => {
+      const newSet = new Set(prev)
+      if (isExpanding) newSet.add(postId)
+      else newSet.delete(postId)
+      return newSet
+    })
+
+    // Load comments on first expand
+    if (isExpanding && !commentsData[postId] && !isInDemoMode) {
+      setLoadingComments(prev => new Set(prev).add(postId))
+      try {
+        const comments = await getComments(postId)
+        setCommentsData(prev => ({ ...prev, [postId]: comments }))
+      } catch (err) {
+        console.error('[ManagerCommunity] Error loading comments:', err)
+      } finally {
+        setLoadingComments(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(postId)
+          return newSet
+        })
+      }
+    }
+  }
+
+  // Submit a comment
+  const handleSubmitComment = async (postId) => {
+    const text = (newCommentText[postId] || '').trim()
+    if (!text) return
+
+    // Clear input immediately
+    setNewCommentText(prev => ({ ...prev, [postId]: '' }))
+
+    if (isInDemoMode) {
+      const demoComment = {
+        id: Date.now(),
+        content: text,
+        author: { full_name: 'Property Manager', unit_number: null },
+        created_at: new Date().toISOString()
+      }
+      setCommentsData(prev => ({
+        ...prev,
+        [postId]: [...(prev[postId] || []), demoComment]
+      }))
+      setPosts(prev => prev.map(p =>
+        p.id === postId ? { ...p, comments: p.comments + 1 } : p
+      ))
+      return
+    }
+
+    try {
+      const newComment = await addComment(postId, userProfile.id, text)
+      // Re-fetch comments to get author info
+      const comments = await getComments(postId)
+      setCommentsData(prev => ({ ...prev, [postId]: comments }))
+      setPosts(prev => prev.map(p =>
+        p.id === postId ? { ...p, comments: p.comments + 1 } : p
+      ))
+    } catch (err) {
+      console.error('[ManagerCommunity] Error adding comment:', err)
+      setNewCommentText(prev => ({ ...prev, [postId]: text }))
+    }
   }
 
   // Handle pin/unpin post
@@ -446,9 +557,12 @@ function ManagerCommunity() {
                     onClick={() => handleLike(post.id)}
                   >
                     <Heart size={18} fill={isLiked ? '#ef4444' : 'none'} />
-                    <span>{post.likes + (isLiked ? 1 : 0)}</span>
+                    <span>{post.likes}</span>
                   </button>
-                  <button className="action-btn">
+                  <button
+                    className={`action-btn ${expandedComments.has(post.id) ? 'active' : ''}`}
+                    onClick={() => handleToggleComments(post.id)}
+                  >
                     <MessageCircle size={18} />
                     <span>{post.comments}</span>
                   </button>
@@ -456,6 +570,55 @@ function ManagerCommunity() {
                     <Share2 size={18} />
                   </button>
                 </div>
+
+                {/* Comment Section */}
+                {expandedComments.has(post.id) && (
+                  <div className="comments-section">
+                    {loadingComments.has(post.id) ? (
+                      <div className="comments-loading">Loading comments...</div>
+                    ) : (
+                      <>
+                        {(commentsData[post.id] || []).length > 0 && (
+                          <div className="comments-list">
+                            {(commentsData[post.id] || []).map(comment => (
+                              <div key={comment.id} className="comment-item">
+                                <div className="comment-avatar">
+                                  {(comment.author?.full_name || 'U').charAt(0)}
+                                </div>
+                                <div className="comment-body">
+                                  <div className="comment-header">
+                                    <span className="comment-author">{comment.author?.full_name || 'Unknown'}</span>
+                                    {comment.author?.unit_number && (
+                                      <span className="comment-unit">Unit {comment.author.unit_number}</span>
+                                    )}
+                                    <span className="comment-time">{formatTimeAgo(new Date(comment.created_at).getTime())}</span>
+                                  </div>
+                                  <p className="comment-text">{comment.content}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <div className="comment-input-row">
+                          <input
+                            type="text"
+                            placeholder="Write a comment..."
+                            value={newCommentText[post.id] || ''}
+                            onChange={e => setNewCommentText(prev => ({ ...prev, [post.id]: e.target.value }))}
+                            onKeyDown={e => { if (e.key === 'Enter') handleSubmitComment(post.id) }}
+                          />
+                          <button
+                            className="comment-send-btn"
+                            onClick={() => handleSubmitComment(post.id)}
+                            disabled={!(newCommentText[post.id] || '').trim()}
+                          >
+                            <Send size={16} />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
               </article>
             )
           })
