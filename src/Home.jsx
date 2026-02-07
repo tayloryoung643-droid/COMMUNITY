@@ -324,7 +324,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
   }
 
   // Default hero image URL
-  const defaultHeroImageUrl = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80"
+  const defaultHeroImageUrl = "https://jsjocdxqxfcashrhjbgn.supabase.co/storage/v1/object/public/building-images/5e3b6dae-b373-414e-9707-b6e182525ea6/background.jpg"
 
   // Hero image URL - use building's custom background if available, otherwise default
   // Used in BOTH the hero card AND the ambient background

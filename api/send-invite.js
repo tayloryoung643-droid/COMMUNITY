@@ -42,7 +42,7 @@ export default async function handler(req, res) {
                   <!-- Hero Image -->
                   <tr>
                     <td style="padding: 0;">
-                      <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1040&h=400&fit=crop&crop=bottom" alt="" width="100%" style="display: block; width: 100%; height: auto; max-height: 200px; object-fit: cover;">
+                      <img src="https://jsjocdxqxfcashrhjbgn.supabase.co/storage/v1/object/public/building-images/5e3b6dae-b373-414e-9707-b6e182525ea6/background.jpg" alt="" width="100%" style="display: block; width: 100%; height: auto; max-height: 200px; object-fit: cover;">
                     </td>
                   </tr>
 

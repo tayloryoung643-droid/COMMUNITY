@@ -316,7 +316,7 @@ p {
   height: 28vh;
   min-height: 200px;
   max-height: 280px;
-  background-image: var(--building-bg-image, url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80'));
+  background-image: var(--building-bg-image, url('https://jsjocdxqxfcashrhjbgn.supabase.co/storage/v1/object/public/building-images/5e3b6dae-b373-414e-9707-b6e182525ea6/background.jpg'));
   background-size: cover;
   background-position: center;
   z-index: 0;
