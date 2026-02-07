@@ -261,6 +261,7 @@ export const AuthProvider = ({ children }) => {
 
     setUser(demoUser)
     setUserProfile(demoProfile)
+    setBuildingBackgroundUrl('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80')
 
     return { data: demoUser, error: null }
   }

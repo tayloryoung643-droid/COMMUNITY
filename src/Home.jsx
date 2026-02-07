@@ -188,7 +188,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
     const fetchHomeIntelligence = async () => {
       if (isDemoMode) {
         // Demo mode: show a static context line
-        setContextLine1('3 events this week · 2 packages waiting')
+        setContextLine1('3 events this week · 3 packages waiting · 4 new neighbors')
         setContextLine2(null)
         return
       }
@@ -357,6 +357,37 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
     }
   }
 
+  // Demo bulletin listings
+  const demoBulletinListings = [
+    {
+      id: 'demo-bl-1',
+      title: 'Parking Spot Available — P2 Level',
+      price: '$150/mo',
+      category: 'parking',
+      created_at: new Date(Date.now() - 7200000).toISOString(),
+    },
+    {
+      id: 'demo-bl-2',
+      title: 'Free Couch — Must Pick Up by Friday',
+      price: 0,
+      category: 'for_sale',
+      created_at: new Date(Date.now() - 18000000).toISOString(),
+    },
+    {
+      id: 'demo-bl-3',
+      title: 'Looking for Dog Walker',
+      price: '$20/walk',
+      category: 'iso',
+      created_at: new Date(Date.now() - 43200000).toISOString(),
+    },
+  ]
+
+  // Demo new joiners
+  const demoNewJoiners = [
+    { id: 'demo-j1', full_name: 'Emily Chen', unit_number: '1205', created_at: new Date(Date.now() - 86400000).toISOString() },
+    { id: 'demo-j2', full_name: 'Marcus Johnson', unit_number: '908', created_at: new Date(Date.now() - 172800000).toISOString() },
+  ]
+
   // Demo community posts
   const demoCommunityPosts = [
     {
@@ -378,6 +409,16 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
       timestamp: Date.now() - 14400000,
       likes: 8,
       comments: 5
+    },
+    {
+      id: 97,
+      type: 'share',
+      text: "Welcome to all new residents this month! We're thrilled to have you at The Paramount. Don't forget to check the calendar for upcoming events and say hello in the Community feed!",
+      author: 'The Paramount',
+      unit: 'Management',
+      timestamp: Date.now() - 28800000,
+      likes: 12,
+      comments: 4
     }
   ]
 
@@ -496,16 +537,32 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
 
           {/* Packages Card - Demo or Real */}
           {isDemoMode ? (
-            <button className="today-card" onClick={() => handleFeatureClick('Packages')}>
-              <div className="today-card-icon package-icon">
-                <Package size={20} />
-              </div>
-              <div className="today-card-content">
-                <span className="today-card-title">3 deliveries ready for pickup</span>
-                <span className="today-card-subtitle">Today</span>
-              </div>
-              <span className="today-card-time">9:00 AM</span>
-            </button>
+            <>
+              <button className="today-card" onClick={() => handleFeatureClick('Packages')}>
+                <div className="today-card-icon package-icon"><Package size={20} /></div>
+                <div className="today-card-content">
+                  <span className="today-card-title">Amazon package ready for pickup</span>
+                  <span className="today-card-subtitle">Front Desk · Large box</span>
+                </div>
+                <span className="today-card-time">9:00 AM</span>
+              </button>
+              <button className="today-card" onClick={() => handleFeatureClick('Packages')}>
+                <div className="today-card-icon package-icon"><Package size={20} /></div>
+                <div className="today-card-content">
+                  <span className="today-card-title">UPS delivery arrived</span>
+                  <span className="today-card-subtitle">Front Desk · Medium box</span>
+                </div>
+                <span className="today-card-time">10:30 AM</span>
+              </button>
+              <button className="today-card" onClick={() => handleFeatureClick('Packages')}>
+                <div className="today-card-icon package-icon"><Package size={20} /></div>
+                <div className="today-card-content">
+                  <span className="today-card-title">FedEx envelope</span>
+                  <span className="today-card-subtitle">Mailroom</span>
+                </div>
+                <span className="today-card-time">11:15 AM</span>
+              </button>
+            </>
           ) : realPackages.length > 0 ? (
             <button className="today-card" onClick={() => handleFeatureClick('Packages')}>
               <div className="today-card-icon package-icon">
@@ -531,16 +588,24 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
 
           {/* Event Card - Demo or Real */}
           {isDemoMode ? (
-            <button className="today-card" onClick={() => handleFeatureClick('Calendar')}>
-              <div className="today-card-icon calendar-icon">
-                <Calendar size={20} />
-              </div>
-              <div className="today-card-content">
-                <span className="today-card-title">Rooftop BBQ</span>
-                <span className="today-card-subtitle">Tonight · 6:00 PM</span>
-              </div>
-              <span className="today-card-time">Tonight · 6:00 PM</span>
-            </button>
+            <>
+              <button className="today-card" onClick={() => handleFeatureClick('Calendar')}>
+                <div className="today-card-icon calendar-icon"><Calendar size={20} /></div>
+                <div className="today-card-content">
+                  <span className="today-card-title">Rooftop BBQ</span>
+                  <span className="today-card-subtitle">Tonight · 6:00 PM · Rooftop</span>
+                </div>
+                <span className="today-card-time">6:00 PM</span>
+              </button>
+              <button className="today-card" onClick={() => handleFeatureClick('Calendar')}>
+                <div className="today-card-icon calendar-icon"><Calendar size={20} /></div>
+                <div className="today-card-content">
+                  <span className="today-card-title">Wine & Cheese Social</span>
+                  <span className="today-card-subtitle">This Friday · 7:00 PM · Rooftop Lounge</span>
+                </div>
+                <span className="today-card-time">Friday</span>
+              </button>
+            </>
           ) : realEvents.length > 0 ? (
             <button className="today-card" onClick={() => handleEventClick(realEvents[0])}>
               <div className="today-card-icon calendar-icon">
@@ -565,7 +630,9 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
           )}
 
           {/* Bulletin Board Preview */}
-          {bulletinListings.length > 0 ? (
+          {(() => {
+            const listings = isDemoMode ? demoBulletinListings : bulletinListings
+            return listings.length > 0 ? (
             <div className="bulletin-preview-section">
               <div className="bulletin-preview-header">
                 <h3 className="bulletin-preview-title">
@@ -576,7 +643,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
                   View all →
                 </button>
               </div>
-              {bulletinListings.slice(0, 3).map(listing => {
+              {listings.slice(0, 3).map(listing => {
                 const price = listing.price == null || listing.price === 0 || listing.price === '0' ? 'Free' : (typeof listing.price === 'number' ? `$${listing.price}` : (String(listing.price).startsWith('$') ? listing.price : `$${listing.price}`))
                 const ago = Date.now() - new Date(listing.created_at).getTime()
                 const timeAgo = ago < 3600000 ? `${Math.floor(ago / 60000)}m` : ago < 86400000 ? `${Math.floor(ago / 3600000)}h` : `${Math.floor(ago / 86400000)}d`
@@ -604,25 +671,29 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
               </div>
               <ChevronRight size={20} className="today-card-arrow" />
             </button>
-          )}
+          )
+          })()}
 
           {/* New Joiners Welcome Tile */}
-          {!isDemoMode && newJoiners.length > 0 && (
+          {(() => {
+            const joiners = isDemoMode ? demoNewJoiners : newJoiners
+            return joiners.length > 0 && (
             <button className="today-card welcome-card" onClick={() => handleFeatureClick('Neighbors')}>
               <div className="today-card-icon welcome-icon">
                 <Sparkles size={20} />
               </div>
               <div className="today-card-content">
                 <span className="today-card-title">
-                  Welcome {newJoiners.map(j => j.full_name?.split(' ')[0]).slice(0, 2).join(' & ')}{newJoiners.length > 2 ? ` +${newJoiners.length - 2} more` : ''}!
+                  Welcome {joiners.map(j => j.full_name?.split(' ')[0]).slice(0, 2).join(' & ')}{joiners.length > 2 ? ` +${joiners.length - 2} more` : ''}!
                 </span>
                 <span className="today-card-subtitle">
-                  {newJoiners.length} new {newJoiners.length === 1 ? 'neighbor has' : 'neighbors have'} joined this week
+                  {joiners.length} new {joiners.length === 1 ? 'neighbor has' : 'neighbors have'} joined this week
                 </span>
               </div>
               <ChevronRight size={20} className="today-card-arrow" />
             </button>
-          )}
+          )
+          })()}
 
           {/* Community Section */}
           <div className="bulletin-preview-header" style={{ marginTop: '8px' }}>

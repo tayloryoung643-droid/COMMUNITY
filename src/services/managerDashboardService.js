@@ -34,7 +34,27 @@ export function getIsDemoUser(userProfile, isDemoMode) {
 // DEMO DATA - Exact same data as before, just moved here
 // ============================================================
 
+// Helper to get dynamic dates relative to today
+function getNextDayOfWeek(dayOfWeek) {
+  // dayOfWeek: 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
+  const today = new Date()
+  const todayDay = today.getDay()
+  let daysUntil = dayOfWeek - todayDay
+  if (daysUntil <= 0) daysUntil += 7
+  const target = new Date(today)
+  target.setDate(today.getDate() + daysUntil)
+  return target
+}
+
+function formatEventDate(date) {
+  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+}
+
 export function loadDemoDashboardData() {
+  const nextFriday = getNextDayOfWeek(5)
+  const nextSaturday = getNextDayOfWeek(6)
+  const nextSunday = getNextDayOfWeek(0)
+
   return {
     building: {
       id: 'demo-building-id',
@@ -120,7 +140,7 @@ export function loadDemoDashboardData() {
       {
         id: 1,
         title: 'Wine & Cheese Social',
-        date: 'Friday, Jan 17',
+        date: formatEventDate(nextFriday),
         time: '7:00 PM',
         location: 'Rooftop Lounge',
         rsvps: 18
@@ -128,7 +148,7 @@ export function loadDemoDashboardData() {
       {
         id: 2,
         title: 'Building Maintenance',
-        date: 'Saturday, Jan 18',
+        date: formatEventDate(nextSaturday),
         time: '9:00 AM - 12:00 PM',
         location: 'All Common Areas',
         type: 'maintenance'
@@ -136,7 +156,7 @@ export function loadDemoDashboardData() {
       {
         id: 3,
         title: 'Yoga in the Park',
-        date: 'Sunday, Jan 19',
+        date: formatEventDate(nextSunday),
         time: '10:00 AM',
         location: 'Courtyard',
         rsvps: 8
