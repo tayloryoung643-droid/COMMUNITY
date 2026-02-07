@@ -1725,3 +1725,307 @@
     justify-content: center;
   }
 }
+
+/* ============================================================================
+   IMPORT MODAL STYLES
+   ============================================================================ */
+
+.import-modal {
+  max-width: 640px;
+}
+
+.import-modal-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--md-card-border);
+}
+
+.import-modal-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  padding: 0.875rem 1rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--md-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  justify-content: center;
+}
+
+.import-modal-tab:hover {
+  color: var(--md-text-primary);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.import-modal-tab.active {
+  color: var(--md-accent);
+  border-bottom-color: var(--md-accent);
+}
+
+.import-modal .paste-section textarea {
+  width: 100%;
+  padding: 1rem;
+  background: var(--md-card-bg);
+  border: 1px solid var(--md-card-border);
+  border-radius: 10px;
+  color: var(--md-text-primary);
+  font-size: 0.875rem;
+  font-family: inherit;
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 240px;
+  transition: all var(--transition-base);
+}
+
+.import-modal .paste-section textarea:focus {
+  outline: none;
+  border-color: var(--md-accent);
+  background: #FFFFFF;
+}
+
+.import-modal .paste-section textarea::placeholder {
+  color: var(--md-text-secondary);
+  opacity: 0.7;
+}
+
+.import-modal .upload-section {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+.import-modal .upload-dropzone {
+  width: 100%;
+  max-width: 100%;
+  padding: 2.5rem 1.5rem;
+}
+
+.import-modal .extract-error {
+  margin-top: 1rem;
+}
+
+.import-modal .extract-error span {
+  color: #ef4444;
+}
+
+.import-modal .generate-btn {
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+}
+
+/* ============================================================================
+   REVIEW SUMMARY & CHECKBOX STYLES
+   ============================================================================ */
+
+.review-summary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--md-card-bg);
+  border: 1px solid var(--md-card-border);
+  border-radius: 10px;
+}
+
+.select-all-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: transparent;
+  border: 1px solid var(--md-card-border);
+  border-radius: 6px;
+  color: var(--md-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.select-all-toggle:hover {
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--md-text-primary);
+}
+
+.selected-count {
+  font-size: 0.8125rem;
+  color: var(--md-text-secondary);
+}
+
+.review-item-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--md-accent);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  flex-shrink: 0;
+}
+
+.review-item-checkbox:hover {
+  background: rgba(91, 154, 154, 0.1);
+}
+
+.review-item-deselected {
+  opacity: 0.5;
+}
+
+/* ============================================================================
+   BULK MODE STYLES
+   ============================================================================ */
+
+.bulk-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  background: transparent;
+  border: 1px solid var(--md-card-border);
+  border-radius: 8px;
+  color: var(--md-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.bulk-mode-btn:hover {
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--md-text-primary);
+}
+
+.bulk-mode-btn.active {
+  background: rgba(91, 154, 154, 0.1);
+  border-color: var(--md-accent);
+  color: var(--md-accent);
+}
+
+.bulk-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--md-accent);
+  border-radius: 10px;
+  color: white;
+}
+
+.bulk-count {
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.bulk-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  white-space: nowrap;
+}
+
+.bulk-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.bulk-btn-danger {
+  background: rgba(239, 68, 68, 0.6);
+}
+
+.bulk-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.8);
+}
+
+.bulk-select-all {
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 6px;
+  color: white;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  white-space: nowrap;
+}
+
+.bulk-select-all:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.bulk-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--md-accent);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  flex-shrink: 0;
+}
+
+.bulk-checkbox:hover {
+  background: rgba(91, 154, 154, 0.1);
+}
+
+.faq-item.bulk-selected {
+  border-color: var(--md-accent);
+  background: rgba(91, 154, 154, 0.05);
+}
+
+/* Bulk mode responsive */
+@media (max-width: 768px) {
+  .bulk-action-bar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .bulk-actions {
+    flex-wrap: wrap;
+  }
+
+  .bulk-mode-btn span {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .import-modal-tab {
+    font-size: 0.8125rem;
+    padding: 0.75rem 0.5rem;
+  }
+
+  .review-summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}

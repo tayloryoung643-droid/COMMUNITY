@@ -348,7 +348,7 @@ function ResidentFAQ({ onBack }) {
               <p>
                 {searchQuery
                   ? 'Try a different search term'
-                  : 'FAQ content will be available soon'}
+                  : "Your building manager hasn't added FAQs yet"}
               </p>
             </div>
           ) : activeCategory === 'all' ? (

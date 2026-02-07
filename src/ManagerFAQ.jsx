@@ -31,7 +31,9 @@ import {
   AlertCircle,
   ArrowLeft,
   ArrowRight,
-  Save
+  Save,
+  CheckSquare,
+  Square
 } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import {
@@ -43,9 +45,6 @@ import {
   extractFaqsFromText
 } from './services/faqService'
 import './ManagerFAQ.css'
-
-// Feature flags
-const FEATURE_FAQ_AI_IMPORT = false // Set to true to enable AI FAQ import (paste/file upload)
 
 // Demo FAQs data - used when in demo mode
 const DEMO_FAQS = [
@@ -142,6 +141,10 @@ function ManagerFAQ() {
   const [extracting, setExtracting] = useState(false)
   const [extractError, setExtractError] = useState(null)
 
+  // Import modal state (for importing from manage view)
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [importTab, setImportTab] = useState('paste') // 'paste' | 'file'
+
   // Management state
   const [activeCategory, setActiveCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -151,6 +154,12 @@ function ManagerFAQ() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [selectedFAQ, setSelectedFAQ] = useState(null)
   const [activeMenu, setActiveMenu] = useState(null)
+
+  // Bulk mode state
+  const [bulkMode, setBulkMode] = useState(false)
+  const [selectedFaqIds, setSelectedFaqIds] = useState([])
+  const [showBulkCategoryModal, setShowBulkCategoryModal] = useState(false)
+  const [bulkCategory, setBulkCategory] = useState('General')
 
   // Toast
   const [showToast, setShowToast] = useState(false)
@@ -255,10 +264,11 @@ function ManagerFAQ() {
 
     try {
       let textContent = ''
+      const method = showImportModal ? importTab : importMethod
 
-      if (importMethod === 'paste') {
+      if (method === 'paste') {
         textContent = pasteText
-      } else if (importMethod === 'file' && uploadedFile) {
+      } else if (method === 'file' && uploadedFile) {
         textContent = await readFileAsText(uploadedFile)
       }
 
@@ -278,8 +288,10 @@ function ManagerFAQ() {
         setExtractedItems(result.items.map((item, index) => ({
           ...item,
           id: `temp-${index}`,
-          is_visible: true
+          is_visible: true,
+          selected: true
         })))
+        setShowImportModal(false)
         setCurrentView('review')
       }
     } catch (err) {
@@ -299,6 +311,14 @@ function ManagerFAQ() {
     })
   }
 
+  const openImportModal = () => {
+    setPasteText('')
+    setUploadedFile(null)
+    setExtractError(null)
+    setImportTab('paste')
+    setShowImportModal(true)
+  }
+
   // ============================================================================
   // REVIEW HANDLERS
   // ============================================================================
@@ -316,38 +336,73 @@ function ManagerFAQ() {
     setExtractedItems(prev => prev.filter((_, i) => i !== index))
   }
 
+  const handleToggleItemSelection = (index) => {
+    setExtractedItems(prev => prev.map((item, i) => {
+      if (i === index) {
+        return { ...item, selected: !item.selected }
+      }
+      return item
+    }))
+  }
+
+  const handleSelectAll = () => {
+    const allSelected = extractedItems.every(item => item.selected)
+    setExtractedItems(prev => prev.map(item => ({ ...item, selected: !allSelected })))
+  }
+
+  const selectedCount = extractedItems.filter(item => item.selected).length
+
   const handlePublishFAQs = async () => {
-    if (extractedItems.length === 0) {
-      showToastMessage('No FAQ items to publish.')
+    const itemsToPublish = extractedItems.filter(item => item.selected)
+
+    if (itemsToPublish.length === 0) {
+      showToastMessage('No FAQ items selected to publish.')
       return
     }
 
     if (isInDemoMode) {
-      setFaqs(extractedItems.map((item, index) => ({
-        ...item,
-        id: Date.now() + index,
-        view_count: 0,
-        display_order: index
-      })))
+      setFaqs(prev => [
+        ...prev,
+        ...itemsToPublish.map((item, index) => ({
+          ...item,
+          id: Date.now() + index,
+          view_count: 0,
+          display_order: prev.length + index
+        }))
+      ])
       setCurrentView('manage')
-      showToastMessage('FAQs published successfully!')
+      showToastMessage(`${itemsToPublish.length} FAQs published!`)
       return
     }
 
     try {
       const meta = {
         createdBy: userProfile?.id,
-        sourceType: importMethod,
+        sourceType: importMethod || importTab,
         sourceName: uploadedFile?.name || null
       }
 
-      await replaceFaqItems(userProfile.building_id, extractedItems, meta)
+      // Add to existing FAQs rather than replacing all
+      for (const item of itemsToPublish) {
+        await createFaqItem({
+          building_id: userProfile.building_id,
+          category: item.category || 'General',
+          question: item.question,
+          answer: item.answer,
+          is_visible: item.is_visible !== false,
+          display_order: faqs.length,
+          view_count: 0,
+          created_by: meta.createdBy,
+          source_type: meta.sourceType,
+          source_name: meta.sourceName
+        })
+      }
 
       // Reload FAQs
       const data = await getFaqItems(userProfile.building_id, true)
       setFaqs(data || [])
       setCurrentView('manage')
-      showToastMessage('FAQs published successfully!')
+      showToastMessage(`${itemsToPublish.length} FAQs published!`)
 
       // Reset import state
       setPasteText('')
@@ -484,6 +539,108 @@ function ManagerFAQ() {
     setShowDeleteModal(true)
   }
 
+  // ============================================================================
+  // BULK ACTION HANDLERS
+  // ============================================================================
+
+  const toggleBulkMode = () => {
+    setBulkMode(!bulkMode)
+    setSelectedFaqIds([])
+  }
+
+  const toggleFaqSelection = (faqId) => {
+    setSelectedFaqIds(prev =>
+      prev.includes(faqId) ? prev.filter(id => id !== faqId) : [...prev, faqId]
+    )
+  }
+
+  const handleBulkSelectAll = () => {
+    const filtered = getFilteredFAQs()
+    if (selectedFaqIds.length === filtered.length) {
+      setSelectedFaqIds([])
+    } else {
+      setSelectedFaqIds(filtered.map(f => f.id))
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedFaqIds.length === 0) return
+
+    if (isInDemoMode) {
+      setFaqs(prev => prev.filter(f => !selectedFaqIds.includes(f.id)))
+    } else {
+      try {
+        for (const id of selectedFaqIds) {
+          await deleteFaqItem(id)
+        }
+        setFaqs(prev => prev.filter(f => !selectedFaqIds.includes(f.id)))
+      } catch (err) {
+        console.error('[ManagerFAQ] Bulk delete error:', err)
+        showToastMessage('Failed to delete some FAQs.')
+        return
+      }
+    }
+
+    showToastMessage(`${selectedFaqIds.length} FAQs deleted`)
+    setSelectedFaqIds([])
+    setBulkMode(false)
+  }
+
+  const handleBulkToggleVisibility = async (visible) => {
+    if (selectedFaqIds.length === 0) return
+
+    if (isInDemoMode) {
+      setFaqs(prev => prev.map(f =>
+        selectedFaqIds.includes(f.id) ? { ...f, is_visible: visible } : f
+      ))
+    } else {
+      try {
+        for (const id of selectedFaqIds) {
+          await updateFaqItem(id, { is_visible: visible })
+        }
+        setFaqs(prev => prev.map(f =>
+          selectedFaqIds.includes(f.id) ? { ...f, is_visible: visible } : f
+        ))
+      } catch (err) {
+        console.error('[ManagerFAQ] Bulk visibility error:', err)
+        showToastMessage('Failed to update some FAQs.')
+        return
+      }
+    }
+
+    showToastMessage(`${selectedFaqIds.length} FAQs ${visible ? 'shown' : 'hidden'}`)
+    setSelectedFaqIds([])
+    setBulkMode(false)
+  }
+
+  const handleBulkChangeCategory = async () => {
+    if (selectedFaqIds.length === 0) return
+
+    if (isInDemoMode) {
+      setFaqs(prev => prev.map(f =>
+        selectedFaqIds.includes(f.id) ? { ...f, category: bulkCategory } : f
+      ))
+    } else {
+      try {
+        for (const id of selectedFaqIds) {
+          await updateFaqItem(id, { category: bulkCategory })
+        }
+        setFaqs(prev => prev.map(f =>
+          selectedFaqIds.includes(f.id) ? { ...f, category: bulkCategory } : f
+        ))
+      } catch (err) {
+        console.error('[ManagerFAQ] Bulk category error:', err)
+        showToastMessage('Failed to update some FAQs.')
+        return
+      }
+    }
+
+    showToastMessage(`${selectedFaqIds.length} FAQs moved to ${bulkCategory}`)
+    setSelectedFaqIds([])
+    setBulkMode(false)
+    setShowBulkCategoryModal(false)
+  }
+
   // Filter FAQs
   const getFilteredFAQs = () => {
     let filtered = [...faqs]
@@ -554,43 +711,39 @@ function ManagerFAQ() {
           <div className="wizard-header">
             <HelpCircle size={48} />
             <h2>Set Up Building FAQs</h2>
-            <p>Help your residents find answers quickly{FEATURE_FAQ_AI_IMPORT ? ' by importing your building\'s FAQ content' : ' by adding FAQ questions'}.</p>
+            <p>Help your residents find answers quickly by importing your building's FAQ content.</p>
           </div>
 
           <div className="wizard-options">
-            {FEATURE_FAQ_AI_IMPORT && (
-              <>
-                <button className="wizard-option" onClick={() => handleWizardChoice('paste')}>
-                  <div className="option-icon">
-                    <Clipboard size={32} />
-                  </div>
-                  <div className="option-content">
-                    <h3>Paste Text</h3>
-                    <p>Copy and paste your FAQ content from any document</p>
-                  </div>
-                  <ChevronRight size={20} />
-                </button>
+            <button className="wizard-option" onClick={() => handleWizardChoice('paste')}>
+              <div className="option-icon">
+                <Clipboard size={32} />
+              </div>
+              <div className="option-content">
+                <h3>Paste Text</h3>
+                <p>Copy and paste your building rules, policies, or FAQ content</p>
+              </div>
+              <ChevronRight size={20} />
+            </button>
 
-                <button className="wizard-option" onClick={() => handleWizardChoice('file')}>
-                  <div className="option-icon">
-                    <FileUp size={32} />
-                  </div>
-                  <div className="option-content">
-                    <h3>Upload File</h3>
-                    <p>Upload a .txt file with your FAQ content</p>
-                  </div>
-                  <ChevronRight size={20} />
-                </button>
-              </>
-            )}
+            <button className="wizard-option" onClick={() => handleWizardChoice('file')}>
+              <div className="option-icon">
+                <FileUp size={32} />
+              </div>
+              <div className="option-content">
+                <h3>Upload File</h3>
+                <p>Upload a .txt file with your FAQ content</p>
+              </div>
+              <ChevronRight size={20} />
+            </button>
 
             <button className="wizard-option skip-option" onClick={() => handleWizardChoice('skip')}>
               <div className="option-icon">
                 <SkipForward size={32} />
               </div>
               <div className="option-content">
-                <h3>{FEATURE_FAQ_AI_IMPORT ? 'Skip for Now' : 'Start Adding FAQs'}</h3>
-                <p>{FEATURE_FAQ_AI_IMPORT ? 'Set up FAQs later and add questions manually' : 'Add FAQ questions manually one by one'}</p>
+                <h3>Skip for Now</h3>
+                <p>Set up FAQs later and add questions manually</p>
               </div>
               <ChevronRight size={20} />
             </button>
@@ -600,7 +753,7 @@ function ManagerFAQ() {
     )
   }
 
-  // Import View
+  // Import View (from wizard flow)
   if (currentView === 'import') {
     return (
       <div className="manager-faq">
@@ -620,18 +773,13 @@ function ManagerFAQ() {
                 <textarea
                   value={pasteText}
                   onChange={(e) => setPasteText(e.target.value)}
-                  placeholder="Paste your FAQ document content here...
+                  placeholder="Paste your building rules, policies, lease excerpts, or any FAQ content here...
 
-For best results, format as:
-Q: What are the quiet hours?
-A: Quiet hours are 10 PM to 8 AM.
-
-Q: How do I submit a maintenance request?
-A: Use the app or email maintenance@building.com..."
+The AI will analyze your text and organize it into clear Q&A pairs automatically."
                   rows={15}
                 />
                 <p className="paste-hint">
-                  The AI will analyze your text and extract FAQ items automatically.
+                  Tip: You can paste any format — the AI will extract questions and answers automatically.
                 </p>
               </div>
             ) : (
@@ -681,12 +829,12 @@ A: Use the app or email maintenance@building.com..."
               {extracting ? (
                 <>
                   <Loader2 className="spin" size={18} />
-                  Analyzing...
+                  AI is organizing your document into FAQ entries...
                 </>
               ) : (
                 <>
                   <Sparkles size={18} />
-                  Generate FAQs
+                  Organize with AI
                 </>
               )}
             </button>
@@ -698,19 +846,38 @@ A: Use the app or email maintenance@building.com..."
 
   // Review View
   if (currentView === 'review') {
+    const allSelected = extractedItems.length > 0 && extractedItems.every(item => item.selected)
+
     return (
       <div className="manager-faq">
         <div className="faq-review">
           <div className="review-header">
-            <button className="back-btn" onClick={() => setCurrentView('import')}>
+            <button className="back-btn" onClick={() => {
+              if (showImportModal || faqs.length > 0) {
+                setCurrentView('manage')
+              } else {
+                setCurrentView('import')
+              }
+            }}>
               <ArrowLeft size={20} />
               Back
             </button>
             <div className="review-title">
               <h2>Review & Edit FAQs</h2>
-              <span className="item-count">{extractedItems.length} items extracted</span>
+              <span className="item-count">AI generated {extractedItems.length} questions from your document</span>
             </div>
           </div>
+
+          {/* Select all / summary bar */}
+          {extractedItems.length > 0 && (
+            <div className="review-summary">
+              <button className="select-all-toggle" onClick={handleSelectAll}>
+                {allSelected ? <CheckSquare size={18} /> : <Square size={18} />}
+                <span>{allSelected ? 'Deselect All' : 'Select All'}</span>
+              </button>
+              <span className="selected-count">{selectedCount} of {extractedItems.length} selected</span>
+            </div>
+          )}
 
           <div className="review-content">
             {extractedItems.length === 0 ? (
@@ -720,8 +887,14 @@ A: Use the app or email maintenance@building.com..."
               </div>
             ) : (
               extractedItems.map((item, index) => (
-                <div key={item.id} className="review-item">
+                <div key={item.id} className={`review-item ${!item.selected ? 'review-item-deselected' : ''}`}>
                   <div className="review-item-header">
+                    <button
+                      className="review-item-checkbox"
+                      onClick={() => handleToggleItemSelection(index)}
+                    >
+                      {item.selected ? <CheckSquare size={18} /> : <Square size={18} />}
+                    </button>
                     <span className="item-number">#{index + 1}</span>
                     <select
                       value={item.category}
@@ -731,14 +904,6 @@ A: Use the app or email maintenance@building.com..."
                         <option key={cat.id} value={cat.id}>{cat.label}</option>
                       ))}
                     </select>
-                    <label className="visibility-toggle">
-                      <input
-                        type="checkbox"
-                        checked={item.is_visible}
-                        onChange={(e) => handleUpdateExtractedItem(index, 'is_visible', e.target.checked)}
-                      />
-                      <Eye size={14} />
-                    </label>
                     <button
                       className="delete-item-btn"
                       onClick={() => handleDeleteExtractedItem(index)}
@@ -774,17 +939,21 @@ A: Use the app or email maintenance@building.com..."
           <div className="review-footer">
             <button className="cancel-btn" onClick={() => {
               setExtractedItems([])
-              setCurrentView('wizard')
+              if (faqs.length > 0) {
+                setCurrentView('manage')
+              } else {
+                setCurrentView('wizard')
+              }
             }}>
               Cancel
             </button>
             <button
               className="publish-btn"
               onClick={handlePublishFAQs}
-              disabled={extractedItems.length === 0}
+              disabled={selectedCount === 0}
             >
               <Save size={18} />
-              Publish FAQs ({extractedItems.length})
+              Add {selectedCount} Selected
             </button>
           </div>
         </div>
@@ -806,10 +975,17 @@ A: Use the app or email maintenance@building.com..."
           <p>Manage frequently asked questions for residents</p>
         </div>
         <div className="faq-header-actions">
-          {FEATURE_FAQ_AI_IMPORT && faqs.length > 0 && (
-            <button className="reimport-btn" onClick={() => setCurrentView('wizard')}>
-              <Upload size={16} />
-              <span>Re-import</span>
+          <button className="reimport-btn" onClick={openImportModal}>
+            <Upload size={16} />
+            <span>Import FAQ</span>
+          </button>
+          {faqs.length > 0 && (
+            <button
+              className={`bulk-mode-btn ${bulkMode ? 'active' : ''}`}
+              onClick={toggleBulkMode}
+            >
+              <CheckSquare size={16} />
+              <span>{bulkMode ? 'Cancel' : 'Select'}</span>
             </button>
           )}
           <button className="add-faq-btn" onClick={() => setShowAddModal(true)}>
@@ -819,37 +995,70 @@ A: Use the app or email maintenance@building.com..."
         </div>
       </div>
 
+      {/* Bulk Action Bar */}
+      {bulkMode && selectedFaqIds.length > 0 && (
+        <div className="bulk-action-bar">
+          <span className="bulk-count">{selectedFaqIds.length} selected</span>
+          <div className="bulk-actions">
+            <button className="bulk-btn" onClick={() => handleBulkToggleVisibility(false)}>
+              <EyeOff size={14} />
+              Hide
+            </button>
+            <button className="bulk-btn" onClick={() => handleBulkToggleVisibility(true)}>
+              <Eye size={14} />
+              Show
+            </button>
+            <button className="bulk-btn" onClick={() => {
+              setBulkCategory('General')
+              setShowBulkCategoryModal(true)
+            }}>
+              <FileText size={14} />
+              Category
+            </button>
+            <button className="bulk-btn bulk-btn-danger" onClick={handleBulkDelete}>
+              <Trash2 size={14} />
+              Delete
+            </button>
+          </div>
+          <button className="bulk-select-all" onClick={handleBulkSelectAll}>
+            {selectedFaqIds.length === filteredFAQs.length ? 'Deselect All' : 'Select All'}
+          </button>
+        </div>
+      )}
+
       {/* Stats Row */}
-      <div className="faq-stats">
-        <div className="stat-card">
-          <HelpCircle size={20} />
-          <div className="stat-content">
-            <span className="stat-value">{faqs.length}</span>
-            <span className="stat-label">Total FAQs</span>
+      {!bulkMode && (
+        <div className="faq-stats">
+          <div className="stat-card">
+            <HelpCircle size={20} />
+            <div className="stat-content">
+              <span className="stat-value">{faqs.length}</span>
+              <span className="stat-label">Total FAQs</span>
+            </div>
+          </div>
+          <div className="stat-card">
+            <Eye size={20} />
+            <div className="stat-content">
+              <span className="stat-value">{totalViews.toLocaleString()}</span>
+              <span className="stat-label">Total Views</span>
+            </div>
+          </div>
+          <div className="stat-card">
+            <FileText size={20} />
+            <div className="stat-content">
+              <span className="stat-value">{Object.keys(groupedFAQs).length}</span>
+              <span className="stat-label">Categories</span>
+            </div>
+          </div>
+          <div className="stat-card">
+            <EyeOff size={20} />
+            <div className="stat-content">
+              <span className="stat-value">{faqs.filter(f => !f.is_visible).length}</span>
+              <span className="stat-label">Hidden</span>
+            </div>
           </div>
         </div>
-        <div className="stat-card">
-          <Eye size={20} />
-          <div className="stat-content">
-            <span className="stat-value">{totalViews.toLocaleString()}</span>
-            <span className="stat-label">Total Views</span>
-          </div>
-        </div>
-        <div className="stat-card">
-          <FileText size={20} />
-          <div className="stat-content">
-            <span className="stat-value">{Object.keys(groupedFAQs).length}</span>
-            <span className="stat-label">Categories</span>
-          </div>
-        </div>
-        <div className="stat-card">
-          <EyeOff size={20} />
-          <div className="stat-content">
-            <span className="stat-value">{faqs.filter(f => !f.is_visible).length}</span>
-            <span className="stat-label">Hidden</span>
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* Search and Filters */}
       <div className="faq-toolbar">
@@ -893,17 +1102,13 @@ A: Use the app or email maintenance@building.com..."
             <p>
               {searchQuery
                 ? 'Try a different search term'
-                : FEATURE_FAQ_AI_IMPORT
-                  ? 'Add your first question or import FAQs to get started!'
-                  : 'Add your first question to get started!'}
+                : 'Add your first question or import FAQs to get started!'}
             </p>
             <div className="no-faqs-actions">
-              {FEATURE_FAQ_AI_IMPORT && (
-                <button className="import-btn" onClick={() => setCurrentView('wizard')}>
-                  <Upload size={18} />
-                  Import FAQs
-                </button>
-              )}
+              <button className="import-btn" onClick={openImportModal}>
+                <Upload size={18} />
+                Import FAQs
+              </button>
               <button className="add-first-btn" onClick={() => setShowAddModal(true)}>
                 <Plus size={18} />
                 Add Question
@@ -937,6 +1142,9 @@ A: Use the app or email maintenance@building.com..."
                       onEdit={() => openEditModal(faq)}
                       onDelete={() => openDeleteModal(faq)}
                       onToggleVisibility={() => handleToggleVisibility(faq)}
+                      bulkMode={bulkMode}
+                      isSelected={selectedFaqIds.includes(faq.id)}
+                      onToggleSelect={() => toggleFaqSelection(faq.id)}
                     />
                   ))}
                 </div>
@@ -960,12 +1168,119 @@ A: Use the app or email maintenance@building.com..."
                   onEdit={() => openEditModal(faq)}
                   onDelete={() => openDeleteModal(faq)}
                   onToggleVisibility={() => handleToggleVisibility(faq)}
+                  bulkMode={bulkMode}
+                  isSelected={selectedFaqIds.includes(faq.id)}
+                  onToggleSelect={() => toggleFaqSelection(faq.id)}
                 />
               )
             })}
           </div>
         )}
       </div>
+
+      {/* Import FAQ Modal */}
+      {showImportModal && (
+        <div className="modal-overlay" onClick={() => setShowImportModal(false)}>
+          <div className="modal-content import-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Import FAQ</h3>
+              <button className="modal-close" onClick={() => setShowImportModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="import-modal-tabs">
+              <button
+                className={`import-modal-tab ${importTab === 'paste' ? 'active' : ''}`}
+                onClick={() => { setImportTab('paste'); setExtractError(null) }}
+              >
+                <Clipboard size={16} />
+                Paste Text
+              </button>
+              <button
+                className={`import-modal-tab ${importTab === 'file' ? 'active' : ''}`}
+                onClick={() => { setImportTab('file'); setExtractError(null) }}
+              >
+                <FileUp size={16} />
+                Upload File
+              </button>
+            </div>
+
+            <div className="modal-body">
+              {importTab === 'paste' ? (
+                <div className="paste-section">
+                  <textarea
+                    value={pasteText}
+                    onChange={(e) => setPasteText(e.target.value)}
+                    placeholder="Paste your building rules, policies, lease excerpts, or any FAQ content here...
+
+The AI will analyze your text and organize it into clear Q&A pairs."
+                    rows={12}
+                  />
+                </div>
+              ) : (
+                <div className="upload-section">
+                  <div
+                    className="upload-dropzone"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {uploadedFile ? (
+                      <>
+                        <FileText size={48} />
+                        <p className="file-name">{uploadedFile.name}</p>
+                        <p className="file-size">{(uploadedFile.size / 1024).toFixed(1)} KB</p>
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={48} />
+                        <p>Click to select a .txt file</p>
+                        <p className="upload-hint">Only .txt files are supported</p>
+                      </>
+                    )}
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".txt"
+                    onChange={handleFileSelect}
+                    style={{ display: 'none' }}
+                  />
+                </div>
+              )}
+
+              {extractError && (
+                <div className="extract-error">
+                  <AlertCircle size={18} />
+                  <span>{extractError}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn-secondary" onClick={() => setShowImportModal(false)}>
+                Cancel
+              </button>
+              <button
+                className="generate-btn"
+                onClick={handleExtractFAQs}
+                disabled={extracting || (importTab === 'paste' ? !pasteText.trim() : !uploadedFile)}
+              >
+                {extracting ? (
+                  <>
+                    <Loader2 className="spin" size={18} />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={18} />
+                    Organize with AI
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add FAQ Modal */}
       {showAddModal && (
@@ -1152,6 +1467,44 @@ A: Use the app or email maintenance@building.com..."
         </div>
       )}
 
+      {/* Bulk Category Modal */}
+      {showBulkCategoryModal && (
+        <div className="modal-overlay" onClick={() => setShowBulkCategoryModal(false)}>
+          <div className="modal-content delete-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Change Category</h3>
+              <button className="modal-close" onClick={() => setShowBulkCategoryModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Move {selectedFaqIds.length} FAQs to:</label>
+                <select
+                  value={bulkCategory}
+                  onChange={e => setBulkCategory(e.target.value)}
+                >
+                  {CATEGORIES.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn-secondary" onClick={() => setShowBulkCategoryModal(false)}>
+                Cancel
+              </button>
+              <button className="btn-primary" onClick={handleBulkChangeCategory}>
+                <CheckCircle size={18} />
+                Change Category
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Toast Notification */}
       {showToast && (
         <div className="toast-notification">
@@ -1178,11 +1531,19 @@ function FAQItem({
   setActiveMenu,
   onEdit,
   onDelete,
-  onToggleVisibility
+  onToggleVisibility,
+  bulkMode,
+  isSelected,
+  onToggleSelect
 }) {
   return (
-    <div className={`faq-item ${isExpanded ? 'expanded' : ''} ${!faq.is_visible ? 'hidden-faq' : ''}`}>
-      <div className="faq-item-header" onClick={onToggle}>
+    <div className={`faq-item ${isExpanded ? 'expanded' : ''} ${!faq.is_visible ? 'hidden-faq' : ''} ${bulkMode && isSelected ? 'bulk-selected' : ''}`}>
+      <div className="faq-item-header" onClick={bulkMode ? onToggleSelect : onToggle}>
+        {bulkMode && (
+          <button className="bulk-checkbox" onClick={e => { e.stopPropagation(); onToggleSelect() }}>
+            {isSelected ? <CheckSquare size={18} /> : <Square size={18} />}
+          </button>
+        )}
         <div className="faq-question">
           <span className="question-text">{faq.question}</span>
           {!faq.is_visible && (
@@ -1193,46 +1554,48 @@ function FAQItem({
           )}
         </div>
 
-        <div className="faq-item-actions">
-          <span className="faq-views">
-            <Eye size={12} />
-            {faq.view_count || 0}
-          </span>
-          <div className="faq-menu-wrapper">
-            <button
-              className="faq-menu-btn"
-              onClick={e => {
-                e.stopPropagation()
-                setActiveMenu(activeMenu === faq.id ? null : faq.id)
-              }}
-            >
-              <MoreVertical size={16} />
+        {!bulkMode && (
+          <div className="faq-item-actions">
+            <span className="faq-views">
+              <Eye size={12} />
+              {faq.view_count || 0}
+            </span>
+            <div className="faq-menu-wrapper">
+              <button
+                className="faq-menu-btn"
+                onClick={e => {
+                  e.stopPropagation()
+                  setActiveMenu(activeMenu === faq.id ? null : faq.id)
+                }}
+              >
+                <MoreVertical size={16} />
+              </button>
+              {activeMenu === faq.id && (
+                <div className="faq-menu-dropdown">
+                  <button onClick={e => { e.stopPropagation(); onEdit() }}>
+                    <Edit3 size={14} />
+                    Edit Question
+                  </button>
+                  <button onClick={e => { e.stopPropagation(); onToggleVisibility() }}>
+                    {faq.is_visible ? <EyeOff size={14} /> : <Eye size={14} />}
+                    {faq.is_visible ? 'Hide from Residents' : 'Show to Residents'}
+                  </button>
+                  <div className="menu-divider"></div>
+                  <button className="delete-btn" onClick={e => { e.stopPropagation(); onDelete() }}>
+                    <Trash2 size={14} />
+                    Delete Question
+                  </button>
+                </div>
+              )}
+            </div>
+            <button className="expand-btn">
+              {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
             </button>
-            {activeMenu === faq.id && (
-              <div className="faq-menu-dropdown">
-                <button onClick={e => { e.stopPropagation(); onEdit() }}>
-                  <Edit3 size={14} />
-                  Edit Question
-                </button>
-                <button onClick={e => { e.stopPropagation(); onToggleVisibility() }}>
-                  {faq.is_visible ? <EyeOff size={14} /> : <Eye size={14} />}
-                  {faq.is_visible ? 'Hide from Residents' : 'Show to Residents'}
-                </button>
-                <div className="menu-divider"></div>
-                <button className="delete-btn" onClick={e => { e.stopPropagation(); onDelete() }}>
-                  <Trash2 size={14} />
-                  Delete Question
-                </button>
-              </div>
-            )}
           </div>
-          <button className="expand-btn">
-            {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-          </button>
-        </div>
+        )}
       </div>
 
-      {isExpanded && (
+      {isExpanded && !bulkMode && (
         <div className="faq-answer">
           <p>{faq.answer}</p>
         </div>
