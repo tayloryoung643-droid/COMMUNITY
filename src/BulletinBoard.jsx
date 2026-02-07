@@ -228,7 +228,7 @@ function BulletinBoard({ onBack }) {
     { id: 'storage', label: 'Storage', icon: Box },
     { id: 'items', label: 'For Sale', icon: ShoppingBag },
     { id: 'services', label: 'Services', icon: Briefcase },
-    { id: 'iso', label: 'ISO', icon: Search },
+    { id: 'iso', label: 'Looking For', icon: Search },
   ]
 
   useEffect(() => {
@@ -583,7 +583,9 @@ function BulletinBoard({ onBack }) {
                 <input
                   type="text"
                   placeholder={
-                    postForm.category === 'parking' || postForm.category === 'storage'
+                    postForm.category === 'iso'
+                      ? 'What are you willing to pay?'
+                      : postForm.category === 'parking' || postForm.category === 'storage'
                       ? 'e.g., $150/month'
                       : postForm.category === 'services'
                       ? 'e.g., $20/hour'

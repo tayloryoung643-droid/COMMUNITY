@@ -580,7 +580,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
                 const price = listing.price == null || listing.price === 0 || listing.price === '0' ? 'Free' : (typeof listing.price === 'number' ? `$${listing.price}` : (String(listing.price).startsWith('$') ? listing.price : `$${listing.price}`))
                 const ago = Date.now() - new Date(listing.created_at).getTime()
                 const timeAgo = ago < 3600000 ? `${Math.floor(ago / 60000)}m` : ago < 86400000 ? `${Math.floor(ago / 3600000)}h` : `${Math.floor(ago / 86400000)}d`
-                const catLabel = (listing.category || 'General').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+                const catLabel = listing.category === 'iso' ? 'Looking For' : (listing.category || 'General').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
                 return (
                   <button key={listing.id} className="bulletin-preview-card" onClick={() => handleFeatureClick('Bulletin')}>
                     <span className="bulletin-preview-badge">{catLabel}</span>
