@@ -555,7 +555,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
                 const price = listing.price == null || listing.price === 0 || listing.price === '0' ? 'Free' : (typeof listing.price === 'number' ? `$${listing.price}` : (String(listing.price).startsWith('$') ? listing.price : `$${listing.price}`))
                 const ago = Date.now() - new Date(listing.created_at).getTime()
                 const timeAgo = ago < 3600000 ? `${Math.floor(ago / 60000)}m` : ago < 86400000 ? `${Math.floor(ago / 3600000)}h` : `${Math.floor(ago / 86400000)}d`
-                const catLabel = listing.category || 'General'
+                const catLabel = (listing.category || 'General').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
                 return (
                   <button key={listing.id} className="bulletin-preview-card" onClick={() => handleFeatureClick('Bulletin')}>
                     <span className="bulletin-preview-badge">{catLabel}</span>
@@ -598,6 +598,17 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
               <ChevronRight size={20} className="today-card-arrow" />
             </button>
           )}
+
+          {/* Community Section */}
+          <div className="bulletin-preview-header" style={{ marginTop: '8px' }}>
+            <h3 className="bulletin-preview-title">
+              <MessageSquare size={16} />
+              Community
+            </h3>
+            <button className="view-all-link-inline" onClick={() => handleFeatureClick('Community')}>
+              View all →
+            </button>
+          </div>
 
           {/* Community Posts (capped at 3) */}
           {allCommunityPosts.length > 0 ? (
@@ -647,13 +658,6 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
             </div>
           )}
 
-          {/* View All Posts Link */}
-          {allCommunityPosts.length > 3 && (
-            <button className="view-all-link" onClick={() => handleFeatureClick('Community')}>
-              View all posts in Community →
-            </button>
-          )}
-
           {/* Feedback CTA Card */}
           <button className="feedback-cta-card" onClick={() => setShowFeedbackModal(true)}>
             <div className="feedback-cta-icon">
@@ -665,42 +669,6 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
             </div>
             <ChevronRight size={18} style={{ color: '#999' }} />
           </button>
-        </section>
-
-        {/* Coming Up - scrollable list of all upcoming events */}
-        <section className="coming-up-section">
-          <h2 className="section-title-secondary">Coming Up</h2>
-
-          <div className="events-scroll-container">
-            {upcomingEvents.length > 0 ? (
-              upcomingEvents.map((event) => {
-                // Demo events have icon components, real events use Calendar icon
-                const IconComponent = event.icon || Calendar
-                return (
-                  <button key={event.id} className="event-card" onClick={() => handleEventClick(event)}>
-                    <div className={`event-card-icon ${event.iconClass || 'calendar-icon'}`}>
-                      <IconComponent size={20} />
-                    </div>
-                    <div className="event-card-content">
-                      <span className="event-card-title">{event.title}</span>
-                      <span className="event-card-subtitle">{event.subtitle || event.date}</span>
-                    </div>
-                    <ChevronRight size={20} className="event-card-arrow" />
-                  </button>
-                )
-              })
-            ) : !isDemoMode && (
-              <div className="today-card empty-state-card">
-                <div className="today-card-icon calendar-icon" style={{ opacity: 0.5 }}>
-                  <Calendar size={20} />
-                </div>
-                <div className="today-card-content">
-                  <span className="today-card-title" style={{ color: '#64748b' }}>No upcoming events</span>
-                  <span className="today-card-subtitle">Check back later</span>
-                </div>
-              </div>
-            )}
-          </div>
         </section>
 
                 </main>

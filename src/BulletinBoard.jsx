@@ -294,7 +294,7 @@ function BulletinBoard({ onBack }) {
 
   const getCategoryLabel = (categoryId) => {
     const cat = categories.find(c => c.id === categoryId)
-    return cat ? cat.label : categoryId
+    return cat ? cat.label : (categoryId || 'General').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
   }
 
   const filteredListings = activeCategory === 'all'
