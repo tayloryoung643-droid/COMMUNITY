@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 COMMUNITY.zip
 supabase/.temp/
+.vercel

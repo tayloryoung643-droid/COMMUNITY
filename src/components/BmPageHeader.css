@@ -1,6 +1,6 @@
 /* ============================================
-   BM PAGE HEADER - EXACT COPY of Resident hero
-   Only difference: gradient fades to dark theme
+   BM PAGE HEADER - Matches Resident hero style
+   Gradient fades to warm cream (#FAF8F5)
    ============================================ */
 
 /* EXACT COPY from Home.css .hero-section */
@@ -47,25 +47,21 @@
   pointer-events: none;
 }
 
-/* Light warm gradient overlay - fades to light cream like Resident side */
+/* Gradient overlay - fades to warm cream background matching BM page */
 .bm-hero-gradient-overlay {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    /* Soft warm glow from top */
-    radial-gradient(1200px 600px at 50% 20%,
-      rgba(255, 252, 248, 0.70),
-      rgba(255, 252, 248, 0.0) 60%),
-    /* Subtle depth shadow */
-    radial-gradient(120% 120% at 50% 30%,
-      rgba(0, 0, 0, 0.20),
-      rgba(0, 0, 0, 0.0) 55%),
-    /* Bottom fade to light neutral */
-    linear-gradient(to bottom,
-      rgba(255, 248, 240, 0.70) 0%,
-      rgba(255, 248, 240, 0.35) 45%,
-      rgba(245, 242, 238, 0.95) 100%);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    transparent 35%,
+    rgba(250, 248, 245, 0.3) 48%,
+    rgba(250, 248, 245, 0.6) 60%,
+    rgba(250, 248, 245, 0.88) 75%,
+    rgba(250, 248, 245, 0.98) 88%,
+    #FAF8F5 100%
+  );
 }
 
 /* Text container - similar to Home.css .hero-text-container */

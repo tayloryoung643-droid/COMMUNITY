@@ -11,12 +11,23 @@ import {
   FileText,
   Trash2,
   Clock,
-  ChevronRight
+  ChevronRight,
+  Plus,
+  MoreVertical
 } from 'lucide-react'
 import './ManagerAIAssistant.css'
 import { sendMessage, BM_SYSTEM_PROMPT } from './services/aiService'
+import { fetchAllBuildingData, formatBuildingDataForAI } from './services/aiBuildingDataService'
+import {
+  getConversations,
+  getConversation,
+  createConversation,
+  updateConversationMessages,
+  deleteConversation,
+  formatConversationTime
+} from './services/aiConversationService'
 
-function ManagerAIAssistant({ buildingData }) {
+function ManagerAIAssistant({ buildingData, dashboardData, userId }) {
   const [messages, setMessages] = useState([])
   const [inputText, setInputText] = useState('')
   const [isTyping, setIsTyping] = useState(false)
@@ -25,12 +36,76 @@ function ManagerAIAssistant({ buildingData }) {
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
 
+  // Conversation persistence state
+  const [conversations, setConversations] = useState([])
+  const [currentConversationId, setCurrentConversationId] = useState(null)
+  const [loadingConversations, setLoadingConversations] = useState(true)
+
   const building = buildingData || {
     name: 'The Paramount',
     manager: { name: 'Taylor Young' }
   }
 
-  const managerFirstName = building.manager.name.split(' ')[0]
+  const managerFirstName = building.manager?.name?.split(' ')[0] || 'Manager'
+  // Get buildingId from dashboardData (which has the full data structure)
+  const buildingId = dashboardData?.building?.id
+  const managerId = userId || dashboardData?.manager?.id
+
+  // Build context string from dashboard data
+  const getBuildingContext = () => {
+    if (!dashboardData) return ''
+
+    const stats = dashboardData.stats || {}
+    const newResidents = dashboardData.newResidents || []
+    const recentActivity = dashboardData.recentActivity || []
+    const upcomingEvents = dashboardData.upcomingEvents || []
+
+    let context = `
+CURRENT BUILDING DATA (as of now):
+
+Building Stats:
+- Total residents: ${stats.totalResidents || 0}
+- Residents joined: ${stats.residentsJoined || 0} (${stats.totalResidents ? Math.round((stats.residentsJoined || 0) / stats.totalResidents * 100) : 0}% onboarded)
+- New residents this week: ${stats.newResidentsThisWeek || newResidents.length || 0}
+- Packages pending pickup: ${stats.packagesPending || 0}
+- Packages overdue (48+ hours): ${stats.packagesOverdue || 0}
+- Unread messages: ${stats.unreadMessages || 0}
+- Events this week: ${stats.eventsThisWeek || 0}
+- Community posts today: ${stats.postsToday || 0}
+- Engagement rate: ${stats.engagementRate || 0}%`
+
+    if (newResidents.length > 0) {
+      context += `
+
+New Residents This Week:`
+      newResidents.forEach(r => {
+        context += `
+- ${r.name} (Unit ${r.unit || 'TBD'}) - joined ${r.joinedAgo || 'recently'}`
+      })
+    }
+
+    if (upcomingEvents.length > 0) {
+      context += `
+
+Upcoming Events:`
+      upcomingEvents.forEach(e => {
+        context += `
+- ${e.title} - ${e.date} at ${e.time} (${e.location || 'TBD'})`
+      })
+    }
+
+    if (recentActivity.length > 0) {
+      context += `
+
+Recent Activity:`
+      recentActivity.slice(0, 5).forEach(a => {
+        context += `
+- ${a.text} (${a.time})`
+      })
+    }
+
+    return context
+  }
 
   // Quick action suggestions
   const suggestions = [
@@ -46,6 +121,103 @@ function ManagerAIAssistant({ buildingData }) {
   useEffect(() => {
     scrollToBottom()
   }, [messages, isTyping])
+
+  // Load conversation history on mount
+  useEffect(() => {
+    if (buildingId && managerId) {
+      loadConversations()
+    } else {
+      setLoadingConversations(false)
+    }
+  }, [buildingId, managerId])
+
+  // Save messages whenever they change (debounced)
+  useEffect(() => {
+    if (currentConversationId && messages.length > 0) {
+      const timer = setTimeout(() => {
+        saveCurrentConversation()
+      }, 1000) // Save 1 second after last change
+      return () => clearTimeout(timer)
+    }
+  }, [messages, currentConversationId])
+
+  const loadConversations = async () => {
+    try {
+      setLoadingConversations(true)
+      const convos = await getConversations(buildingId, managerId)
+      setConversations(convos)
+      console.log('[ManagerAIAssistant] Loaded conversations:', convos.length)
+    } catch (err) {
+      console.error('[ManagerAIAssistant] Error loading conversations:', err)
+    } finally {
+      setLoadingConversations(false)
+    }
+  }
+
+  const saveCurrentConversation = async () => {
+    if (!currentConversationId || messages.length === 0) return
+    try {
+      await updateConversationMessages(currentConversationId, messages)
+      console.log('[ManagerAIAssistant] Conversation saved')
+    } catch (err) {
+      console.error('[ManagerAIAssistant] Error saving conversation:', err)
+    }
+  }
+
+  const startNewConversation = async (firstMessage) => {
+    if (!buildingId || !managerId) {
+      console.warn('[ManagerAIAssistant] Cannot create conversation - missing buildingId or managerId')
+      return null
+    }
+    try {
+      const newConvo = await createConversation(buildingId, managerId, firstMessage)
+      if (newConvo) {
+        setCurrentConversationId(newConvo.id)
+        // Refresh conversations list
+        loadConversations()
+        return newConvo.id
+      }
+    } catch (err) {
+      console.error('[ManagerAIAssistant] Error creating conversation:', err)
+    }
+    return null
+  }
+
+  const loadConversation = async (conversationId) => {
+    try {
+      const convo = await getConversation(conversationId)
+      if (convo) {
+        setMessages(convo.messages || [])
+        setCurrentConversationId(conversationId)
+        setShowSuggestions(false)
+        console.log('[ManagerAIAssistant] Loaded conversation:', conversationId)
+      }
+    } catch (err) {
+      console.error('[ManagerAIAssistant] Error loading conversation:', err)
+    }
+  }
+
+  const handleDeleteConversation = async (conversationId, e) => {
+    e.stopPropagation()
+    if (confirm('Delete this conversation?')) {
+      const success = await deleteConversation(conversationId)
+      if (success) {
+        // If deleting current conversation, clear it
+        if (conversationId === currentConversationId) {
+          setMessages([])
+          setCurrentConversationId(null)
+          setShowSuggestions(true)
+        }
+        loadConversations()
+      }
+    }
+  }
+
+  const handleNewChat = () => {
+    setMessages([])
+    setCurrentConversationId(null)
+    setShowSuggestions(true)
+  }
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -71,6 +243,12 @@ function ManagerAIAssistant({ buildingData }) {
       timestamp: Date.now()
     }
 
+    // Create new conversation if this is the first message
+    let activeConversationId = currentConversationId
+    if (!activeConversationId && messages.length === 0) {
+      activeConversationId = await startNewConversation(inputText.trim())
+    }
+
     setMessages(prev => [...prev, userMessage])
     setInputText('')
     setShowSuggestions(false)
@@ -83,13 +261,37 @@ function ManagerAIAssistant({ buildingData }) {
       content: msg.text
     }))
 
-    // Custom system prompt with building context
-    const systemPrompt = `${BM_SYSTEM_PROMPT}
+    try {
+      // Fetch ALL fresh building data before each query
+      // Note: buildingId comes from the component-level variable (derived from dashboardData)
+      console.log('[ManagerAIAssistant] dashboardData:', dashboardData)
+      console.log('[ManagerAIAssistant] buildingData prop:', buildingData)
+      console.log('[ManagerAIAssistant] building state:', building)
+      console.log('[ManagerAIAssistant] Using buildingId:', buildingId)
+      console.log('[ManagerAIAssistant] Using managerId:', managerId)
+
+      const allData = buildingId ? await fetchAllBuildingData(buildingId) : null
+      console.log('[ManagerAIAssistant] Fetched allData:', allData ? 'Data received' : 'No data')
+      if (allData) {
+        console.log('[ManagerAIAssistant] Residents count:', allData.residents?.length)
+      }
+
+      const fullContext = allData
+        ? formatBuildingDataForAI(allData, { name: building.manager?.name || 'Property Manager' })
+        : getBuildingContext()
+
+      console.log('[ManagerAIAssistant] Context length:', fullContext?.length, 'chars')
+      console.log('[ManagerAIAssistant] Context preview (first 500 chars):', fullContext?.substring(0, 500))
+
+      // Custom system prompt with COMPLETE building data
+      const systemPrompt = `${BM_SYSTEM_PROMPT}
 
 Current building: ${building.name}
-Manager: ${building.manager.name}`
+Manager: ${building.manager?.name || 'Property Manager'}
+${fullContext}
 
-    try {
+IMPORTANT: Use the COMPLETE BUILDING DATA above to give accurate, specific answers. Include real names, unit numbers, dates, and numbers from the data. If asked about specific residents, packages, events, messages, or any building information - reference the actual data provided.`
+
       const response = await sendMessage(conversationHistory, systemPrompt)
 
       if (response.success) {
@@ -134,6 +336,12 @@ Manager: ${building.manager.name}`
       timestamp: Date.now()
     }
 
+    // Create new conversation if this is the first message
+    let activeConversationId = currentConversationId
+    if (!activeConversationId && messages.length === 0) {
+      activeConversationId = await startNewConversation(suggestion.text)
+    }
+
     setMessages(prev => [...prev, userMessage])
     setInputText('')
     setShowSuggestions(false)
@@ -146,12 +354,22 @@ Manager: ${building.manager.name}`
       content: msg.text
     }))
 
-    const systemPrompt = `${BM_SYSTEM_PROMPT}
+    try {
+      // Fetch ALL fresh building data before each query
+      // Note: buildingId comes from the component-level variable (derived from dashboardData)
+      const allData = buildingId ? await fetchAllBuildingData(buildingId) : null
+      const fullContext = allData
+        ? formatBuildingDataForAI(allData, { name: building.manager?.name || 'Property Manager' })
+        : getBuildingContext()
+
+      const systemPrompt = `${BM_SYSTEM_PROMPT}
 
 Current building: ${building.name}
-Manager: ${building.manager.name}`
+Manager: ${building.manager?.name || 'Property Manager'}
+${fullContext}
 
-    try {
+IMPORTANT: Use the COMPLETE BUILDING DATA above to give accurate, specific answers. Include real names, unit numbers, dates, and numbers from the data. If asked about specific residents, packages, events, messages, or any building information - reference the actual data provided.`
+
       const response = await sendMessage(conversationHistory, systemPrompt)
 
       if (response.success) {
@@ -255,13 +473,47 @@ Manager: ${building.manager.name}`
           </div>
         </div>
 
-        {/* Conversation History Placeholder */}
+        {/* Conversation History */}
         <div className="ai-history">
-          <h3>Recent Conversations</h3>
-          <div className="history-placeholder">
-            <Clock size={20} />
-            <p>Your conversation history will appear here</p>
+          <div className="ai-history-header">
+            <h3>Recent Conversations</h3>
+            <button className="new-chat-btn" onClick={handleNewChat} title="New conversation">
+              <Plus size={16} />
+            </button>
           </div>
+          {loadingConversations ? (
+            <div className="history-placeholder">
+              <Clock size={20} />
+              <p>Loading conversations...</p>
+            </div>
+          ) : conversations.length === 0 ? (
+            <div className="history-placeholder">
+              <Clock size={20} />
+              <p>Your conversation history will appear here</p>
+            </div>
+          ) : (
+            <div className="conversation-list">
+              {conversations.map(convo => (
+                <div
+                  key={convo.id}
+                  className={`conversation-item ${convo.id === currentConversationId ? 'active' : ''}`}
+                  onClick={() => loadConversation(convo.id)}
+                >
+                  <div className="conversation-item-content">
+                    <span className="conversation-title">{convo.title}</span>
+                    <span className="conversation-time">{formatConversationTime(convo.updated_at)}</span>
+                  </div>
+                  <button
+                    className="conversation-delete-btn"
+                    onClick={(e) => handleDeleteConversation(convo.id, e)}
+                    title="Delete conversation"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

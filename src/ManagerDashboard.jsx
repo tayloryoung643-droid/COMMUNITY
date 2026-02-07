@@ -525,7 +525,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
     }
 
     if (activeNav === 'ai-assistant') {
-      return <ManagerAIAssistant buildingData={building} />
+      return <ManagerAIAssistant buildingData={building} dashboardData={dashboardData} userId={user?.id || userProfile?.id} />
     }
 
     if (activeNav === 'community') {
