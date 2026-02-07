@@ -24,6 +24,7 @@ import ManagerOnboardingStep1 from './ManagerOnboardingStep1'
 import ManagerOnboardingStep2 from './ManagerOnboardingStep2'
 import ManagerOnboardingStep3 from './ManagerOnboardingStep3'
 import ManagerOnboardingStep4 from './ManagerOnboardingStep4'
+import { processInviteBatch } from './services/invitationService'
 import ManagerDashboard from './ManagerDashboard'
 import ResidentSignupEntry from './ResidentSignupEntry'
 import ResidentAddressSearch from './ResidentAddressSearch'
@@ -467,13 +468,29 @@ function App() {
       return // Don't navigate away on error
     }
 
+    // Send real invites if residents were imported
+    if (formData.invitesSent && formData.residents?.length > 0) {
+      try {
+        const selectedResidents = formData.residents.filter(r => r.selected !== false)
+        if (selectedResidents.length > 0) {
+          const inviteResult = await processInviteBatch(
+            result.building.id,
+            result.user.id,
+            selectedResidents,
+            result.building.name
+          )
+          console.log('[Onboarding] Invites sent:', inviteResult)
+          alert(`Success! ${inviteResult.emailsSent} invite${inviteResult.emailsSent !== 1 ? 's' : ''} sent to your residents!`)
+        }
+      } catch (err) {
+        console.error('[Onboarding] Failed to send invites:', err)
+        // Non-blocking: building was still created successfully
+        alert('Building created! Some invites may not have sent. You can resend from Settings.')
+      }
+    }
+
     // Clear localStorage onboarding data since we're done
     localStorage.removeItem('onboardingData')
-
-    // Show success message and go to dashboard
-    if (formData.invitesSent) {
-      alert(`Success! Invites sent to ${formData.inviteCount} residents!`)
-    }
     setCurrentScreen('manager-dashboard')
   }
 

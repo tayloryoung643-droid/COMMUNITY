@@ -23,11 +23,12 @@ import {
   ImageIcon,
   Loader2,
   Users,
-  Send,
   Check
 } from 'lucide-react'
 import { uploadBuildingBackgroundImage, removeBuildingBackgroundImage, getBuildingById } from './services/buildingService'
-import { updateUserProfile, uploadProfilePhoto, updateBuildingInfo, changePassword, getResidentCount, sendInviteEmails } from './services/settingsService'
+import { updateUserProfile, uploadProfilePhoto, updateBuildingInfo, changePassword, getResidentCount } from './services/settingsService'
+import { getInvitations, hasFAQEntries, hasInvitations } from './services/invitationService'
+import ResidentImporter from './ResidentImporter'
 import { useAuth } from './contexts/AuthContext'
 import './ManagerSettings.css'
 
@@ -83,9 +84,8 @@ function ManagerSettings() {
 
   // Invite state
   const [accessCodeVisible, setAccessCodeVisible] = useState(false)
-  const [inviteEmails, setInviteEmails] = useState('')
-  const [isSendingInvites, setIsSendingInvites] = useState(false)
   const [residentCount, setResidentCount] = useState(0)
+  const [previousInvites, setPreviousInvites] = useState([])
 
   // Onboarding checklist state
   const [checklistItems, setChecklistItems] = useState({
@@ -149,13 +149,16 @@ function ManagerSettings() {
     fetchBuildingData()
   }, [buildingId])
 
-  // Fetch resident count for invite tab
+  // Fetch invite tab data
   useEffect(() => {
     if (!buildingId) return
     getResidentCount(buildingId).then(count => {
       setResidentCount(count)
       setChecklistItems(prev => ({ ...prev, residentsInvited: count > 0 }))
     })
+    getInvitations(buildingId).then(invites => setPreviousInvites(invites))
+    hasFAQEntries(buildingId).then(has => setChecklistItems(prev => ({ ...prev, faqSetup: has })))
+    hasInvitations(buildingId).then(has => setChecklistItems(prev => ({ ...prev, residentsInvited: has || prev.residentsInvited })))
   }, [buildingId])
 
   // Show toast message
@@ -359,25 +362,18 @@ function ManagerSettings() {
     }
   }
 
-  // Invite handler
-  const handleSendInvites = async () => {
-    const emails = inviteEmails.split(/[,\n]/).map(e => e.trim()).filter(Boolean)
-    if (emails.length === 0) {
-      showToastMessage('Please enter at least one email address.')
-      return
+  // ResidentImporter completion handler
+  const handleImportComplete = ({ sentCount, savedCount }) => {
+    if (sentCount > 0) {
+      showToastMessage(`${sentCount} invitation${sentCount !== 1 ? 's' : ''} sent!`)
+    } else if (savedCount > 0) {
+      showToastMessage(`${savedCount} resident${savedCount !== 1 ? 's' : ''} saved!`)
     }
-
-    setIsSendingInvites(true)
-    try {
-      const accessCode = userProfile?.buildings?.access_code || ''
-      const buildingName = buildingData.name || userProfile?.buildings?.name || ''
-      await sendInviteEmails(emails, accessCode, buildingName)
-      setInviteEmails('')
-      showToastMessage(`Invites sent to ${emails.length} email${emails.length > 1 ? 's' : ''}!`)
-    } catch (err) {
-      showToastMessage(err.message || 'Failed to send invites.')
-    } finally {
-      setIsSendingInvites(false)
+    // Refresh invite data
+    if (buildingId) {
+      getInvitations(buildingId).then(invites => setPreviousInvites(invites))
+      hasInvitations(buildingId).then(has => setChecklistItems(prev => ({ ...prev, residentsInvited: has })))
+      getResidentCount(buildingId).then(count => setResidentCount(count))
     }
   }
 
@@ -723,35 +719,60 @@ function ManagerSettings() {
           </div>
         </div>
 
-        {/* Email Invites */}
+        {/* Import & Invite Residents */}
         <div className="settings-card">
           <div className="card-header">
-            <h3>Invite by Email</h3>
-            <p>Send invitation emails to your residents</p>
+            <h3>Import & Invite Residents</h3>
+            <p>Paste a list, upload a file, or add emails to send invitation emails</p>
           </div>
           <div className="card-body">
-            <div className="form-group">
-              <label>Email Addresses</label>
-              <textarea
-                value={inviteEmails}
-                onChange={e => setInviteEmails(e.target.value)}
-                rows={4}
-                placeholder={"Enter email addresses, one per line or comma-separated...\ne.g. resident1@email.com, resident2@email.com"}
-              />
-            </div>
-            <button
-              className="btn-primary"
-              onClick={handleSendInvites}
-              disabled={isSendingInvites || !inviteEmails.trim()}
-            >
-              {isSendingInvites ? (
-                <><Loader2 size={16} className="spin" /> Sending...</>
-              ) : (
-                <><Send size={16} /> Send Invitations</>
-              )}
-            </button>
+            <ResidentImporter
+              buildingId={buildingId}
+              buildingName={buildingData.name || userProfile?.buildings?.name || ''}
+              accessCode={accessCode}
+              userId={user?.id}
+              onComplete={handleImportComplete}
+              compact
+            />
           </div>
         </div>
+
+        {/* Previously Invited */}
+        {previousInvites.length > 0 && (
+          <div className="settings-card">
+            <div className="card-header">
+              <h3>Previously Invited ({previousInvites.length})</h3>
+              <p>Track invitation status for your residents</p>
+            </div>
+            <div className="card-body">
+              <div className="invite-history-table">
+                <div className="invite-history-header">
+                  <span>Name</span>
+                  <span>Email</span>
+                  <span>Unit</span>
+                  <span>Status</span>
+                </div>
+                {previousInvites.slice(0, 20).map(inv => (
+                  <div key={inv.id} className="invite-history-row">
+                    <span className="invite-history-name">{inv.name || '—'}</span>
+                    <span className="invite-history-email">{inv.email || '—'}</span>
+                    <span className="invite-history-unit">{inv.unit || '—'}</span>
+                    <span className={`invite-history-status status-${inv.status}`}>
+                      {inv.status === 'sent' && <CheckCircle size={14} />}
+                      {inv.status === 'pending' && <AlertTriangle size={14} />}
+                      {inv.status === 'joined' && <Users size={14} />}
+                      {inv.status === 'failed' && <AlertTriangle size={14} />}
+                      {inv.status}
+                    </span>
+                  </div>
+                ))}
+                {previousInvites.length > 20 && (
+                  <p className="invite-history-more">and {previousInvites.length - 20} more...</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Onboarding Checklist */}
         <div className="settings-card">

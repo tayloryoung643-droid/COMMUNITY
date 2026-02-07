@@ -11,14 +11,12 @@ import {
   Sparkles,
   Rocket,
   Send,
-  ExternalLink,
   CheckCircle,
   AlertCircle
 } from 'lucide-react'
 import './ManagerOnboardingStep4.css'
 
 function ManagerOnboardingStep4({ onBack, onLaunch, onSkip, initialData }) {
-  const [sendTestEmail, setSendTestEmail] = useState(false)
   const [codeCopied, setCodeCopied] = useState(false)
   const [isSending, setIsSending] = useState(false)
 
@@ -32,12 +30,10 @@ function ManagerOnboardingStep4({ onBack, onLaunch, onSkip, initialData }) {
     ? Object.values(initialData.faq).reduce((acc, cat) => acc + cat.items.length, 0)
     : 0
 
-  // Count residents
-  const residentCount = initialData?.residents
-    ? initialData.residents.valid.length + initialData.residents.needsReview.length
-    : 0
-
-  const readyResidentCount = initialData?.residents?.valid?.length || 0
+  // Count residents — flat array format from ResidentImporter
+  const allResidents = initialData?.residents || []
+  const residentCount = allResidents.length
+  const readyResidentCount = allResidents.filter(r => r.selected !== false && r.hasEmail).length
 
   // Copy building code to clipboard
   const copyCode = async () => {
@@ -50,14 +46,9 @@ function ManagerOnboardingStep4({ onBack, onLaunch, onSkip, initialData }) {
     }
   }
 
-  // Handle send invites
+  // Handle send invites — real sending happens in App.jsx after building creation
   const handleSendInvites = async () => {
     setIsSending(true)
-
-    // Simulate sending emails
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    setIsSending(false)
     onLaunch({
       ...initialData,
       invitesSent: true,
@@ -219,36 +210,25 @@ function ManagerOnboardingStep4({ onBack, onLaunch, onSkip, initialData }) {
         {/* Action Section */}
         <div className="action-section">
           {residentCount > 0 ? (
-            <>
-              <div className="primary-action">
-                <button
-                  className={`launch-btn ${isSending ? 'sending' : ''}`}
-                  onClick={handleSendInvites}
-                  disabled={isSending}
-                >
-                  {isSending ? (
-                    <>
-                      <Send size={20} className="sending-icon" />
-                      Sending invites...
-                    </>
-                  ) : (
-                    <>
-                      <Send size={20} />
-                      Send Invites to {readyResidentCount} Residents
-                    </>
-                  )}
-                </button>
-
-                <label className="test-email-option">
-                  <input
-                    type="checkbox"
-                    checked={sendTestEmail}
-                    onChange={(e) => setSendTestEmail(e.target.checked)}
-                  />
-                  <span>Send me a test email first</span>
-                </label>
-              </div>
-            </>
+            <div className="primary-action">
+              <button
+                className={`launch-btn ${isSending ? 'sending' : ''}`}
+                onClick={handleSendInvites}
+                disabled={isSending}
+              >
+                {isSending ? (
+                  <>
+                    <Send size={20} className="sending-icon" />
+                    Creating building & sending invites...
+                  </>
+                ) : (
+                  <>
+                    <Send size={20} />
+                    Send Invites to {readyResidentCount} Residents
+                  </>
+                )}
+              </button>
+            </div>
           ) : (
             <div className="no-residents-message">
               <AlertCircle size={24} />

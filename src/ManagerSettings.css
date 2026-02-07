@@ -1542,6 +1542,86 @@
   text-decoration-color: rgba(0, 0, 0, 0.2);
 }
 
+/* Invite History Table */
+.invite-history-table {
+  font-size: 0.8125rem;
+}
+
+.invite-history-header {
+  display: grid;
+  grid-template-columns: 1.5fr 2fr 0.8fr 1fr;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  font-weight: 600;
+  color: var(--md-text-secondary);
+  border-bottom: 1px solid var(--md-border);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 0.6875rem;
+}
+
+.invite-history-row {
+  display: grid;
+  grid-template-columns: 1.5fr 2fr 0.8fr 1fr;
+  gap: 0.75rem;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid var(--md-border);
+  align-items: center;
+}
+
+.invite-history-row:last-child {
+  border-bottom: none;
+}
+
+.invite-history-name {
+  font-weight: 500;
+  color: var(--md-text-primary);
+}
+
+.invite-history-email {
+  color: var(--md-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.invite-history-unit {
+  color: var(--md-text-secondary);
+}
+
+.invite-history-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.invite-history-status.status-sent {
+  color: #0D9488;
+}
+
+.invite-history-status.status-pending {
+  color: #D97706;
+}
+
+.invite-history-status.status-joined {
+  color: #059669;
+}
+
+.invite-history-status.status-failed {
+  color: #EF4444;
+}
+
+.invite-history-more {
+  text-align: center;
+  color: var(--md-text-secondary);
+  font-size: 0.8125rem;
+  padding: 0.75rem 0 0;
+  margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .settings-layout {
