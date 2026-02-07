@@ -23,16 +23,18 @@ import {
   ImageIcon,
   Loader2,
   Users,
-  Check
+  Check,
+  ChevronDown,
+  ArrowRight
 } from 'lucide-react'
 import { uploadBuildingBackgroundImage, removeBuildingBackgroundImage, getBuildingById } from './services/buildingService'
 import { updateUserProfile, uploadProfilePhoto, updateBuildingInfo, changePassword, getResidentCount } from './services/settingsService'
-import { getInvitations, hasFAQEntries, hasInvitations } from './services/invitationService'
+import { getInvitations, hasFAQEntries, hasInvitations, getInvitationStats } from './services/invitationService'
 import ResidentImporter from './ResidentImporter'
 import { useAuth } from './contexts/AuthContext'
 import './ManagerSettings.css'
 
-function ManagerSettings() {
+function ManagerSettings({ onNavigate }) {
   const { userProfile, user, refreshUserProfile } = useAuth()
   const buildingId = userProfile?.building_id
 
@@ -84,8 +86,10 @@ function ManagerSettings() {
 
   // Invite state
   const [accessCodeVisible, setAccessCodeVisible] = useState(false)
+  const [accessCodeExpanded, setAccessCodeExpanded] = useState(false)
   const [residentCount, setResidentCount] = useState(0)
   const [previousInvites, setPreviousInvites] = useState([])
+  const [inviteStats, setInviteStats] = useState({ total: 0, sent: 0, failed: 0, notInvited: 0 })
 
   // Onboarding checklist state
   const [checklistItems, setChecklistItems] = useState({
@@ -157,6 +161,7 @@ function ManagerSettings() {
       setChecklistItems(prev => ({ ...prev, residentsInvited: count > 0 }))
     })
     getInvitations(buildingId).then(invites => setPreviousInvites(invites))
+    getInvitationStats(buildingId).then(stats => setInviteStats(stats))
     hasFAQEntries(buildingId).then(has => setChecklistItems(prev => ({ ...prev, faqSetup: has })))
     hasInvitations(buildingId).then(has => setChecklistItems(prev => ({ ...prev, residentsInvited: has || prev.residentsInvited })))
   }, [buildingId])
@@ -372,6 +377,7 @@ function ManagerSettings() {
     // Refresh invite data
     if (buildingId) {
       getInvitations(buildingId).then(invites => setPreviousInvites(invites))
+      getInvitationStats(buildingId).then(stats => setInviteStats(stats))
       hasInvitations(buildingId).then(has => setChecklistItems(prev => ({ ...prev, residentsInvited: has })))
       getResidentCount(buildingId).then(count => setResidentCount(count))
     }
@@ -680,101 +686,7 @@ function ManagerSettings() {
 
     return (
       <div className="settings-section">
-        {/* Access Code */}
-        <div className="settings-card">
-          <div className="card-header">
-            <h3>Building Access Code</h3>
-            <p>Share this code with residents so they can join your building</p>
-          </div>
-          <div className="card-body">
-            <div className="access-code-display">
-              <div className="access-code-value">
-                <Key size={20} />
-                <span className={accessCodeVisible ? 'code-revealed' : 'code-hidden-text'}>
-                  {accessCodeVisible ? accessCode : '••••••••'}
-                </span>
-                <button className="code-toggle" onClick={() => setAccessCodeVisible(!accessCodeVisible)}>
-                  {accessCodeVisible ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-                <button className="code-copy" onClick={() => copyToClipboard(accessCode)}>
-                  <Copy size={16} />
-                </button>
-              </div>
-            </div>
-
-            {/* Resident counter */}
-            <div className="resident-counter">
-              <div className="resident-counter-header">
-                <span className="resident-counter-label">
-                  <strong>{residentCount}</strong> of <strong>{totalUnits || '?'}</strong> residents joined
-                </span>
-                {totalUnits > 0 && <span className="resident-counter-pct">{progressPct}%</span>}
-              </div>
-              {totalUnits > 0 && (
-                <div className="resident-progress-bar">
-                  <div className="resident-progress-fill" style={{ width: `${progressPct}%` }} />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Import & Invite Residents */}
-        <div className="settings-card">
-          <div className="card-header">
-            <h3>Import & Invite Residents</h3>
-            <p>Paste a list, upload a file, or add emails to send invitation emails</p>
-          </div>
-          <div className="card-body">
-            <ResidentImporter
-              buildingId={buildingId}
-              buildingName={buildingData.name || userProfile?.buildings?.name || ''}
-              accessCode={accessCode}
-              userId={user?.id}
-              onComplete={handleImportComplete}
-              compact
-            />
-          </div>
-        </div>
-
-        {/* Previously Invited */}
-        {previousInvites.length > 0 && (
-          <div className="settings-card">
-            <div className="card-header">
-              <h3>Previously Invited ({previousInvites.length})</h3>
-              <p>Track invitation status for your residents</p>
-            </div>
-            <div className="card-body">
-              <div className="invite-history-table">
-                <div className="invite-history-header">
-                  <span>Name</span>
-                  <span>Email</span>
-                  <span>Unit</span>
-                  <span>Status</span>
-                </div>
-                {previousInvites.slice(0, 20).map(inv => (
-                  <div key={inv.id} className="invite-history-row">
-                    <span className="invite-history-name">{inv.name || '—'}</span>
-                    <span className="invite-history-email">{inv.email || '—'}</span>
-                    <span className="invite-history-unit">{inv.unit || '—'}</span>
-                    <span className={`invite-history-status status-${inv.status}`}>
-                      {inv.status === 'sent' && <CheckCircle size={14} />}
-                      {inv.status === 'pending' && <AlertTriangle size={14} />}
-                      {inv.status === 'joined' && <Users size={14} />}
-                      {inv.status === 'failed' && <AlertTriangle size={14} />}
-                      {inv.status}
-                    </span>
-                  </div>
-                ))}
-                {previousInvites.length > 20 && (
-                  <p className="invite-history-more">and {previousInvites.length - 20} more...</p>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Onboarding Checklist */}
+        {/* 1. Setup Checklist (moved to top) */}
         <div className="settings-card">
           <div className="card-header">
             <h3>Setup Checklist</h3>
@@ -808,6 +720,107 @@ function ManagerSettings() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* 2. Import & Invite Residents */}
+        <div className="settings-card">
+          <div className="card-header">
+            <h3>Import & Invite Residents</h3>
+            <p>Paste a list, upload a file, or add emails to send invitation emails</p>
+          </div>
+          <div className="card-body">
+            <ResidentImporter
+              buildingId={buildingId}
+              buildingName={buildingData.name || userProfile?.buildings?.name || ''}
+              accessCode={accessCode}
+              userId={user?.id}
+              onComplete={handleImportComplete}
+              compact
+            />
+          </div>
+        </div>
+
+        {/* 3. Invitation Summary Card (replaces previously invited list) */}
+        <div className="settings-card">
+          <div className="card-header">
+            <h3>Invitation Summary</h3>
+            <p>Overview of resident invitations for your building</p>
+          </div>
+          <div className="card-body">
+            <div className="invite-summary-stats">
+              <div className="summary-stat">
+                <span className="summary-stat-value">{inviteStats.sent}</span>
+                <span className="summary-stat-label">Total Sent</span>
+              </div>
+              <div className="summary-stat">
+                <span className="summary-stat-value">{residentCount}</span>
+                <span className="summary-stat-label">Joined</span>
+              </div>
+              <div className="summary-stat">
+                <span className="summary-stat-value">{inviteStats.failed}</span>
+                <span className="summary-stat-label">Failed</span>
+              </div>
+            </div>
+
+            <div className="invite-summary-links">
+              {onNavigate && (
+                <button className="invite-summary-link" onClick={() => onNavigate('residents')}>
+                  View All Residents <ArrowRight size={14} />
+                </button>
+              )}
+              {inviteStats.failed > 0 && onNavigate && (
+                <button className="invite-summary-link failed-link" onClick={() => onNavigate('residents')}>
+                  View Failed Invites <ArrowRight size={14} />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* 4. Building Access Code (collapsible, collapsed by default) */}
+        <div className="settings-card">
+          <div
+            className="card-header collapsible"
+            onClick={() => setAccessCodeExpanded(!accessCodeExpanded)}
+          >
+            <div>
+              <h3>Building Access Code</h3>
+              <p>Share this code with residents so they can join your building</p>
+            </div>
+            <ChevronDown size={20} className={`collapse-chevron ${accessCodeExpanded ? 'expanded' : ''}`} />
+          </div>
+          {accessCodeExpanded && (
+            <div className="card-body">
+              <div className="access-code-display">
+                <div className="access-code-value">
+                  <Key size={20} />
+                  <span className={accessCodeVisible ? 'code-revealed' : 'code-hidden-text'}>
+                    {accessCodeVisible ? accessCode : '••••••••'}
+                  </span>
+                  <button className="code-toggle" onClick={() => setAccessCodeVisible(!accessCodeVisible)}>
+                    {accessCodeVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                  <button className="code-copy" onClick={() => copyToClipboard(accessCode)}>
+                    <Copy size={16} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="resident-counter">
+                <div className="resident-counter-header">
+                  <span className="resident-counter-label">
+                    <strong>{residentCount}</strong> of <strong>{totalUnits || '?'}</strong> residents joined
+                  </span>
+                  {totalUnits > 0 && <span className="resident-counter-pct">{progressPct}%</span>}
+                </div>
+                {totalUnits > 0 && (
+                  <div className="resident-progress-bar">
+                    <div className="resident-progress-fill" style={{ width: `${progressPct}%` }} />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     )

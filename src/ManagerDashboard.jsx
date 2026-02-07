@@ -557,7 +557,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
     }
 
     if (activeNav === 'settings') {
-      return <ManagerSettings />
+      return <ManagerSettings onNavigate={setActiveNav} />
     }
 
     if (activeNav === 'dashboard') {

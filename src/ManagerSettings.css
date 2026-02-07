@@ -1542,6 +1542,97 @@
   text-decoration-color: rgba(0, 0, 0, 0.2);
 }
 
+/* Invitation Summary Stats */
+.invite-summary-stats {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.summary-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 1rem;
+  background: #FAF8F5;
+  border: 1px solid rgba(139, 115, 85, 0.08);
+  border-radius: 10px;
+}
+
+.summary-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--md-text-primary);
+}
+
+.summary-stat-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--md-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.invite-summary-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.invite-summary-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(130, 170, 170, 0.08);
+  border: 1px solid rgba(130, 170, 170, 0.15);
+  border-radius: 8px;
+  color: var(--md-accent);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.invite-summary-link:hover {
+  background: rgba(130, 170, 170, 0.15);
+}
+
+.invite-summary-link.failed-link {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.invite-summary-link.failed-link:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Collapsible Card Header */
+.card-header.collapsible {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s ease;
+}
+
+.card-header.collapsible:hover {
+  background: rgba(0, 0, 0, 0.01);
+}
+
+.collapse-chevron {
+  color: var(--md-text-muted);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.collapse-chevron.expanded {
+  transform: rotate(180deg);
+}
+
 /* Invite History Table */
 .invite-history-table {
   font-size: 0.8125rem;

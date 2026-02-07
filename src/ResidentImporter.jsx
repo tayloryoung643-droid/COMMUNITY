@@ -4,7 +4,7 @@ import {
   AlertTriangle, Users, CheckCircle, Send, Copy, Mail, ArrowLeft
 } from 'lucide-react'
 import {
-  parseWithAI, parseCSVFile, parseExcelFile, processInviteBatch, saveInvitations
+  parseWithAI, parseCSVFile, parseExcelFile, processInviteBatch, saveInvitations, addToRoster
 } from './services/invitationService'
 import './ResidentImporter.css'
 
@@ -20,7 +20,7 @@ import './ResidentImporter.css'
  *  - onResidentsReady (residents[]) — optional, called when review data is ready (for onboarding flow)
  *  - compact (boolean) — if true, use less vertical padding (for Settings embed)
  */
-function ResidentImporter({ buildingId, buildingName, accessCode, userId, onComplete, onResidentsReady, compact }) {
+function ResidentImporter({ buildingId, buildingName, accessCode, userId, onComplete, onResidentsReady, compact, mode = 'invite' }) {
   // Phase: 'input' | 'review' | 'sending' | 'done'
   const [phase, setPhase] = useState('input')
 
@@ -219,6 +219,25 @@ function ResidentImporter({ buildingId, buildingName, accessCode, userId, onComp
     } catch (err) {
       console.error('[ResidentImporter] Send error:', err)
       setParseError(err.message || 'Failed to send invitations.')
+      setPhase('review')
+    }
+  }
+
+  const handleAddToRoster = async () => {
+    const toAdd = residents.filter(r => r.selected)
+    if (toAdd.length === 0) return
+
+    setPhase('sending')
+    setProcessingText('Adding to roster...')
+
+    try {
+      await addToRoster(buildingId, userId, toAdd)
+      setSendResult({ totalSaved: toAdd.length, emailsSent: 0, emailsFailed: 0, savedWithoutEmail: 0, isRoster: true })
+      setPhase('done')
+      if (onComplete) onComplete({ sentCount: 0, savedCount: toAdd.length })
+    } catch (err) {
+      console.error('[ResidentImporter] Roster error:', err)
+      setParseError(err.message || 'Failed to add to roster.')
       setPhase('review')
     }
   }
@@ -481,7 +500,12 @@ function ResidentImporter({ buildingId, buildingName, accessCode, userId, onComp
 
         {/* Actions */}
         <div className="ri-review-actions">
-          {buildingId && (
+          {buildingId && mode === 'roster' && (
+            <button className="ri-btn-primary" onClick={handleAddToRoster} disabled={selectedCount === 0}>
+              <Plus size={16} /> Add {selectedCount} to Roster
+            </button>
+          )}
+          {buildingId && mode === 'invite' && (
             <>
               <button className="ri-btn-primary" onClick={handleSend} disabled={readyCount === 0}>
                 <Send size={16} /> Send {readyCount} Invitation{readyCount !== 1 ? 's' : ''}
@@ -522,9 +546,11 @@ function ResidentImporter({ buildingId, buildingName, accessCode, userId, onComp
       <div className={`ri-container ${compact ? 'ri-compact' : ''}`}>
         <div className="ri-done-card">
           <div className="ri-done-icon"><CheckCircle size={48} /></div>
-          <h3>{sendResult.emailsSent > 0
-            ? `${sendResult.emailsSent} invitation${sendResult.emailsSent !== 1 ? 's' : ''} sent!`
-            : `${sendResult.totalSaved} resident${sendResult.totalSaved !== 1 ? 's' : ''} saved!`
+          <h3>{sendResult.isRoster
+            ? `${sendResult.totalSaved} resident${sendResult.totalSaved !== 1 ? 's' : ''} added!`
+            : sendResult.emailsSent > 0
+              ? `${sendResult.emailsSent} invitation${sendResult.emailsSent !== 1 ? 's' : ''} sent!`
+              : `${sendResult.totalSaved} resident${sendResult.totalSaved !== 1 ? 's' : ''} saved!`
           }</h3>
 
           {sendResult.savedWithoutEmail > 0 && (

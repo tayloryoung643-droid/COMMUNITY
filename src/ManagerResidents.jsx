@@ -19,165 +19,166 @@ import {
   ArrowDownAZ,
   Building,
   ChevronDown,
-  Check
+  Check,
+  Send,
+  Loader2,
+  Edit3,
+  Plus
 } from 'lucide-react'
 import './ManagerResidents.css'
 import { useAuth } from './contexts/AuthContext'
 import { supabase } from './lib/supabase'
+import {
+  getInvitations,
+  addSingleResident,
+  sendSingleInvite,
+  deleteInvitation,
+  sendInviteEmail,
+  updateInvitationStatus
+} from './services/invitationService'
+import ResidentImporter from './ResidentImporter'
 
-// Demo residents data - only shown for demo accounts
+// Demo residents data
 const DEMO_RESIDENTS = [
-  { id: 1, firstName: 'Sarah', lastName: 'Mitchell', unit: '1201', email: 'sarah.mitchell@email.com', phone: '(555) 123-4567', status: 'active', joinDate: '2024-12-15' },
-  { id: 2, firstName: 'Mike', lastName: 'Thompson', unit: '805', email: 'mike.t@email.com', phone: '(555) 234-5678', status: 'active', joinDate: '2024-11-20' },
-  { id: 3, firstName: 'Jessica', lastName: 'Kim', unit: '402', email: 'jkim@email.com', phone: '(555) 345-6789', status: 'active', joinDate: '2024-12-01' },
-  { id: 4, firstName: 'Alex', lastName: 'Rivera', unit: '1104', email: 'alex.rivera@email.com', phone: '(555) 456-7890', status: 'active', joinDate: '2024-10-15' },
-  { id: 5, firstName: 'Chris', lastName: 'Walker', unit: '309', email: 'chris.w@email.com', phone: '(555) 567-8901', status: 'active', joinDate: '2024-11-05' },
-  { id: 6, firstName: 'Emma', lastName: 'Davis', unit: '1507', email: 'emma.davis@email.com', phone: '', status: 'pending', joinDate: null, inviteSent: '2025-01-10' },
-  { id: 7, firstName: 'James', lastName: 'Lee', unit: '203', email: 'jameslee@email.com', phone: '(555) 678-9012', status: 'pending', joinDate: null, inviteSent: '2025-01-12' },
-  { id: 8, firstName: 'Taylor', lastName: 'Young', unit: '612', email: 'taylor.young@email.com', phone: '(555) 789-0123', status: 'active', joinDate: '2024-09-01' },
-  { id: 9, firstName: 'Lisa', lastName: 'Chen', unit: '908', email: 'lisa.chen@email.com', phone: '(555) 890-1234', status: 'active', joinDate: '2024-12-20' },
-  { id: 10, firstName: 'Robert', lastName: 'Martinez', unit: '1102', email: 'r.martinez@email.com', phone: '', status: 'inactive', joinDate: '2024-06-15', inactiveSince: '2024-12-01' }
+  { id: 1, firstName: 'Sarah', lastName: 'Mitchell', unit: '1201', email: 'sarah.mitchell@email.com', phone: '(555) 123-4567', status: 'joined', joinDate: '2024-12-15' },
+  { id: 2, firstName: 'Mike', lastName: 'Thompson', unit: '805', email: 'mike.t@email.com', phone: '(555) 234-5678', status: 'joined', joinDate: '2024-11-20' },
+  { id: 3, firstName: 'Jessica', lastName: 'Kim', unit: '402', email: 'jkim@email.com', phone: '(555) 345-6789', status: 'joined', joinDate: '2024-12-01' },
+  { id: 4, firstName: 'Alex', lastName: 'Rivera', unit: '1104', email: 'alex.rivera@email.com', phone: '(555) 456-7890', status: 'joined', joinDate: '2024-10-15' },
+  { id: 5, firstName: 'Chris', lastName: 'Walker', unit: '309', email: 'chris.w@email.com', phone: '(555) 567-8901', status: 'joined', joinDate: '2024-11-05' },
+  { id: 6, firstName: 'Emma', lastName: 'Davis', unit: '1507', email: 'emma.davis@email.com', phone: '', status: 'sent', moveInDate: '2025-02-01' },
+  { id: 7, firstName: 'James', lastName: 'Lee', unit: '203', email: 'jameslee@email.com', phone: '(555) 678-9012', status: 'not_invited', moveInDate: null },
+  { id: 8, firstName: 'Taylor', lastName: 'Young', unit: '612', email: 'taylor.young@email.com', phone: '(555) 789-0123', status: 'joined', joinDate: '2024-09-01' },
+  { id: 9, firstName: 'Lisa', lastName: 'Chen', unit: '908', email: 'lisa.chen@email.com', phone: '(555) 890-1234', status: 'joined', joinDate: '2024-12-20' },
+  { id: 10, firstName: 'Robert', lastName: 'Martinez', unit: '1102', email: 'r.martinez@email.com', phone: '', status: 'failed', moveInDate: null }
 ]
 
 function ManagerResidents() {
-  // Check if in demo mode
-  const { userProfile, isDemoMode } = useAuth()
+  const { userProfile, isDemoMode, user } = useAuth()
   const isInDemoMode = isDemoMode || userProfile?.is_demo === true
+  const buildingId = userProfile?.building_id
 
   const [searchQuery, setSearchQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState('all')
-  const [showInviteModal, setShowInviteModal] = useState(false)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [addModalTab, setAddModalTab] = useState('single')
   const [openMenuId, setOpenMenuId] = useState(null)
   const [sortBy, setSortBy] = useState('name-asc')
   const [showSortMenu, setShowSortMenu] = useState(false)
   const [floorFilter, setFloorFilter] = useState('all')
+  const [sendingInviteId, setSendingInviteId] = useState(null)
 
-  // Invite form state
-  const [inviteForm, setInviteForm] = useState({
-    firstName: '',
-    lastName: '',
-    unit: '',
-    email: '',
-    phone: '',
-    moveInDate: ''
+  // Add single resident form
+  const [addForm, setAddForm] = useState({
+    firstName: '', lastName: '', unit: '', email: '', phone: '', moveInDate: ''
   })
+  const [addFormLoading, setAddFormLoading] = useState(false)
 
-  // Residents data - demo mode gets demo data, real mode starts empty
-  const [residents, setResidents] = useState(isInDemoMode ? DEMO_RESIDENTS : [])
+  // All residents (unified from users + invitations)
+  const [allResidents, setAllResidents] = useState(isInDemoMode ? DEMO_RESIDENTS : [])
+  const [isLoading, setIsLoading] = useState(!isInDemoMode)
 
-  // Pending invites from Supabase (for real mode)
-  const [pendingInvites, setPendingInvites] = useState([])
-  const [invitesLoading, setInvitesLoading] = useState(false)
-
-  // Fetch real residents AND pending invites from Supabase on mount (real mode only)
+  // Fetch unified data
   useEffect(() => {
     if (isInDemoMode) return
+    fetchAllResidents()
+  }, [isInDemoMode, buildingId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-    const fetchResidentsAndInvites = async () => {
-      const buildingId = userProfile?.building_id
-      if (!buildingId) return
+  const fetchAllResidents = async () => {
+    if (!buildingId) return
+    setIsLoading(true)
 
-      setInvitesLoading(true)
-      try {
-        // Fetch active residents from users table
-        const { data: activeUsers, error: usersError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('building_id', buildingId)
-          .eq('role', 'resident')
-          .order('created_at', { ascending: false })
+    try {
+      // 1. Fetch joined users
+      const { data: activeUsers, error: usersError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('building_id', buildingId)
+        .eq('role', 'resident')
+        .order('created_at', { ascending: false })
 
-        if (usersError) {
-          console.error('[ManagerResidents] Error fetching users:', usersError)
-        } else {
-          console.log('[ManagerResidents] Fetched active residents:', activeUsers?.length || 0)
-          // Transform users to resident display format
-          const transformedUsers = (activeUsers || []).map(user => {
-            const nameParts = (user.full_name || '').split(' ')
-            const firstName = nameParts[0] || 'Unknown'
-            const lastName = nameParts.slice(1).join(' ') || ''
-            return {
-              id: user.id,
-              firstName,
-              lastName,
-              unit: user.unit_number || '',
-              email: user.email || '',
-              phone: user.phone || '',
-              status: 'active',
-              joinDate: user.created_at ? user.created_at.split('T')[0] : null,
-              isFromSupabase: true
-            }
-          })
-          setResidents(transformedUsers)
+      if (usersError) console.error('[ManagerResidents] Users error:', usersError)
+
+      const joinedEmails = new Set()
+      const joined = (activeUsers || []).map(u => {
+        const nameParts = (u.full_name || '').split(' ')
+        if (u.email) joinedEmails.add(u.email.toLowerCase())
+        return {
+          id: u.id,
+          firstName: nameParts[0] || 'Unknown',
+          lastName: nameParts.slice(1).join(' ') || '',
+          unit: u.unit_number || '',
+          email: u.email || '',
+          phone: u.phone || '',
+          status: 'joined',
+          joinDate: u.created_at ? u.created_at.split('T')[0] : null,
+          source: 'users'
         }
+      })
 
-        // Fetch pending invites
-        const { data: invites, error: invitesError } = await supabase
-          .from('resident_invites')
-          .select('*')
-          .eq('building_id', buildingId)
-          .eq('status', 'pending')
-          .order('created_at', { ascending: false })
+      // 2. Fetch invitations (not joined)
+      const invitations = await getInvitations(buildingId)
+      const invited = (invitations || [])
+        .filter(inv => inv.status !== 'joined')
+        .filter(inv => !inv.email || !joinedEmails.has(inv.email.toLowerCase()))
+        .map(inv => {
+          const nameParts = (inv.name || '').split(' ')
+          return {
+            id: inv.id,
+            firstName: nameParts[0] || 'Unknown',
+            lastName: nameParts.slice(1).join(' ') || '',
+            unit: inv.unit || '',
+            email: inv.email || '',
+            phone: inv.phone || '',
+            status: inv.status || 'not_invited',
+            moveInDate: inv.move_in_date || null,
+            invitedAt: inv.invited_at ? inv.invited_at.split('T')[0] : null,
+            source: 'invitations'
+          }
+        })
 
-        if (invitesError) {
-          console.error('[ManagerResidents] Error fetching invites:', invitesError)
-        } else {
-          console.log('[ManagerResidents] Fetched pending invites:', invites?.length || 0)
-          setPendingInvites(invites || [])
-        }
-      } catch (err) {
-        console.error('[ManagerResidents] Fetch error:', err)
-      } finally {
-        setInvitesLoading(false)
-      }
+      setAllResidents([...joined, ...invited])
+    } catch (err) {
+      console.error('[ManagerResidents] Fetch error:', err)
+    } finally {
+      setIsLoading(false)
     }
-
-    fetchResidentsAndInvites()
-  }, [isInDemoMode, userProfile?.building_id])
-
-  // Available units for invite dropdown
-  const availableUnits = [
-    '101', '102', '201', '202', '301', '302', '401', '501', '502',
-    '601', '701', '702', '801', '901', '902', '1001', '1002', '1301',
-    '1401', '1402', '1501', '1502', '1503', '1601', '1602'
-  ]
-
-  // Transform pending invites from Supabase to resident display format
-  const transformedPendingInvites = pendingInvites.map(invite => {
-    const nameParts = (invite.full_name || '').split(' ')
-    const firstName = nameParts[0] || 'Unknown'
-    const lastName = nameParts.slice(1).join(' ') || ''
-    return {
-      id: invite.id,
-      firstName,
-      lastName,
-      unit: invite.unit_number || '',
-      email: invite.email || '',
-      phone: invite.phone || '',
-      status: 'pending',
-      joinDate: null,
-      inviteSent: invite.created_at ? invite.created_at.split('T')[0] : null,
-      isFromSupabase: true // marker to identify Supabase invites
-    }
-  })
-
-  // Combine residents with pending invites (for real mode)
-  const allResidents = isInDemoMode
-    ? residents
-    : [...residents, ...transformedPendingInvites]
-
-  // Get initials from name
-  const getInitials = (firstName, lastName) => {
-    return `${firstName[0] || '?'}${lastName[0] || ''}`.toUpperCase()
   }
 
-  // Get floor from unit number
+  // Helpers
+  const getInitials = (firstName, lastName) => {
+    return `${firstName?.[0] || '?'}${lastName?.[0] || ''}`.toUpperCase()
+  }
+
   const getFloor = (unit) => {
-    if (unit.length <= 2) return 1
+    if (!unit || unit.length <= 2) return 1
     return parseInt(unit.slice(0, -2)) || 1
   }
 
-  // Get unique floors from all residents (including pending invites)
+  const formatDate = (dateStr) => {
+    if (!dateStr) return ''
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'joined': return { label: 'Joined', className: 'status-joined' }
+      case 'sent': return { label: 'Invited', className: 'status-invited' }
+      case 'not_invited': return { label: 'Not Yet Invited', className: 'status-not-invited' }
+      case 'failed': return { label: 'Invite Failed', className: 'status-failed' }
+      case 'pending': return { label: 'Invited', className: 'status-invited' }
+      default: return { label: status, className: '' }
+    }
+  }
+
+  const getStatusDateLabel = (resident) => {
+    if (resident.status === 'joined') return `Joined ${formatDate(resident.joinDate)}`
+    if (resident.status === 'sent' || resident.status === 'pending') return `Invited ${formatDate(resident.invitedAt)}`
+    if (resident.moveInDate) return `Move-in ${formatDate(resident.moveInDate)}`
+    return resident.invitedAt ? `Added ${formatDate(resident.invitedAt)}` : ''
+  }
+
+  // Unique floors
   const uniqueFloors = [...new Set(allResidents.filter(r => r.unit).map(r => getFloor(r.unit)))].sort((a, b) => a - b)
 
   // Sort options
@@ -190,31 +191,15 @@ function ManagerResidents() {
     { id: 'oldest', label: 'Oldest First', icon: Calendar }
   ]
 
-  // Format date
-  const formatDate = (dateStr) => {
-    if (!dateStr) return ''
-    const date = new Date(dateStr)
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-  }
+  // Status counts
+  const joinedCount = allResidents.filter(r => r.status === 'joined').length
+  const invitedCount = allResidents.filter(r => r.status === 'sent' || r.status === 'pending').length
+  const notInvitedCount = allResidents.filter(r => r.status === 'not_invited').length
+  const failedCount = allResidents.filter(r => r.status === 'failed').length
 
-  // Get status badge info
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'active':
-        return { label: 'Active', className: 'status-active' }
-      case 'pending':
-        return { label: 'Pending Invite', className: 'status-pending' }
-      case 'inactive':
-        return { label: 'Inactive', className: 'status-inactive' }
-      default:
-        return { label: status, className: '' }
-    }
-  }
-
-  // Filter residents (using allResidents which includes pending invites)
+  // Filter + Sort
   const filteredResidents = allResidents
     .filter(resident => {
-      // Search filter
       const searchLower = searchQuery.toLowerCase()
       const fullName = `${resident.firstName} ${resident.lastName}`.toLowerCase()
       const matchesSearch = searchQuery === '' ||
@@ -222,238 +207,272 @@ function ManagerResidents() {
         resident.unit.includes(searchQuery) ||
         resident.email.toLowerCase().includes(searchLower)
 
-      // Floor filter
       const matchesFloor = floorFilter === 'all' || getFloor(resident.unit) === parseInt(floorFilter)
 
-      // Status filter
-      if (activeFilter === 'active') return matchesSearch && matchesFloor && resident.status === 'active'
-      if (activeFilter === 'pending') return matchesSearch && matchesFloor && resident.status === 'pending'
-      if (activeFilter === 'inactive') return matchesSearch && matchesFloor && resident.status === 'inactive'
+      if (activeFilter === 'joined') return matchesSearch && matchesFloor && resident.status === 'joined'
+      if (activeFilter === 'invited') return matchesSearch && matchesFloor && (resident.status === 'sent' || resident.status === 'pending')
+      if (activeFilter === 'not_invited') return matchesSearch && matchesFloor && resident.status === 'not_invited'
+      if (activeFilter === 'failed') return matchesSearch && matchesFloor && resident.status === 'failed'
       return matchesSearch && matchesFloor
     })
     .sort((a, b) => {
       switch (sortBy) {
-        case 'name-asc':
-          return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`)
-        case 'name-desc':
-          return `${b.firstName} ${b.lastName}`.localeCompare(`${a.firstName} ${a.lastName}`)
-        case 'floor-asc':
-          return getFloor(a.unit) - getFloor(b.unit) || a.unit.localeCompare(b.unit)
-        case 'floor-desc':
-          return getFloor(b.unit) - getFloor(a.unit) || b.unit.localeCompare(a.unit)
-        case 'newest':
-          return new Date(b.joinDate || b.inviteSent || 0) - new Date(a.joinDate || a.inviteSent || 0)
-        case 'oldest':
-          return new Date(a.joinDate || a.inviteSent || 0) - new Date(b.joinDate || b.inviteSent || 0)
-        default:
-          return 0
+        case 'name-asc': return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`)
+        case 'name-desc': return `${b.firstName} ${b.lastName}`.localeCompare(`${a.firstName} ${a.lastName}`)
+        case 'floor-asc': return getFloor(a.unit) - getFloor(b.unit) || a.unit.localeCompare(b.unit)
+        case 'floor-desc': return getFloor(b.unit) - getFloor(a.unit) || b.unit.localeCompare(a.unit)
+        case 'newest': return new Date(b.joinDate || b.invitedAt || 0) - new Date(a.joinDate || a.invitedAt || 0)
+        case 'oldest': return new Date(a.joinDate || a.invitedAt || 0) - new Date(b.joinDate || b.invitedAt || 0)
+        default: return 0
       }
     })
 
-  // Stats (using allResidents which includes pending invites)
-  const totalUnits = 50
-  const activeCount = allResidents.filter(r => r.status === 'active').length
-  const pendingCount = allResidents.filter(r => r.status === 'pending').length
-  const inactiveCount = allResidents.filter(r => r.status === 'inactive').length
-  const onboardedPercentage = Math.round((activeCount / totalUnits) * 100)
+  // Export CSV
+  const handleExport = () => {
+    const buildingName = userProfile?.buildings?.name || userProfile?.building_name || 'building'
+    const dateStr = new Date().toISOString().split('T')[0]
+    const filename = `${buildingName.replace(/\s+/g, '-').toLowerCase()}-residents-${dateStr}.csv`
 
-  // Handle invite form change
-  const handleInviteChange = (field, value) => {
-    setInviteForm(prev => ({ ...prev, [field]: value }))
+    const headers = ['Name', 'Unit', 'Email', 'Phone', 'Status', 'Move-in Date']
+    const rows = allResidents.map(r => [
+      `${r.firstName} ${r.lastName}`,
+      r.unit || '',
+      r.email || '',
+      r.phone || '',
+      getStatusBadge(r.status).label,
+      r.moveInDate || ''
+    ])
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${(cell || '').replace(/"/g, '""')}"`).join(','))
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
   }
 
-  // Handle send invite
-  const handleSendInvite = async () => {
-    if (!inviteForm.firstName || !inviteForm.lastName || !inviteForm.unit || !inviteForm.email) {
-      return
-    }
+  // Add single resident
+  const handleAddSingle = async () => {
+    if (!addForm.firstName || !addForm.lastName) return
 
-    // Demo mode: use local state only
     if (isInDemoMode) {
       const newResident = {
         id: Date.now(),
-        firstName: inviteForm.firstName,
-        lastName: inviteForm.lastName,
-        unit: inviteForm.unit,
-        email: inviteForm.email,
-        phone: inviteForm.phone,
-        status: 'pending',
-        joinDate: null,
-        inviteSent: new Date().toISOString().split('T')[0]
+        firstName: addForm.firstName,
+        lastName: addForm.lastName,
+        unit: addForm.unit,
+        email: addForm.email,
+        phone: addForm.phone,
+        status: 'not_invited',
+        moveInDate: addForm.moveInDate || null,
+        source: 'invitations'
       }
-      setResidents(prev => [...prev, newResident])
-      setShowInviteModal(false)
-      setInviteForm({
-        firstName: '',
-        lastName: '',
-        unit: '',
-        email: '',
-        phone: '',
-        moveInDate: ''
-      })
+      setAllResidents(prev => [...prev, newResident])
+      resetAddForm()
+      setShowAddModal(false)
       return
     }
 
-    // Real mode: insert into Supabase
-    // Get user info from AuthContext (not supabase.auth.getSession which returns null)
-    const inviterUserId = userProfile?.id
-    const buildingId = userProfile?.building_id
-
-    // Check if profile is loaded
-    if (!inviterUserId || !buildingId) {
-      console.error('[ManagerResidents] Profile not loaded yet:', { inviterUserId, buildingId })
-      alert('Please wait for your profile to load and try again.')
-      return
-    }
-
+    setAddFormLoading(true)
     try {
-      const token = crypto.randomUUID()
-      const fullName = `${inviteForm.firstName} ${inviteForm.lastName}`.trim()
-
-      const { data, error } = await supabase
-        .from('resident_invites')
-        .insert([
-          {
-            building_id: buildingId,
-            inviter_user_id: inviterUserId,
-            email: inviteForm.email.trim().toLowerCase(),
-            full_name: fullName || null,
-            unit_number: inviteForm.unit || null,
-            phone: inviteForm.phone || null,
-            token,
-            status: 'pending',
-          },
-        ])
-        .select()
-        .single()
-
-      if (error) {
-        console.error('[ManagerResidents] Insert invite error:', error)
-        alert(`Failed to send invite: ${error.message}`)
-        return
-      }
-
-      console.log('[ManagerResidents] Invite created:', data)
-
-      // Add to local pending invites state
-      setPendingInvites(prev => [data, ...prev])
-
-      // Send invitation email via API
-      const buildingName = userProfile?.buildings?.name || userProfile?.building_name || 'Your Building'
-      try {
-        const emailResponse = await fetch('/api/send-invite', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: inviteForm.email.trim().toLowerCase(),
-            fullName,
-            token,
-            buildingName
-          })
-        })
-
-        const emailResult = await emailResponse.json()
-
-        if (!emailResponse.ok) {
-          console.error('[ManagerResidents] Email send error:', emailResult.error)
-          // Invite was saved, but email failed - notify user
-          alert(`Invite saved, but email failed to send: ${emailResult.error}`)
-        } else {
-          console.log('[ManagerResidents] Invitation email sent:', emailResult.messageId)
-        }
-      } catch (emailErr) {
-        console.error('[ManagerResidents] Email API error:', emailErr)
-        // Invite was saved, but email failed - notify user
-        alert('Invite saved, but failed to send email. You may need to resend later.')
-      }
-
-      setShowInviteModal(false)
-      setInviteForm({
-        firstName: '',
-        lastName: '',
-        unit: '',
-        email: '',
-        phone: '',
-        moveInDate: ''
+      const fullName = `${addForm.firstName} ${addForm.lastName}`.trim()
+      await addSingleResident(buildingId, user?.id, {
+        name: fullName,
+        email: addForm.email?.trim() || null,
+        unit: addForm.unit || null,
+        phone: addForm.phone || null,
+        moveInDate: addForm.moveInDate || null
       })
+      resetAddForm()
+      setShowAddModal(false)
+      fetchAllResidents()
+    } catch (err) {
+      console.error('[ManagerResidents] Add error:', err)
+      alert(err.message || 'Failed to add resident.')
+    } finally {
+      setAddFormLoading(false)
+    }
+  }
+
+  const resetAddForm = () => {
+    setAddForm({ firstName: '', lastName: '', unit: '', email: '', phone: '', moveInDate: '' })
+  }
+
+  // Send invite for a single row
+  const handleSendInviteRow = async (resident) => {
+    if (!resident.email || sendingInviteId) return
+
+    if (isInDemoMode) {
+      setAllResidents(prev => prev.map(r => r.id === resident.id ? { ...r, status: 'sent' } : r))
+      return
+    }
+
+    setSendingInviteId(resident.id)
+    try {
+      const buildingName = userProfile?.buildings?.name || userProfile?.building_name || 'Your Building'
+      const fullName = `${resident.firstName} ${resident.lastName}`.trim()
+      const result = await sendSingleInvite(resident.id, resident.email, fullName, buildingName)
+      if (result.success) {
+        setAllResidents(prev => prev.map(r => r.id === resident.id ? { ...r, status: 'sent' } : r))
+      } else {
+        setAllResidents(prev => prev.map(r => r.id === resident.id ? { ...r, status: 'failed' } : r))
+      }
     } catch (err) {
       console.error('[ManagerResidents] Send invite error:', err)
-      alert(`Failed to send invite: ${err.message}`)
+    } finally {
+      setSendingInviteId(null)
     }
   }
 
-  // Handle resend invite
-  const handleResendInvite = (residentId) => {
-    setResidents(prev => prev.map(r =>
-      r.id === residentId
-        ? { ...r, inviteSent: new Date().toISOString().split('T')[0] }
-        : r
-    ))
+  // Resend invite (for sent/failed)
+  const handleResendInvite = async (resident) => {
+    if (!resident.email) return
     setOpenMenuId(null)
+
+    if (isInDemoMode) {
+      setAllResidents(prev => prev.map(r => r.id === resident.id ? { ...r, status: 'sent' } : r))
+      return
+    }
+
+    setSendingInviteId(resident.id)
+    try {
+      const buildingName = userProfile?.buildings?.name || userProfile?.building_name || 'Your Building'
+      const fullName = `${resident.firstName} ${resident.lastName}`.trim()
+      const emailResult = await sendInviteEmail(resident.email, fullName, buildingName)
+      if (emailResult.success) {
+        await updateInvitationStatus(resident.id, 'sent')
+        setAllResidents(prev => prev.map(r => r.id === resident.id ? { ...r, status: 'sent' } : r))
+      } else {
+        await updateInvitationStatus(resident.id, 'failed')
+        setAllResidents(prev => prev.map(r => r.id === resident.id ? { ...r, status: 'failed' } : r))
+      }
+    } catch (err) {
+      console.error('[ManagerResidents] Resend error:', err)
+    } finally {
+      setSendingInviteId(null)
+    }
   }
 
-  // Handle remove resident
+  // Remove resident
   const handleRemoveResident = async (resident) => {
-    if (!window.confirm('Are you sure you want to remove this resident from the building?')) {
+    if (!window.confirm('Are you sure you want to remove this resident?')) {
       setOpenMenuId(null)
       return
     }
 
-    // Check if this is a Supabase invite (real mode)
-    if (!isInDemoMode && resident.isFromSupabase) {
-      try {
-        const { error } = await supabase
-          .from('resident_invites')
-          .delete()
-          .eq('id', resident.id)
-
-        if (error) {
-          console.error('[ManagerResidents] Delete invite error:', error)
-          alert(`Failed to remove invite: ${error.message}`)
-          setOpenMenuId(null)
-          return
-        }
-
-        console.log('[ManagerResidents] Invite deleted:', resident.id)
-        setPendingInvites(prev => prev.filter(i => i.id !== resident.id))
-      } catch (err) {
-        console.error('[ManagerResidents] Remove invite error:', err)
-        alert(`Failed to remove invite: ${err.message}`)
-      }
-    } else {
-      // Demo mode or local resident
-      setResidents(prev => prev.filter(r => r.id !== resident.id))
+    if (isInDemoMode || resident.source !== 'invitations') {
+      setAllResidents(prev => prev.filter(r => r.id !== resident.id))
+      setOpenMenuId(null)
+      return
     }
 
+    try {
+      await deleteInvitation(resident.id)
+      setAllResidents(prev => prev.filter(r => r.id !== resident.id))
+    } catch (err) {
+      console.error('[ManagerResidents] Remove error:', err)
+      alert(err.message || 'Failed to remove.')
+    }
     setOpenMenuId(null)
   }
 
-  // Handle export
-  const handleExport = () => {
-    alert('Export functionality coming soon!')
+  // Roster import complete
+  const handleRosterComplete = () => {
+    setShowAddModal(false)
+    fetchAllResidents()
   }
 
-  // Close menu when clicking outside
   const handleClickOutside = () => {
     if (openMenuId) setOpenMenuId(null)
     if (showSortMenu) setShowSortMenu(false)
   }
 
-  // Get current sort label
   const getCurrentSortLabel = () => {
     const option = sortOptions.find(o => o.id === sortBy)
     return option ? option.label : 'Sort'
   }
 
+  // Render action menu items based on status
+  const renderMenuItems = (resident) => {
+    switch (resident.status) {
+      case 'joined':
+        return (
+          <>
+            <button className="menu-item"><MessageSquare size={16} /><span>Send Message</span></button>
+            <div className="menu-divider" />
+            <button className="menu-item danger" onClick={() => handleRemoveResident(resident)}>
+              <Trash2 size={16} /><span>Remove</span>
+            </button>
+          </>
+        )
+      case 'sent':
+      case 'pending':
+        return (
+          <>
+            <button className="menu-item" onClick={() => handleResendInvite(resident)}>
+              <RefreshCw size={16} /><span>Resend Invite</span>
+            </button>
+            <div className="menu-divider" />
+            <button className="menu-item danger" onClick={() => handleRemoveResident(resident)}>
+              <Trash2 size={16} /><span>Remove</span>
+            </button>
+          </>
+        )
+      case 'not_invited':
+        return (
+          <>
+            {resident.email && (
+              <button className="menu-item" onClick={() => { setOpenMenuId(null); handleSendInviteRow(resident) }}>
+                <Send size={16} /><span>Send Invite</span>
+              </button>
+            )}
+            <div className="menu-divider" />
+            <button className="menu-item danger" onClick={() => handleRemoveResident(resident)}>
+              <Trash2 size={16} /><span>Remove</span>
+            </button>
+          </>
+        )
+      case 'failed':
+        return (
+          <>
+            <button className="menu-item" onClick={() => handleResendInvite(resident)}>
+              <RefreshCw size={16} /><span>Resend Invite</span>
+            </button>
+            <div className="menu-divider" />
+            <button className="menu-item danger" onClick={() => handleRemoveResident(resident)}>
+              <Trash2 size={16} /><span>Remove</span>
+            </button>
+          </>
+        )
+      default:
+        return (
+          <button className="menu-item danger" onClick={() => handleRemoveResident(resident)}>
+            <Trash2 size={16} /><span>Remove</span>
+          </button>
+        )
+    }
+  }
+
+  const totalUnits = 50
+  const onboardedPercentage = Math.round((joinedCount / totalUnits) * 100)
+
   return (
     <div className="manager-residents" onClick={handleClickOutside}>
-      {/* Header Section */}
+      {/* Header */}
       <div className="residents-header">
         <div className="residents-title-section">
           <h1>Residents</h1>
           <p className="residents-stats">
             <Users size={16} />
-            <span><strong>{activeCount}</strong> of <strong>{totalUnits}</strong> residents onboarded ({onboardedPercentage}%)</span>
+            <span><strong>{joinedCount}</strong> of <strong>{totalUnits}</strong> residents onboarded ({onboardedPercentage}%)</span>
           </p>
         </div>
         <div className="residents-actions">
@@ -461,9 +480,9 @@ function ManagerResidents() {
             <Download size={18} />
             <span>Export List</span>
           </button>
-          <button className="btn-primary" onClick={() => setShowInviteModal(true)}>
+          <button className="btn-primary" onClick={() => { setShowAddModal(true); setAddModalTab('single') }}>
             <UserPlus size={18} />
-            <span>Invite Resident</span>
+            <span>Add Residents</span>
           </button>
         </div>
       </div>
@@ -481,13 +500,9 @@ function ManagerResidents() {
             />
           </div>
 
-          {/* Floor Filter */}
           <div className="floor-filter">
             <Building size={16} />
-            <select
-              value={floorFilter}
-              onChange={(e) => setFloorFilter(e.target.value)}
-            >
+            <select value={floorFilter} onChange={(e) => setFloorFilter(e.target.value)}>
               <option value="all">All Floors</option>
               {uniqueFloors.map(floor => (
                 <option key={floor} value={floor}>Floor {floor}</option>
@@ -495,14 +510,10 @@ function ManagerResidents() {
             </select>
           </div>
 
-          {/* Sort Dropdown */}
           <div className="sort-dropdown-wrapper">
             <button
               className="sort-dropdown-btn"
-              onClick={(e) => {
-                e.stopPropagation()
-                setShowSortMenu(!showSortMenu)
-              }}
+              onClick={(e) => { e.stopPropagation(); setShowSortMenu(!showSortMenu) }}
             >
               <SlidersHorizontal size={16} />
               <span>{getCurrentSortLabel()}</span>
@@ -514,10 +525,7 @@ function ManagerResidents() {
                   <button
                     key={option.id}
                     className={`sort-option ${sortBy === option.id ? 'active' : ''}`}
-                    onClick={() => {
-                      setSortBy(option.id)
-                      setShowSortMenu(false)
-                    }}
+                    onClick={() => { setSortBy(option.id); setShowSortMenu(false) }}
                   >
                     <option.icon size={16} />
                     <span>{option.label}</span>
@@ -530,53 +538,40 @@ function ManagerResidents() {
         </div>
 
         <div className="residents-filters">
-          <button
-            className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('all')}
-          >
-            All
-            <span className="filter-count">{allResidents.length}</span>
+          <button className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`} onClick={() => setActiveFilter('all')}>
+            All <span className="filter-count">{allResidents.length}</span>
           </button>
-          <button
-            className={`filter-btn ${activeFilter === 'active' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('active')}
-          >
-            Active
-            <span className="filter-count">{activeCount}</span>
+          <button className={`filter-btn ${activeFilter === 'joined' ? 'active' : ''}`} onClick={() => setActiveFilter('joined')}>
+            Joined <span className="filter-count">{joinedCount}</span>
           </button>
-          <button
-            className={`filter-btn ${activeFilter === 'pending' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('pending')}
-          >
-            Pending Invites
-            <span className="filter-count">{pendingCount}</span>
+          <button className={`filter-btn ${activeFilter === 'invited' ? 'active' : ''}`} onClick={() => setActiveFilter('invited')}>
+            Invited <span className="filter-count">{invitedCount}</span>
           </button>
-          <button
-            className={`filter-btn ${activeFilter === 'inactive' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('inactive')}
-          >
-            Inactive
-            <span className="filter-count">{inactiveCount}</span>
+          <button className={`filter-btn ${activeFilter === 'not_invited' ? 'active' : ''}`} onClick={() => setActiveFilter('not_invited')}>
+            Not Yet Invited <span className="filter-count">{notInvitedCount}</span>
           </button>
+          {failedCount > 0 && (
+            <button className={`filter-btn ${activeFilter === 'failed' ? 'active' : ''}`} onClick={() => setActiveFilter('failed')}>
+              Failed <span className="filter-count">{failedCount}</span>
+            </button>
+          )}
         </div>
       </div>
 
       {/* Residents Grid */}
-      {filteredResidents.length === 0 ? (
+      {isLoading ? (
         <div className="residents-empty">
-          <div className="empty-icon">
-            <Users size={48} />
-          </div>
+          <Loader2 size={32} className="spin" />
+          <p>Loading residents...</p>
+        </div>
+      ) : filteredResidents.length === 0 ? (
+        <div className="residents-empty">
+          <div className="empty-icon"><Users size={48} /></div>
           <h3>No residents found</h3>
-          <p>
-            {searchQuery
-              ? 'Try adjusting your search or filters'
-              : 'Invite your first resident to get started'}
-          </p>
+          <p>{searchQuery ? 'Try adjusting your search or filters' : 'Add your first resident to get started'}</p>
           {!searchQuery && (
-            <button className="btn-primary" onClick={() => setShowInviteModal(true)}>
-              <UserPlus size={18} />
-              <span>Invite Resident</span>
+            <button className="btn-primary" onClick={() => setShowAddModal(true)}>
+              <UserPlus size={18} /><span>Add Residents</span>
             </button>
           )}
         </div>
@@ -584,87 +579,58 @@ function ManagerResidents() {
         <div className="residents-grid">
           {filteredResidents.map(resident => {
             const statusBadge = getStatusBadge(resident.status)
+            const isSending = sendingInviteId === resident.id
             return (
-              <div key={resident.id} className="resident-card">
+              <div key={`${resident.source}-${resident.id}`} className="resident-card">
                 <div className="resident-card-header">
                   <div className={`resident-avatar ${resident.status}`}>
                     {getInitials(resident.firstName, resident.lastName)}
                   </div>
-                  <div className="resident-menu-wrapper">
-                    <button
-                      className="resident-menu-btn"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setOpenMenuId(openMenuId === resident.id ? null : resident.id)
-                      }}
-                    >
-                      <MoreVertical size={18} />
-                    </button>
-                    {openMenuId === resident.id && (
-                      <div className="resident-menu" onClick={(e) => e.stopPropagation()}>
-                        <button className="menu-item">
-                          <User size={16} />
-                          <span>View Profile</span>
-                        </button>
-                        <button className="menu-item">
-                          <MessageSquare size={16} />
-                          <span>Send Message</span>
-                        </button>
-                        {resident.status === 'pending' && (
-                          <button
-                            className="menu-item"
-                            onClick={() => handleResendInvite(resident.id)}
-                          >
-                            <RefreshCw size={16} />
-                            <span>Resend Invite</span>
-                          </button>
-                        )}
-                        <div className="menu-divider" />
-                        <button
-                          className="menu-item danger"
-                          onClick={() => handleRemoveResident(resident)}
-                        >
-                          <Trash2 size={16} />
-                          <span>Remove from Building</span>
-                        </button>
-                      </div>
+                  <div className="resident-header-actions">
+                    {/* Per-row Send Invite button */}
+                    {resident.status === 'not_invited' && resident.email && (
+                      <button
+                        className="btn-send-invite"
+                        onClick={() => handleSendInviteRow(resident)}
+                        disabled={isSending}
+                      >
+                        {isSending ? <Loader2 size={14} className="spin" /> : <Send size={14} />}
+                        <span>{isSending ? 'Sending...' : 'Send Invite'}</span>
+                      </button>
                     )}
+                    <div className="resident-menu-wrapper">
+                      <button
+                        className="resident-menu-btn"
+                        onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === resident.id ? null : resident.id) }}
+                      >
+                        <MoreVertical size={18} />
+                      </button>
+                      {openMenuId === resident.id && (
+                        <div className="resident-menu" onClick={(e) => e.stopPropagation()}>
+                          {renderMenuItems(resident)}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
                 <div className="resident-card-body">
-                  <h3 className="resident-name">
-                    {resident.firstName} {resident.lastName}
-                  </h3>
-                  <span className={`resident-status ${statusBadge.className}`}>
-                    {statusBadge.label}
-                  </span>
+                  <h3 className="resident-name">{resident.firstName} {resident.lastName}</h3>
+                  <span className={`resident-status ${statusBadge.className}`}>{statusBadge.label}</span>
 
                   <div className="resident-details">
-                    <div className="resident-detail">
-                      <Home size={14} />
-                      <span>Unit {resident.unit}</span>
-                    </div>
-                    <div className="resident-detail">
-                      <Mail size={14} />
-                      <span>{resident.email}</span>
-                    </div>
-                    {resident.phone && (
-                      <div className="resident-detail">
-                        <Phone size={14} />
-                        <span>{resident.phone}</span>
-                      </div>
+                    {resident.unit && (
+                      <div className="resident-detail"><Home size={14} /><span>Unit {resident.unit}</span></div>
                     )}
-                    <div className="resident-detail">
-                      <Calendar size={14} />
-                      <span>
-                        {resident.status === 'pending'
-                          ? `Invited ${formatDate(resident.inviteSent)}`
-                          : resident.status === 'inactive'
-                            ? `Inactive since ${formatDate(resident.inactiveSince)}`
-                            : `Joined ${formatDate(resident.joinDate)}`}
-                      </span>
-                    </div>
+                    {resident.email && (
+                      <div className="resident-detail"><Mail size={14} /><span>{resident.email}</span></div>
+                    )}
+                    {resident.phone && (
+                      <div className="resident-detail"><Phone size={14} /><span>{resident.phone}</span></div>
+                    )}
+                    {getStatusDateLabel(resident) && (
+                      <div className="resident-detail"><Calendar size={14} /><span>{getStatusDateLabel(resident)}</span></div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -673,107 +639,104 @@ function ManagerResidents() {
         </div>
       )}
 
-      {/* Invite Modal */}
-      {showInviteModal && (
-        <div className="modal-overlay" onClick={() => setShowInviteModal(false)}>
-          <div className="invite-modal" onClick={(e) => e.stopPropagation()}>
+      {/* Add Residents Modal */}
+      {showAddModal && (
+        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+          <div className="invite-modal add-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Invite New Resident</h2>
-              <button className="modal-close" onClick={() => setShowInviteModal(false)}>
+              <h2>Add Residents</h2>
+              <button className="modal-close" onClick={() => setShowAddModal(false)}>
                 <X size={24} />
               </button>
             </div>
 
+            {/* Modal tabs */}
+            <div className="add-modal-tabs">
+              <button className={`add-modal-tab ${addModalTab === 'single' ? 'active' : ''}`} onClick={() => setAddModalTab('single')}>
+                <User size={16} /> Single
+              </button>
+              <button className={`add-modal-tab ${addModalTab === 'upload' ? 'active' : ''}`} onClick={() => setAddModalTab('upload')}>
+                <Plus size={16} /> Upload File
+              </button>
+              <button className={`add-modal-tab ${addModalTab === 'paste' ? 'active' : ''}`} onClick={() => setAddModalTab('paste')}>
+                <Edit3 size={16} /> Paste List
+              </button>
+            </div>
+
             <div className="modal-body">
-              <p className="modal-description">
-                Send an invitation email with your building code so the resident can join the app.
-              </p>
+              {addModalTab === 'single' && (
+                <>
+                  <p className="modal-description">Add a resident to your building roster. You can send them an invite later.</p>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>First Name *</label>
+                      <input type="text" placeholder="John" value={addForm.firstName} onChange={e => setAddForm(p => ({ ...p, firstName: e.target.value }))} />
+                    </div>
+                    <div className="form-group">
+                      <label>Last Name *</label>
+                      <input type="text" placeholder="Doe" value={addForm.lastName} onChange={e => setAddForm(p => ({ ...p, lastName: e.target.value }))} />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Unit Number</label>
+                      <input type="text" placeholder="e.g. 401" value={addForm.unit} onChange={e => setAddForm(p => ({ ...p, unit: e.target.value }))} />
+                    </div>
+                    <div className="form-group">
+                      <label>Email Address</label>
+                      <input type="email" placeholder="john@email.com" value={addForm.email} onChange={e => setAddForm(p => ({ ...p, email: e.target.value }))} />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Phone Number</label>
+                      <input type="tel" placeholder="(555) 123-4567" value={addForm.phone} onChange={e => setAddForm(p => ({ ...p, phone: e.target.value }))} />
+                    </div>
+                    <div className="form-group">
+                      <label>Move-in Date</label>
+                      <input type="date" value={addForm.moveInDate} onChange={e => setAddForm(p => ({ ...p, moveInDate: e.target.value }))} />
+                    </div>
+                  </div>
+                </>
+              )}
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="firstName">First Name *</label>
-                  <input
-                    id="firstName"
-                    type="text"
-                    placeholder="John"
-                    value={inviteForm.firstName}
-                    onChange={(e) => handleInviteChange('firstName', e.target.value)}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="lastName">Last Name *</label>
-                  <input
-                    id="lastName"
-                    type="text"
-                    placeholder="Doe"
-                    value={inviteForm.lastName}
-                    onChange={(e) => handleInviteChange('lastName', e.target.value)}
-                  />
-                </div>
-              </div>
+              {addModalTab === 'upload' && (
+                <ResidentImporter
+                  buildingId={buildingId}
+                  buildingName={userProfile?.buildings?.name || ''}
+                  accessCode=""
+                  userId={user?.id}
+                  onComplete={handleRosterComplete}
+                  compact
+                  mode="roster"
+                />
+              )}
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="unit">Unit Number *</label>
-                  <select
-                    id="unit"
-                    value={inviteForm.unit}
-                    onChange={(e) => handleInviteChange('unit', e.target.value)}
-                  >
-                    <option value="">Select unit...</option>
-                    {availableUnits.map(unit => (
-                      <option key={unit} value={unit}>Unit {unit}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="email">Email Address *</label>
-                  <input
-                    id="email"
-                    type="email"
-                    placeholder="john@email.com"
-                    value={inviteForm.email}
-                    onChange={(e) => handleInviteChange('email', e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="phone">Phone Number</label>
-                  <input
-                    id="phone"
-                    type="tel"
-                    placeholder="(555) 123-4567"
-                    value={inviteForm.phone}
-                    onChange={(e) => handleInviteChange('phone', e.target.value)}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="moveInDate">Move-in Date</label>
-                  <input
-                    id="moveInDate"
-                    type="date"
-                    value={inviteForm.moveInDate}
-                    onChange={(e) => handleInviteChange('moveInDate', e.target.value)}
-                  />
-                </div>
-              </div>
+              {addModalTab === 'paste' && (
+                <ResidentImporter
+                  buildingId={buildingId}
+                  buildingName={userProfile?.buildings?.name || ''}
+                  accessCode=""
+                  userId={user?.id}
+                  onComplete={handleRosterComplete}
+                  compact
+                  mode="roster"
+                />
+              )}
             </div>
 
-            <div className="modal-footer">
-              <button className="btn-secondary" onClick={() => setShowInviteModal(false)}>
-                Cancel
-              </button>
-              <button
-                className="btn-primary"
-                onClick={handleSendInvite}
-                disabled={!inviteForm.firstName || !inviteForm.lastName || !inviteForm.unit || !inviteForm.email}
-              >
-                <Mail size={18} />
-                <span>Send Invite</span>
-              </button>
-            </div>
+            {addModalTab === 'single' && (
+              <div className="modal-footer">
+                <button className="btn-secondary" onClick={() => setShowAddModal(false)}>Cancel</button>
+                <button
+                  className="btn-primary"
+                  onClick={handleAddSingle}
+                  disabled={!addForm.firstName || !addForm.lastName || addFormLoading}
+                >
+                  {addFormLoading ? <><Loader2 size={16} className="spin" /> Adding...</> : <><UserPlus size={16} /> Add Resident</>}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

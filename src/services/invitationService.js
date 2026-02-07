@@ -318,6 +318,135 @@ export async function processInviteBatch(buildingId, invitedBy, residents, build
 }
 
 // ============================================
+// ROSTER & SINGLE INVITE
+// ============================================
+
+/**
+ * Batch insert residents to roster with status 'not_invited'
+ */
+export async function addToRoster(buildingId, invitedBy, residents) {
+  const rows = residents.map(r => ({
+    building_id: buildingId,
+    invited_by: invitedBy,
+    name: r.name || '',
+    email: r.email || null,
+    unit: r.unit || null,
+    phone: r.phone || null,
+    status: 'not_invited'
+  }))
+
+  const { data, error } = await supabase
+    .from('invitations')
+    .insert(rows)
+    .select()
+
+  if (error) {
+    console.error('[invitationService] addToRoster error:', error)
+    throw new Error('Failed to add residents to roster.')
+  }
+
+  return data
+}
+
+/**
+ * Add a single resident to the roster with status 'not_invited'
+ */
+export async function addSingleResident(buildingId, invitedBy, resident) {
+  const row = {
+    building_id: buildingId,
+    invited_by: invitedBy,
+    name: resident.name || '',
+    email: resident.email || null,
+    unit: resident.unit || null,
+    phone: resident.phone || null,
+    move_in_date: resident.moveInDate || null,
+    status: 'not_invited'
+  }
+
+  const { data, error } = await supabase
+    .from('invitations')
+    .insert([row])
+    .select()
+    .single()
+
+  if (error) {
+    console.error('[invitationService] addSingleResident error:', error)
+    throw new Error('Failed to add resident.')
+  }
+
+  return data
+}
+
+/**
+ * Send a single invite email and update the invitation status
+ */
+export async function sendSingleInvite(invitationId, email, fullName, buildingName) {
+  const result = await sendInviteEmail(email, fullName, buildingName)
+
+  if (result.success) {
+    await updateInvitationStatus(invitationId, 'sent')
+    return { success: true }
+  } else {
+    await updateInvitationStatus(invitationId, 'failed')
+    return { success: false, error: result.error }
+  }
+}
+
+/**
+ * Get invitation stats for a building
+ * Returns { total, sent, failed, notInvited }
+ */
+export async function getInvitationStats(buildingId) {
+  const { data, error } = await supabase
+    .from('invitations')
+    .select('status')
+    .eq('building_id', buildingId)
+
+  if (error) {
+    console.error('[invitationService] getInvitationStats error:', error)
+    return { total: 0, sent: 0, failed: 0, notInvited: 0 }
+  }
+
+  const rows = data || []
+  return {
+    total: rows.length,
+    sent: rows.filter(r => r.status === 'sent').length,
+    failed: rows.filter(r => r.status === 'failed').length,
+    notInvited: rows.filter(r => r.status === 'not_invited').length
+  }
+}
+
+/**
+ * Delete an invitation by ID
+ */
+export async function deleteInvitation(invitationId) {
+  const { error } = await supabase
+    .from('invitations')
+    .delete()
+    .eq('id', invitationId)
+
+  if (error) {
+    console.error('[invitationService] deleteInvitation error:', error)
+    throw new Error('Failed to remove invitation.')
+  }
+}
+
+/**
+ * Update an invitation's fields (e.g. email, name)
+ */
+export async function updateInvitation(invitationId, fields) {
+  const { error } = await supabase
+    .from('invitations')
+    .update(fields)
+    .eq('id', invitationId)
+
+  if (error) {
+    console.error('[invitationService] updateInvitation error:', error)
+    throw error
+  }
+}
+
+// ============================================
 // CHECKLIST HELPERS
 // ============================================
 
