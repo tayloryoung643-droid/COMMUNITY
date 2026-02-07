@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Menu, X, Key, UserPlus, Sparkles, Search } from 'lucide-react'
 import { validateBuildingCode } from './services/buildingService'
-import { supabase } from './lib/supabase'
+import { submitFeedback } from './services/feedbackService'
 import './Login.css'
 
 const features = [
@@ -126,13 +126,14 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
     if (!contactName.trim() || !contactEmail.trim() || !contactMessage.trim()) return
     setContactSending(true)
     try {
-      await supabase.from('feedback').insert([{
-        name: contactName,
-        email: contactEmail,
+      await submitFeedback({
+        userName: contactName,
+        userEmail: contactEmail,
+        userRole: contactRole,
         category: 'contact_form',
-        role: contactRole,
         message: contactMessage,
-      }])
+        pageContext: 'landing_page',
+      })
       setContactSent(true)
     } catch (err) {
       console.error('Contact form error:', err)

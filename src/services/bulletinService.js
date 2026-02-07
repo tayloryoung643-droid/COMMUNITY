@@ -16,7 +16,7 @@ export async function getListings(buildingId) {
     if (authorIds.length > 0) {
       const { data: authors } = await supabase
         .from('users')
-        .select('id, full_name, first_name, last_name, unit_number')
+        .select('id, full_name, first_name, last_name, unit_number, role')
         .in('id', authorIds)
 
       const authorMap = {}
@@ -50,7 +50,7 @@ export async function getListingsByCategory(buildingId, category) {
     if (authorIds.length > 0) {
       const { data: authors } = await supabase
         .from('users')
-        .select('id, full_name, first_name, last_name, unit_number')
+        .select('id, full_name, first_name, last_name, unit_number, role')
         .in('id', authorIds)
 
       const authorMap = {}
@@ -113,7 +113,7 @@ export async function getActiveListings(buildingId) {
     if (authorIds.length > 0) {
       const { data: authors } = await supabase
         .from('users')
-        .select('id, full_name, first_name, last_name, unit_number')
+        .select('id, full_name, first_name, last_name, unit_number, role')
         .in('id', authorIds)
 
       const authorMap = {}

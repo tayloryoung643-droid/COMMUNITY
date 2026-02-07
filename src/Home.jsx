@@ -7,6 +7,7 @@ import { getHomeIntelligence, logEngagementEvent } from './services/homeIntellig
 import { getPosts as getCommunityPosts } from './services/communityPostService'
 import { getActiveListings } from './services/bulletinService'
 import { useAuth } from './contexts/AuthContext'
+import FeedbackModal from './components/FeedbackModal'
 import './Home.css'
 
 function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
@@ -34,6 +35,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
   const [newJoiners, setNewJoiners] = useState([])
   const [bulletinListings, setBulletinListings] = useState([])
   const [dataLoading, setDataLoading] = useState(false)
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
 
   // Home Intelligence state (context lines)
   const [contextLine1, setContextLine1] = useState(null)
@@ -365,7 +367,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
     type: post.type || 'share',
     text: post.content || post.text,
     author: post.author?.full_name || 'Neighbor',
-    unit: post.author?.unit_number ? `Unit ${post.author.unit_number}` : '',
+    unit: post.author?.role?.includes('manager') ? 'Management' : (post.author?.unit_number ? `Unit ${post.author.unit_number}` : ''),
     timestamp: new Date(post.created_at).getTime(),
     likes: post.likes_count ?? post.likes ?? 0,
     comments: post.comments_count ?? post.comments ?? 0,
@@ -537,15 +539,43 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
             </div>
           )}
 
-          {/* Bulletin Board Tile */}
-          {bulletinListings.length > 0 && (
+          {/* Bulletin Board Preview */}
+          {bulletinListings.length > 0 ? (
+            <div className="bulletin-preview-section">
+              <div className="bulletin-preview-header">
+                <h3 className="bulletin-preview-title">
+                  <ClipboardList size={16} />
+                  Bulletin Board
+                </h3>
+                <button className="view-all-link-inline" onClick={() => handleFeatureClick('Bulletin')}>
+                  View all →
+                </button>
+              </div>
+              {bulletinListings.slice(0, 3).map(listing => {
+                const price = listing.price == null || listing.price === 0 || listing.price === '0' ? 'Free' : (typeof listing.price === 'number' ? `$${listing.price}` : (String(listing.price).startsWith('$') ? listing.price : `$${listing.price}`))
+                const ago = Date.now() - new Date(listing.created_at).getTime()
+                const timeAgo = ago < 3600000 ? `${Math.floor(ago / 60000)}m` : ago < 86400000 ? `${Math.floor(ago / 3600000)}h` : `${Math.floor(ago / 86400000)}d`
+                const catLabel = listing.category || 'General'
+                return (
+                  <button key={listing.id} className="bulletin-preview-card" onClick={() => handleFeatureClick('Bulletin')}>
+                    <span className="bulletin-preview-badge">{catLabel}</span>
+                    <span className="bulletin-preview-card-title">{listing.title}</span>
+                    <div className="bulletin-preview-meta">
+                      <span className="bulletin-preview-price">{price}</span>
+                      <span className="bulletin-preview-time">{timeAgo} ago</span>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          ) : !isDemoMode && (
             <button className="today-card bulletin-card" onClick={() => handleFeatureClick('Bulletin')}>
-              <div className="today-card-icon bulletin-icon">
+              <div className="today-card-icon bulletin-icon" style={{ opacity: 0.5 }}>
                 <ClipboardList size={20} />
               </div>
               <div className="today-card-content">
-                <span className="today-card-title">New Postings on the Bulletin Board!</span>
-                <span className="today-card-subtitle">{bulletinListings.length} active {bulletinListings.length === 1 ? 'listing' : 'listings'}</span>
+                <span className="today-card-title" style={{ color: '#64748b' }}>Nothing posted yet</span>
+                <span className="today-card-subtitle">Be the first on the Bulletin Board!</span>
               </div>
               <ChevronRight size={20} className="today-card-arrow" />
             </button>
@@ -569,9 +599,9 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
             </button>
           )}
 
-          {/* All Community Posts */}
+          {/* Community Posts (capped at 3) */}
           {allCommunityPosts.length > 0 ? (
-            allCommunityPosts.map((post) => (
+            allCommunityPosts.slice(0, 3).map((post) => (
               <button key={post.id} className="today-card community-post-card" onClick={() => handleCommunityPostClick(post)}>
                 <div className="today-card-icon community-icon">
                   {post.author.charAt(0)}
@@ -616,6 +646,25 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
               </div>
             </div>
           )}
+
+          {/* View All Posts Link */}
+          {allCommunityPosts.length > 3 && (
+            <button className="view-all-link" onClick={() => handleFeatureClick('Community')}>
+              View all posts in Community →
+            </button>
+          )}
+
+          {/* Feedback CTA Card */}
+          <button className="feedback-cta-card" onClick={() => setShowFeedbackModal(true)}>
+            <div className="feedback-cta-icon">
+              <MessageSquare size={20} />
+            </div>
+            <div className="feedback-cta-content">
+              <span className="feedback-cta-title">Help us improve COMMUNITY!</span>
+              <span className="feedback-cta-subtitle">Report bugs, suggest features, or ask questions</span>
+            </div>
+            <ChevronRight size={18} style={{ color: '#999' }} />
+          </button>
         </section>
 
         {/* Coming Up - scrollable list of all upcoming events */}
@@ -731,6 +780,23 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
         </div>
       )}
 
+      {/* Floating Feedback Button */}
+      <button
+        className="resident-feedback-fab"
+        onClick={() => setShowFeedbackModal(true)}
+        aria-label="Send feedback"
+      >
+        ?
+      </button>
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        userProfile={userProfile}
+        isDemoMode={isDemoMode}
+        pageContext="home"
+      />
     </div>
   )
 }

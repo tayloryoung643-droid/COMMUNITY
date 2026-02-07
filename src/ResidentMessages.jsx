@@ -110,9 +110,16 @@ function ResidentMessages({ onBack, onNavigate }) {
     loadConversation()
   }, [userProfile, isInDemoMode])
 
-  // Scroll to bottom when messages change
+  // Scroll to bottom when messages change or on initial load
+  const isInitialLoad = useRef(true)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (isInitialLoad.current) {
+      // Instant scroll on first load (no animation)
+      messagesEndRef.current?.scrollIntoView({ behavior: 'instant' })
+      isInitialLoad.current = false
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
   }, [messages])
 
   // Format message timestamp

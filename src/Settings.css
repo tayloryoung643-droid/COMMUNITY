@@ -11,6 +11,12 @@
   padding-bottom: 40px;
 }
 
+/* Hide hero image pseudo-elements on Settings page */
+.settings-container.resident-inner-page::before,
+.settings-container.resident-inner-page::after {
+  display: none;
+}
+
 /* Header */
 .settings-header {
   padding: 24px 16px 16px;

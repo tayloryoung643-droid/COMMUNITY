@@ -1,0 +1,262 @@
+/* FeedbackModal - Warm, clean feedback form */
+
+.feedback-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+  padding: 20px;
+}
+
+.feedback-modal {
+  background: #FFFCF7;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.15);
+  animation: feedbackSlideUp 0.25s ease;
+}
+
+@keyframes feedbackSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header */
+.feedback-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.feedback-modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.feedback-modal-header-left svg {
+  color: #5a7a6a;
+}
+
+.feedback-modal-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.feedback-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #999;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.feedback-modal-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #333;
+}
+
+/* Body */
+.feedback-modal-body {
+  padding: 20px 24px;
+}
+
+/* Category Pills */
+.feedback-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.feedback-category-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: white;
+  color: #666;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.feedback-category-pill:hover {
+  border-color: #5a7a6a;
+  color: #5a7a6a;
+}
+
+.feedback-category-pill.active {
+  background: #5a7a6a;
+  border-color: #5a7a6a;
+  color: white;
+}
+
+/* Form Fields */
+.feedback-field {
+  margin-bottom: 12px;
+}
+
+.feedback-field input,
+.feedback-field textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  background: white;
+  font-size: 14px;
+  color: #1a1a1a;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.feedback-field input:focus,
+.feedback-field textarea:focus {
+  outline: none;
+  border-color: #5a7a6a;
+}
+
+.feedback-field textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.feedback-hint {
+  font-size: 12px;
+  color: #999;
+  margin: 0 0 8px;
+}
+
+.feedback-error {
+  font-size: 13px;
+  color: #e74c3c;
+  margin: 8px 0 0;
+}
+
+/* Footer */
+.feedback-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.feedback-cancel-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: white;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.feedback-cancel-btn:hover {
+  background: #f5f5f5;
+}
+
+.feedback-submit-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  background: #5a7a6a;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.feedback-submit-btn:hover:not(:disabled) {
+  background: #4a6a5a;
+}
+
+.feedback-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Success Overlay */
+.feedback-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px;
+  text-align: center;
+}
+
+.feedback-success-icon {
+  color: #5a7a6a;
+  margin-bottom: 16px;
+  animation: feedbackPop 0.3s ease;
+}
+
+@keyframes feedbackPop {
+  0% { transform: scale(0); }
+  70% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.feedback-success h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 8px;
+}
+
+.feedback-success p {
+  font-size: 14px;
+  color: #999;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .feedback-modal-overlay {
+    padding: 12px;
+    align-items: flex-end;
+  }
+
+  .feedback-modal {
+    border-radius: 16px 16px 0 0;
+    max-height: 85vh;
+  }
+
+  .feedback-categories {
+    gap: 6px;
+  }
+
+  .feedback-category-pill {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}

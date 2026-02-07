@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react'
 import { Calendar, Wrench, ClipboardList, HelpCircle, FileText, User, Settings, Phone, ChevronRight, Home as HomeIcon, MessageSquare, Building2, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import HamburgerMenu from './HamburgerMenu'
+import FeedbackModal from './components/FeedbackModal'
 import './Building.css'
 
 function Building({ onNavigate }) {
   const { userProfile, isDemoMode, buildingBackgroundUrl } = useAuth()
   const isInDemoMode = isDemoMode || userProfile?.is_demo === true
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
 
   // Weather and time state - matches Home exactly
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -146,17 +148,32 @@ function Building({ onNavigate }) {
               <span className="list-item-label">Settings</span>
               <ChevronRight size={18} className="list-item-arrow" />
             </button>
-            <button className="list-item" onClick={() => handleFeatureClick('ContactManagement')}>
+            <button className="list-item" onClick={() => handleFeatureClick('messages')}>
               <div className="list-item-icon">
                 <Phone size={20} />
               </div>
               <span className="list-item-label">Contact Management</span>
               <ChevronRight size={18} className="list-item-arrow" />
             </button>
+            <button className="list-item" onClick={() => setShowFeedbackModal(true)}>
+              <div className="list-item-icon">
+                <HelpCircle size={20} />
+              </div>
+              <span className="list-item-label">Help & Feedback</span>
+              <ChevronRight size={18} className="list-item-arrow" />
+            </button>
           </div>
         </section>
       </div>
 
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        userProfile={userProfile}
+        isDemoMode={isDemoMode}
+        pageContext="building_page"
+      />
     </div>
   )
 }

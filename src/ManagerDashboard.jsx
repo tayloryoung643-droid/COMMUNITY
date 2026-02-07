@@ -38,7 +38,8 @@ import {
   Eye,
   Trash2,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
+  MessageSquarePlus
 } from 'lucide-react'
 import './ManagerDashboard.css'
 import { useAuth } from './contexts/AuthContext'
@@ -55,9 +56,11 @@ import ManagerBulletin from './ManagerBulletin'
 import ManagerFAQ from './ManagerFAQ'
 import ManagerDocuments from './ManagerDocuments'
 import ManagerSettings from './ManagerSettings'
+import ManagerFeedback from './ManagerFeedback'
 import AnnouncementModal from './components/AnnouncementModal'
 import EventModal from './components/EventModal'
 import PackageModal from './components/PackageModal'
+import FeedbackModal from './components/FeedbackModal'
 import BmPageHeader from './components/BmPageHeader'
 
 function ManagerDashboard({ onLogout, buildingData }) {
@@ -79,6 +82,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [showActivityModal, setShowActivityModal] = useState(false)
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
 
   // Toast state
   const [showToast, setShowToast] = useState(false)
@@ -276,6 +280,10 @@ function ManagerDashboard({ onLogout, buildingData }) {
         title: 'Documents',
         subtitle: 'Building files and resources'
       },
+      'feedback': {
+        title: 'Help & Feedback',
+        subtitle: 'Report bugs, suggest features, ask questions'
+      },
       'settings': {
         title: 'Settings',
         subtitle: 'Building configuration'
@@ -299,6 +307,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
     { id: 'bulletin', label: 'Bulletin Board', icon: ClipboardList },
     { id: 'faq', label: 'Building FAQ', icon: HelpCircle },
     { id: 'documents', label: 'Documents', icon: FileText },
+    { id: 'feedback', label: 'Help & Feedback', icon: MessageSquarePlus },
     { id: 'divider2', divider: true },
     { id: 'settings', label: 'Settings', icon: Settings }
   ]
@@ -375,7 +384,8 @@ function ManagerDashboard({ onLogout, buildingData }) {
     { id: 'announcement', label: 'Post Announcement', icon: Megaphone },
     { id: 'package', label: 'Log Package', icon: Package },
     { id: 'event', label: 'Create Event', icon: PartyPopper },
-    { id: 'invite', label: 'Invite Resident', icon: UserPlus }
+    { id: 'invite', label: 'Invite Resident', icon: UserPlus },
+    { id: 'feedback', label: 'Send Feedback', icon: MessageSquarePlus }
   ]
 
   // Upcoming events - from dashboardData
@@ -413,6 +423,9 @@ function ManagerDashboard({ onLogout, buildingData }) {
         break
       case 'invite':
         setShowInviteModal(true)
+        break
+      case 'feedback':
+        setShowFeedbackModal(true)
         break
       default:
         break
@@ -554,6 +567,10 @@ function ManagerDashboard({ onLogout, buildingData }) {
 
     if (activeNav === 'documents') {
       return <ManagerDocuments />
+    }
+
+    if (activeNav === 'feedback') {
+      return <ManagerFeedback />
     }
 
     if (activeNav === 'settings') {
@@ -1112,6 +1129,25 @@ function ManagerDashboard({ onLogout, buildingData }) {
           <span>{toastMessage}</span>
         </div>
       )}
+
+      {/* Floating Feedback Button */}
+      <button
+        className="feedback-fab"
+        onClick={() => setShowFeedbackModal(true)}
+        aria-label="Send feedback"
+      >
+        ?
+      </button>
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        userProfile={userProfile}
+        buildingId={building?.id}
+        isDemoMode={isDemoMode}
+        pageContext={`manager_${activeNav}`}
+      />
     </div>
   )
 }

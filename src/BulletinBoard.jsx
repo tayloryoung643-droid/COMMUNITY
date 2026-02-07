@@ -262,8 +262,8 @@ function BulletinBoard({ onBack }) {
             dbCategory: listing.category,
             title: listing.title,
             details: listing.description,
-            price: listing.price,
-            unit: `Unit ${listing.author?.unit_number || 'Unknown'}`,
+            price: listing.price == null || listing.price === 0 || listing.price === '0' ? 'Free' : (typeof listing.price === 'number' ? `$${listing.price}` : (String(listing.price).startsWith('$') ? listing.price : `$${listing.price}`)),
+            unit: listing.author?.role?.includes('manager') ? 'Management' : (listing.author?.unit_number ? `Unit ${listing.author.unit_number}` : 'Unit Unknown'),
             timestamp: new Date(listing.created_at).getTime(),
             color: categoryColors[listing.category] || '#6b7280'
           }
@@ -347,8 +347,8 @@ function BulletinBoard({ onBack }) {
             dbCategory: listing.category,
             title: listing.title,
             details: listing.description,
-            price: listing.price,
-            unit: `Unit ${listing.author?.unit_number || 'Unknown'}`,
+            price: listing.price == null || listing.price === 0 || listing.price === '0' ? 'Free' : (typeof listing.price === 'number' ? `$${listing.price}` : (String(listing.price).startsWith('$') ? listing.price : `$${listing.price}`)),
+            unit: listing.author?.role?.includes('manager') ? 'Management' : (listing.author?.unit_number ? `Unit ${listing.author.unit_number}` : 'Unit Unknown'),
             timestamp: new Date(listing.created_at).getTime(),
             color: categoryColors[listing.category] || '#6b7280'
           }

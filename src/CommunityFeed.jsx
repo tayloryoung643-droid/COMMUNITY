@@ -253,7 +253,7 @@ function CommunityFeed({ onNavigate }) {
           type: post.type || 'share',
           text: post.content,
           author: post.author?.full_name || 'Anonymous',
-          unit: `Unit ${post.author?.unit_number || 'N/A'}`,
+          unit: post.author?.role?.includes('manager') ? 'Management' : (post.author?.unit_number ? `Unit ${post.author.unit_number}` : ''),
           authorAvatarUrl: post.author?.id ? (avatarUrlMap[post.author.id] || null) : null,
           timestamp: new Date(post.created_at).getTime(),
           likes: post.likes_count || 0,
@@ -403,7 +403,7 @@ function CommunityFeed({ onNavigate }) {
           type: post.type || 'share',
           text: post.content,
           author: post.author?.full_name || 'Anonymous',
-          unit: `Unit ${post.author?.unit_number || 'N/A'}`,
+          unit: post.author?.role?.includes('manager') ? 'Management' : (post.author?.unit_number ? `Unit ${post.author.unit_number}` : ''),
           timestamp: new Date(post.created_at).getTime(),
           likes: post.likes_count || 0,
           comments: post.comments_count || 0

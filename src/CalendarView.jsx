@@ -312,66 +312,88 @@ function CalendarView({ onNavigate }) {
           </div>
         )}
 
-        {/* Empty State - show when no error and no data */}
-        {!loading && !error && calendarItems.length === 0 && (
-          <EmptyState
-            icon="calendar"
-            title="No events yet"
-            subtitle="Check back later for upcoming building events"
-          />
-        )}
-
-        {/* Content - only show when we have data */}
-        {!loading && !error && calendarItems.length > 0 && (
+        {/* Content */}
+        {!loading && !error && (
           viewMode === 'list' ? (
-          /* List View - Grouped by temporal periods */
+          /* List View - Always show Upcoming + Past sections */
           <div className="calendar-list">
-            {groupedEvents.length === 0 ? (
-              <div className="no-events-message" style={{ textAlign: 'center', padding: '40px 20px', color: 'rgba(255,255,255,0.5)' }}>
+            {/* Upcoming Section */}
+            {(() => {
+              const upcomingGroups = groupedEvents.filter(g => g.title !== 'Past')
+              const pastGroups = groupedEvents.filter(g => g.title === 'Past')
+              return (
+                <>
+                  <div className="event-group">
+                    <div className="event-group-header">
+                      <h2 className="event-group-title">Upcoming</h2>
+                    </div>
+                    {upcomingGroups.length === 0 ? (
+                      <div className="no-events-message" style={{ textAlign: 'center', padding: '30px 20px', color: '#999' }}>
+                        No upcoming events — check back soon!
+                      </div>
+                    ) : upcomingGroups.map(group => (
+                      <div key={group.title}>
+                        {group.title !== 'Today' && group.title !== 'Tomorrow' ? null : (
+                          <div className="event-subgroup-label" style={{ padding: '8px 16px 4px', fontSize: '12px', fontWeight: 600, color: '#5a7a6a', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            {group.title}
+                          </div>
+                        )}
+                        {group.items.map(item => {
+                          const IconComponent = item.icon
+                          const isMaintenance = item.category === 'maintenance'
+                          return (
+                            <article key={item.id} className={`calendar-card ${isMaintenance ? 'maintenance-card' : ''} ${item.actionRequired ? 'action-required' : ''}`} onClick={() => handleEventClick(item)}>
+                              <div className={`calendar-icon ${isMaintenance ? 'maintenance-icon' : ''}`} style={{ background: `${item.color}${isMaintenance ? '30' : '15'}` }}>
+                                <IconComponent size={20} style={{ color: item.color }} />
+                              </div>
+                              <div className="calendar-details">
+                                <h3 className="calendar-title">{item.title}</h3>
+                                <span className="calendar-meta">{formatDate(item.date)} • {item.time}</span>
+                                {item.description && <p className="calendar-description">{item.description}</p>}
+                                {item.actionRequired && <span className="action-required-badge"><AlertCircle size={12} />Action Required</span>}
+                              </div>
+                            </article>
+                          )
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                  {/* Past Section */}
+                  {pastGroups.length > 0 && (
+                    <div className="event-group" style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                      <div className="event-group-header">
+                        <h2 className="event-group-title" style={{ opacity: 0.6 }}>Past</h2>
+                      </div>
+                      {pastGroups[0].items.map(item => {
+                        const IconComponent = item.icon
+                        return (
+                          <article key={item.id} className="calendar-card" style={{ opacity: 0.6 }} onClick={() => handleEventClick(item)}>
+                            <div className="calendar-icon" style={{ background: `${item.color}15` }}>
+                              <IconComponent size={20} style={{ color: item.color }} />
+                            </div>
+                            <div className="calendar-details">
+                              <h3 className="calendar-title">{item.title}</h3>
+                              <span className="calendar-meta">{formatDate(item.date)} • {item.time}</span>
+                            </div>
+                          </article>
+                        )
+                      })}
+                    </div>
+                  )}
+                </>
+              )
+            })()}
+            {groupedEvents.length === 0 && calendarItems.length === 0 && (
+              <div className="no-events-message" style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
+                <p style={{ fontSize: '16px', fontWeight: 500 }}>No events yet</p>
+                <p style={{ fontSize: '14px', marginTop: '4px' }}>Your building manager will post events here</p>
+              </div>
+            )}
+            {groupedEvents.length === 0 && calendarItems.length > 0 && (
+              <div className="no-events-message" style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
                 No {activeFilter === 'all' ? '' : activeFilter + ' '}events found
               </div>
-            ) : groupedEvents.map(group => (
-              <div key={group.title} className="event-group">
-                <div className="event-group-header">
-                  <h2 className="event-group-title">{group.title}</h2>
-                </div>
-
-                {group.items.map(item => {
-                  const IconComponent = item.icon
-                  const isMaintenance = item.category === 'maintenance'
-
-                  return (
-                    <article
-                      key={item.id}
-                      className={`calendar-card ${isMaintenance ? 'maintenance-card' : ''} ${item.actionRequired ? 'action-required' : ''}`}
-                      onClick={() => handleEventClick(item)}
-                    >
-                      <div className={`calendar-icon ${isMaintenance ? 'maintenance-icon' : ''}`} style={{ background: `${item.color}${isMaintenance ? '30' : '15'}` }}>
-                        <IconComponent size={20} style={{ color: item.color }} />
-                      </div>
-                      <div className="calendar-details">
-                        <h3 className="calendar-title">{item.title}</h3>
-                        <span className="calendar-meta">
-                          {group.title === 'Today' ? 'Today' : formatDate(item.date)} • {item.time}
-                        </span>
-                        {item.description && (
-                          <p className="calendar-description">{item.description}</p>
-                        )}
-                        {item.actionRequired && (
-                          <span className="action-required-badge">
-                            <AlertCircle size={12} />
-                            Action Required
-                          </span>
-                        )}
-                        {item.affectedUnits && (
-                          <span className="affected-units">{item.affectedUnits}</span>
-                        )}
-                      </div>
-                    </article>
-                  )
-                })}
-              </div>
-            ))}
+            )}
           </div>
         ) : (
           /* Calendar Grid View */

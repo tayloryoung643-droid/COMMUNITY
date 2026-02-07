@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { Menu, X, Bell, Home as HomeIcon, MessageSquare, MessageCircle, Calendar, Package, Building2, Settings, LogOut, ChevronRight, Wrench, Users, Wine, ClipboardList, CalendarClock } from 'lucide-react'
+import { Menu, X, Bell, Home as HomeIcon, MessageSquare, MessageCircle, Calendar, Package, Building2, Settings, LogOut, ChevronRight, Wrench, Users, Wine, ClipboardList, CalendarClock, HelpCircle } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
+import FeedbackModal from './components/FeedbackModal'
 import './HamburgerMenu.css'
 
 // Demo notifications
@@ -48,6 +49,7 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' 
   const { userProfile, isDemoMode } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
 
   useEffect(() => {
     if (isDemoMode) {
@@ -220,6 +222,13 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' 
           <span>Community</span>
         </button>
         <button
+          className={`global-menu-item ${activeItem === 'Messages' ? 'active' : ''}`}
+          onClick={() => handleMenuItemClick('messages')}
+        >
+          <MessageCircle size={22} />
+          <span>Messages</span>
+        </button>
+        <button
           className={`global-menu-item ${activeItem === 'Calendar' ? 'active' : ''}`}
           onClick={() => handleMenuItemClick('Calendar')}
         >
@@ -234,20 +243,6 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' 
           <span>Packages</span>
         </button>
         <button
-          className={`global-menu-item ${activeItem === 'Building' ? 'active' : ''}`}
-          onClick={() => handleMenuItemClick('Building')}
-        >
-          <Building2 size={22} />
-          <span>Building</span>
-        </button>
-        <button
-          className={`global-menu-item ${activeItem === 'Messages' ? 'active' : ''}`}
-          onClick={() => handleMenuItemClick('messages')}
-        >
-          <MessageCircle size={22} />
-          <span>Messages</span>
-        </button>
-        <button
           className="global-menu-item"
           onClick={() => handleMenuItemClick('Bulletin Board')}
         >
@@ -255,11 +250,25 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' 
           <span>Bulletin Board</span>
         </button>
         <button
+          className={`global-menu-item ${activeItem === 'Building' ? 'active' : ''}`}
+          onClick={() => handleMenuItemClick('Building')}
+        >
+          <Building2 size={22} />
+          <span>Building</span>
+        </button>
+        <button
           className="global-menu-item"
           onClick={() => handleMenuItemClick('Elevator Booking')}
         >
           <CalendarClock size={22} />
           <span>Book Elevator</span>
+        </button>
+        <button
+          className="global-menu-item"
+          onClick={() => { setMenuOpen(false); setShowFeedbackModal(true) }}
+        >
+          <HelpCircle size={22} />
+          <span>Help & Feedback</span>
         </button>
         <button
           className={`global-menu-item ${activeItem === 'Settings' ? 'active' : ''}`}
@@ -307,6 +316,15 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' 
       {notificationsPanel}
       {menuOverlay}
       {menuPanel}
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        userProfile={userProfile}
+        isDemoMode={isDemoMode}
+        pageContext="hamburger_menu"
+      />
     </>
   )
 }
