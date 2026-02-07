@@ -1,0 +1,120 @@
+.loading-splash {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  transition: opacity 0.5s ease;
+  opacity: 1;
+}
+
+.loading-splash.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Warm theme (resident) */
+.loading-splash.warm {
+  background-color: #faf9f7;
+}
+
+.loading-splash.warm .loading-splash-icon {
+  color: #5B8A8A;
+}
+
+.loading-splash.warm .loading-splash-brand {
+  color: #1a1a1a;
+}
+
+.loading-splash.warm .loading-splash-message {
+  color: #888;
+}
+
+.loading-splash.warm .loading-splash-slow {
+  color: #b0a090;
+}
+
+/* Dark theme (manager) */
+.loading-splash.dark {
+  background-color: #0f172a;
+}
+
+.loading-splash.dark .loading-splash-icon {
+  color: #5B8A8A;
+}
+
+.loading-splash.dark .loading-splash-brand {
+  color: #ffffff;
+}
+
+.loading-splash.dark .loading-splash-message {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.loading-splash.dark .loading-splash-slow {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Neutral theme (before role is known) */
+.loading-splash.neutral {
+  background-color: #f5f4f2;
+}
+
+.loading-splash.neutral .loading-splash-icon {
+  color: #5B8A8A;
+}
+
+.loading-splash.neutral .loading-splash-brand {
+  color: #1a1a1a;
+}
+
+.loading-splash.neutral .loading-splash-message {
+  color: #888;
+}
+
+.loading-splash.neutral .loading-splash-slow {
+  color: #aaa;
+}
+
+/* Content */
+.loading-splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.loading-splash-icon {
+  animation: splashPulse 2s ease-in-out infinite;
+}
+
+.loading-splash-brand {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  margin: 0;
+}
+
+.loading-splash-message {
+  font-size: 15px;
+  margin: 0;
+  font-weight: 400;
+}
+
+.loading-splash-slow {
+  font-size: 13px;
+  margin: 4px 0 0;
+  font-weight: 400;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes splashPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.95); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

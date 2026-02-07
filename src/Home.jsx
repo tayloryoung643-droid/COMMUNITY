@@ -8,6 +8,7 @@ import { getPosts as getCommunityPosts } from './services/communityPostService'
 import { getActiveListings } from './services/bulletinService'
 import { useAuth } from './contexts/AuthContext'
 import FeedbackModal from './components/FeedbackModal'
+import LoadingSplash from './components/LoadingSplash'
 import './Home.css'
 
 function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
@@ -34,12 +35,19 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
   const [realPosts, setRealPosts] = useState([])
   const [newJoiners, setNewJoiners] = useState([])
   const [bulletinListings, setBulletinListings] = useState([])
-  const [dataLoading, setDataLoading] = useState(false)
+  const [dataLoading, setDataLoading] = useState(!isDemoMode)
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)
+  const [initialLoadDone, setInitialLoadDone] = useState(isDemoMode)
+  const [splashFading, setSplashFading] = useState(false)
 
   // Home Intelligence state (context lines)
   const [contextLine1, setContextLine1] = useState(null)
   const [contextLine2, setContextLine2] = useState(null)
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   // Fetch real data for authenticated users
   useEffect(() => {
@@ -162,6 +170,18 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
 
     fetchRealData()
   }, [isDemoMode, userProfile?.building_id])
+
+  // Handle splash fade-out when initial data load completes
+  useEffect(() => {
+    if (!dataLoading && !initialLoadDone) {
+      setSplashFading(true)
+      const timer = setTimeout(() => {
+        setInitialLoadDone(true)
+        setSplashFading(false)
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [dataLoading, initialLoadDone])
 
   // Fetch Home Intelligence data (context lines) for real users
   useEffect(() => {
@@ -413,6 +433,11 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
       className="home-page"
       style={{ '--hero-image': `url(${heroImageUrl})` }}
     >
+      {/* Loading splash for initial data load */}
+      {!initialLoadDone && (
+        <LoadingSplash theme="warm" fadeOut={splashFading} />
+      )}
+
       {/* Ambient background - real DOM element, same image as hero */}
       <div className="ambient-bg" aria-hidden="true" />
 

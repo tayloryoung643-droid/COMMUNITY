@@ -26,6 +26,7 @@ import ManagerOnboardingStep3 from './ManagerOnboardingStep3'
 import ManagerOnboardingStep4 from './ManagerOnboardingStep4'
 import { processInviteBatch } from './services/invitationService'
 import ManagerDashboard from './ManagerDashboard'
+import LoadingSplash from './components/LoadingSplash'
 import ResidentSignupEntry from './ResidentSignupEntry'
 import ResidentAddressSearch from './ResidentAddressSearch'
 import ResidentJoinBuilding from './ResidentJoinBuilding'
@@ -40,6 +41,7 @@ function App() {
   const [buildingCode, setBuildingCode] = useState('')
   const [currentScreen, setCurrentScreen] = useState('login')
   const [authError, setAuthError] = useState('')
+  const [loginTransitioning, setLoginTransitioning] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [selectedPost, setSelectedPost] = useState(null)
   const [previousScreen, setPreviousScreen] = useState('home')
@@ -75,21 +77,21 @@ function App() {
     }
   }, [])
 
-  // Redirect authenticated users to the correct screen on app load
+  // Redirect authenticated users to the correct screen on app load or after login
   useEffect(() => {
     // Don't redirect if we're on the join screen
     if (currentScreen === 'join') return
 
-    // Only redirect if we're done loading, have a real user, not in demo mode, and on login screen
-    if (!loading && user && userProfile && !isDemoMode && currentScreen === 'login') {
-      // Navigate based on user role
+    // Route once profile is loaded — covers both initial load and login transition
+    if (!loading && user && userProfile && !isDemoMode && (currentScreen === 'login' || loginTransitioning)) {
+      setLoginTransitioning(false)
       if (userProfile.role === 'manager') {
         setCurrentScreen('manager-dashboard')
       } else {
         setCurrentScreen('home')
       }
     }
-  }, [loading, user, userProfile, isDemoMode, currentScreen])
+  }, [loading, user, userProfile, isDemoMode, currentScreen, loginTransitioning])
 
   // Community posts state - seed with some example posts
   const [posts, setPosts] = useState([
@@ -263,8 +265,8 @@ function App() {
       setAuthError(error.message)
       return { error }
     }
-    // Navigate to resident home on successful login
-    setCurrentScreen('home')
+    // Show splash while profile loads — useEffect will route once userProfile is ready
+    setLoginTransitioning(true)
     return { data }
   }
 
@@ -275,8 +277,8 @@ function App() {
       setAuthError(error.message)
       return { error }
     }
-    // Navigate to manager dashboard on successful login
-    setCurrentScreen('manager-dashboard')
+    // Show splash while profile loads — useEffect will route once userProfile is ready
+    setLoginTransitioning(true)
     return { data }
   }
 
@@ -617,21 +619,9 @@ function App() {
     setCurrentScreen('login')
   }
 
-  // Show loading state
-  if (loading) {
-    return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        backgroundColor: '#0f172a',
-        color: 'white',
-        fontSize: '18px'
-      }}>
-        Loading...
-      </div>
-    )
+  // Show loading splash while auth + profile loads, or during login transition
+  if (loading || loginTransitioning) {
+    return <LoadingSplash theme="neutral" />
   }
 
 

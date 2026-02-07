@@ -52,33 +52,51 @@ export const AuthProvider = ({ children }) => {
   const [buildingBackgroundUrl, setBuildingBackgroundUrl] = useState(null)
 
   useEffect(() => {
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    let initialLoadHandled = false
+
+    // Check active session — handles initial page load
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      initialLoadHandled = true
       setUser(session?.user ?? null)
       if (session?.user) {
-        // Real session exists - disable demo mode
         setIsDemoMode(false)
-        loadUserProfile(session.user.id)
+        try {
+          await loadUserProfile(session.user.id)
+        } catch (err) {
+          console.warn('[AuthContext] Initial profile load failed:', err)
+        }
       }
       setLoading(false)
     })
 
-    // Listen for auth changes
+    // Listen for subsequent auth changes (login, logout, token refresh)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Skip the INITIAL_SESSION event — getSession() already handles it
+      if (!initialLoadHandled) return
+
       setUser(session?.user ?? null)
       if (session?.user) {
-        // Real session exists - disable demo mode
         setIsDemoMode(false)
         loadUserProfile(session.user.id)
       } else {
         setUserProfile(null)
       }
-      setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    // Safety timeout — never block the user for more than 5 seconds
+    const safetyTimer = setTimeout(() => {
+      setLoading(prev => {
+        if (prev) console.warn('[AuthContext] Safety timeout — dismissing loading')
+        return false
+      })
+    }, 5000)
+
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(safetyTimer)
+    }
   }, [])
 
   const loadUserProfile = async (userId) => {

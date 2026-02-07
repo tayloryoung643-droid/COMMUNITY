@@ -62,6 +62,7 @@ import EventModal from './components/EventModal'
 import PackageModal from './components/PackageModal'
 import FeedbackModal from './components/FeedbackModal'
 import BmPageHeader from './components/BmPageHeader'
+import LoadingSplash from './components/LoadingSplash'
 
 function ManagerDashboard({ onLogout, buildingData }) {
   // Auth context for demo detection and user info
@@ -73,6 +74,8 @@ function ManagerDashboard({ onLogout, buildingData }) {
   // Dashboard data state
   const [dashboardData, setDashboardData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [initialLoadDone, setInitialLoadDone] = useState(false)
+  const [splashFading, setSplashFading] = useState(false)
   const [loadError, setLoadError] = useState(null)
 
   // Modal states
@@ -103,55 +106,26 @@ function ManagerDashboard({ onLogout, buildingData }) {
   // Notifications state (will be populated from dashboardData)
   const [notifications, setNotifications] = useState([])
 
-  // Fetch building background image when building data is available
-  useEffect(() => {
-    async function fetchBuildingBackground() {
-      if (getIsDemoUser(userProfile, isDemoMode)) return
-
-      const buildingId = dashboardData?.building?.id || userProfile?.building_id
-      if (!buildingId) return
-
-      try {
-        const url = await getBuildingBackgroundImage(buildingId)
-        if (url) {
-          setBuildingBgUrl(url)
-        }
-      } catch (err) {
-        console.warn('[ManagerDashboard] Failed to load building background:', err)
-      }
-    }
-    fetchBuildingBackground()
-  }, [dashboardData?.building?.id, userProfile?.building_id, isDemoMode, userProfile])
-
-  // Load dashboard data on mount
+  // Load dashboard data AND building background together
   useEffect(() => {
     async function fetchDashboardData() {
       setIsLoading(true)
       setLoadError(null)
 
       try {
-        // Determine user ID - use actual user id or demo id
         const userId = user?.id || userProfile?.id
-
-        // Check if this is demo mode
         const isDemo = getIsDemoUser(userProfile, isDemoMode)
 
         if (process.env.NODE_ENV === 'development') {
           console.log('[ManagerDashboard] Loading data - isDemo:', isDemo, 'userId:', userId)
         }
 
-        // For demo users OR if we have buildingData from onboarding, use that
-        // This handles the case where a user just completed onboarding
         if (isDemo) {
           const data = await loadDashboardData(userProfile, isDemoMode, userId)
           setDashboardData(data)
-
-          // Set notifications from demo data
           const notificationIcons = { message: MessageSquare, package: Package, elevator: ArrowUpDown, event: Wine, maintenance: Wrench, resident: UserPlus }
           setNotifications(data.notifications?.map(n => ({ ...n, icon: notificationIcons[n.type] || Bell })) || [])
         } else if (buildingData) {
-          // Real user who just completed onboarding - use the passed buildingData
-          // This is a transitional state before data is in Supabase
           setDashboardData({
             building: {
               id: 'new-building',
@@ -182,17 +156,36 @@ function ManagerDashboard({ onLogout, buildingData }) {
           })
           setNotifications([])
         } else {
-          // Real user - fetch from Supabase
           const data = await loadDashboardData(userProfile, isDemoMode, userId)
           setDashboardData(data)
-
-          if (data.error) {
-            setLoadError(data.error)
-          }
-
-          // Set notifications from real data
+          if (data.error) setLoadError(data.error)
           const notificationIcons = { message: MessageSquare, package: Package, elevator: ArrowUpDown, event: Wine, maintenance: Wrench, resident: UserPlus }
           setNotifications(data.notifications?.map(n => ({ ...n, icon: notificationIcons[n.type] || Bell })) || [])
+        }
+
+        // Now fetch and preload the building background image before dismissing splash
+        if (!isDemo) {
+          const buildingId = userProfile?.building_id
+          if (buildingId) {
+            try {
+              const url = await getBuildingBackgroundImage(buildingId)
+              if (url) {
+                setBuildingBgUrl(url)
+                // Wait for image to actually load (or timeout after 5s)
+                await Promise.race([
+                  new Promise(resolve => {
+                    const img = new window.Image()
+                    img.onload = resolve
+                    img.onerror = resolve
+                    img.src = url
+                  }),
+                  new Promise(resolve => setTimeout(resolve, 5000))
+                ])
+              }
+            } catch (err) {
+              console.warn('[ManagerDashboard] Failed to load building background:', err)
+            }
+          }
         }
       } catch (error) {
         console.error('[ManagerDashboard] Error loading dashboard:', error)
@@ -204,6 +197,18 @@ function ManagerDashboard({ onLogout, buildingData }) {
 
     fetchDashboardData()
   }, [user, userProfile, isDemoMode, buildingData])
+
+  // Handle splash fade-out when initial data load completes (same pattern as Home.jsx)
+  useEffect(() => {
+    if (!isLoading && !initialLoadDone) {
+      setSplashFading(true)
+      const timer = setTimeout(() => {
+        setInitialLoadDone(true)
+        setSplashFading(false)
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [isLoading, initialLoadDone])
 
   // Derive building info from dashboard data
   const building = dashboardData ? {
@@ -494,15 +499,6 @@ function ManagerDashboard({ onLogout, buildingData }) {
 
   // Render content based on active nav
   const renderContent = () => {
-    // Show loading state
-    if (isLoading) {
-      return (
-        <div className="dashboard-loading">
-          <Loader2 size={48} className="loading-spinner" />
-          <p>Loading your dashboard...</p>
-        </div>
-      )
-    }
 
     // Show empty state for real users with no building
     if (dashboardData?.isEmpty && !getIsDemoUser(userProfile, isDemoMode)) {
@@ -830,6 +826,11 @@ function ManagerDashboard({ onLogout, buildingData }) {
 
   return (
     <div className="manager-dashboard">
+      {/* Full-screen loading splash — covers sidebar, header, everything */}
+      {!initialLoadDone && (
+        <LoadingSplash theme="warm" message="Loading your dashboard..." fadeOut={splashFading} />
+      )}
+
       {/* Mobile Header */}
       <div className="mobile-header">
         <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
