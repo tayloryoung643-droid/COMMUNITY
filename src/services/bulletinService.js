@@ -1,53 +1,48 @@
 import { supabase } from '../lib/supabase'
 
+// Join author via the author_id foreign key — same pattern used by
+// aiBuildingDataService and managerDashboardService
+const LISTING_SELECT = '*, author:author_id(id, full_name, first_name, last_name, unit_number, role, avatar_url)'
+
+// Generate signed avatar URLs for authors that have avatar_url stored
+async function attachSignedAvatarUrls(listings) {
+  const authorsWithAvatars = listings
+    .filter(l => l.author?.avatar_url)
+    .map(l => ({ id: l.author.id, avatar_url: l.author.avatar_url }))
+    .filter((a, i, arr) => arr.findIndex(x => x.id === a.id) === i)
+
+  if (authorsWithAvatars.length === 0) return
+
+  const avatarUrlMap = {}
+  await Promise.all(
+    authorsWithAvatars.map(async (author) => {
+      try {
+        const { data: urlData } = await supabase.storage
+          .from('profile-images')
+          .createSignedUrl(author.avatar_url, 3600)
+        if (urlData?.signedUrl) avatarUrlMap[author.id] = urlData.signedUrl
+      } catch (e) { /* ignore failed signed URL generation */ }
+    })
+  )
+
+  listings.forEach(listing => {
+    if (listing.author?.id && avatarUrlMap[listing.author.id]) {
+      listing.author.avatar_signed_url = avatarUrlMap[listing.author.id]
+    }
+  })
+}
+
 export async function getListings(buildingId) {
-  // First get the listings
   const { data, error } = await supabase
     .from('bulletin_listings')
-    .select('*')
+    .select(LISTING_SELECT)
     .eq('building_id', buildingId)
     .order('created_at', { ascending: false })
 
   if (error) throw error
 
-  // Fetch poster info via user_id (primary column) with author_id fallback for legacy rows
   if (data && data.length > 0) {
-    const authorIds = [...new Set(
-      data.map(l => l.user_id || l.author_id).filter(Boolean)
-    )]
-    if (authorIds.length > 0) {
-      const { data: authors } = await supabase
-        .from('users')
-        .select('id, full_name, first_name, last_name, unit_number, role, avatar_url')
-        .in('id', authorIds)
-
-      const authorMap = {}
-      if (authors) {
-        authors.forEach(a => { authorMap[a.id] = a })
-      }
-
-      // Generate signed avatar URLs
-      const avatarUrlMap = {}
-      const authorsWithAvatars = (authors || []).filter(a => a.avatar_url)
-      await Promise.all(
-        authorsWithAvatars.map(async (author) => {
-          try {
-            const { data: urlData } = await supabase.storage
-              .from('profile-images')
-              .createSignedUrl(author.avatar_url, 3600)
-            if (urlData?.signedUrl) avatarUrlMap[author.id] = urlData.signedUrl
-          } catch (e) { /* ignore */ }
-        })
-      )
-
-      data.forEach(listing => {
-        const aid = listing.user_id || listing.author_id
-        listing.author = authorMap[aid] || null
-        if (listing.author) {
-          listing.author.avatar_signed_url = avatarUrlMap[aid] || null
-        }
-      })
-    }
+    await attachSignedAvatarUrls(data)
   }
 
   return data
@@ -56,50 +51,15 @@ export async function getListings(buildingId) {
 export async function getListingsByCategory(buildingId, category) {
   const { data, error } = await supabase
     .from('bulletin_listings')
-    .select('*')
+    .select(LISTING_SELECT)
     .eq('building_id', buildingId)
     .eq('category', category)
     .order('created_at', { ascending: false })
 
   if (error) throw error
 
-  // Fetch poster info via user_id (primary column) with author_id fallback for legacy rows
   if (data && data.length > 0) {
-    const authorIds = [...new Set(
-      data.map(l => l.user_id || l.author_id).filter(Boolean)
-    )]
-    if (authorIds.length > 0) {
-      const { data: authors } = await supabase
-        .from('users')
-        .select('id, full_name, first_name, last_name, unit_number, role, avatar_url')
-        .in('id', authorIds)
-
-      const authorMap = {}
-      if (authors) {
-        authors.forEach(a => { authorMap[a.id] = a })
-      }
-
-      const avatarUrlMap = {}
-      const authorsWithAvatars = (authors || []).filter(a => a.avatar_url)
-      await Promise.all(
-        authorsWithAvatars.map(async (author) => {
-          try {
-            const { data: urlData } = await supabase.storage
-              .from('profile-images')
-              .createSignedUrl(author.avatar_url, 3600)
-            if (urlData?.signedUrl) avatarUrlMap[author.id] = urlData.signedUrl
-          } catch (e) { /* ignore */ }
-        })
-      )
-
-      data.forEach(listing => {
-        const aid = listing.user_id || listing.author_id
-        listing.author = authorMap[aid] || null
-        if (listing.author) {
-          listing.author.avatar_signed_url = avatarUrlMap[aid] || null
-        }
-      })
-    }
+    await attachSignedAvatarUrls(data)
   }
 
   return data
@@ -139,51 +99,15 @@ export async function deleteListing(listingId) {
 export async function getActiveListings(buildingId) {
   const { data, error } = await supabase
     .from('bulletin_listings')
-    .select('*')
+    .select(LISTING_SELECT)
     .eq('building_id', buildingId)
     .eq('status', 'active')
     .order('created_at', { ascending: false })
 
   if (error) throw error
 
-  // Fetch poster info via user_id (primary column) with author_id fallback for legacy rows
   if (data && data.length > 0) {
-    const authorIds = [...new Set(
-      data.map(l => l.user_id || l.author_id).filter(Boolean)
-    )]
-    if (authorIds.length > 0) {
-      const { data: authors } = await supabase
-        .from('users')
-        .select('id, full_name, first_name, last_name, unit_number, role, avatar_url')
-        .in('id', authorIds)
-
-      const authorMap = {}
-      if (authors) {
-        authors.forEach(a => { authorMap[a.id] = a })
-      }
-
-      // Generate signed avatar URLs
-      const avatarUrlMap = {}
-      const authorsWithAvatars = (authors || []).filter(a => a.avatar_url)
-      await Promise.all(
-        authorsWithAvatars.map(async (author) => {
-          try {
-            const { data: urlData } = await supabase.storage
-              .from('profile-images')
-              .createSignedUrl(author.avatar_url, 3600)
-            if (urlData?.signedUrl) avatarUrlMap[author.id] = urlData.signedUrl
-          } catch (e) { /* ignore */ }
-        })
-      )
-
-      data.forEach(listing => {
-        const aid = listing.user_id || listing.author_id
-        listing.author = authorMap[aid] || null
-        if (listing.author) {
-          listing.author.avatar_signed_url = avatarUrlMap[aid] || null
-        }
-      })
-    }
+    await attachSignedAvatarUrls(data)
   }
 
   return data
