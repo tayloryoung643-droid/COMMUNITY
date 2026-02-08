@@ -227,7 +227,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
         const intelligence = await getHomeIntelligence({
           userId,
           buildingId,
-          buildingName: userProfile?.buildings?.name || userProfile?.building_name || 'Your Building'
+          buildingName: userProfile?.buildings?.name || userProfile?.buildings?.address || 'Your Building'
         })
 
         setContextLine1(intelligence.contextLine1)
@@ -354,7 +354,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
   // Building name - use real building name for authenticated users
   const buildingName = isDemoMode
     ? 'Paramount'
-    : (userProfile?.buildings?.name || userProfile?.building_name || 'Your Building')
+    : (userProfile?.buildings?.name || userProfile?.buildings?.address || 'Your Building')
 
   // Get upcoming events - demo data for demo mode, real data for real users
   const upcomingEvents = isDemoMode ? eventsData : realEvents

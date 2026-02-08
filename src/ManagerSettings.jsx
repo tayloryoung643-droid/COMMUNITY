@@ -249,6 +249,7 @@ function ManagerSettings({ onNavigate }) {
             description: buildingData.description,
             total_units: buildingData.totalUnits
           })
+          await refreshUserProfile()
         }
       }
 

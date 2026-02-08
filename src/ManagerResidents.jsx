@@ -317,7 +317,7 @@ function ManagerResidents() {
 
     setSendingInviteId(resident.id)
     try {
-      const buildingName = userProfile?.buildings?.name || userProfile?.building_name || 'Your Building'
+      const buildingName = userProfile?.buildings?.name || userProfile?.buildings?.address || 'Your Building'
       const fullName = `${resident.firstName} ${resident.lastName}`.trim()
       const result = await sendSingleInvite(resident.id, resident.email, fullName, buildingName)
       if (result.success) {
@@ -344,7 +344,7 @@ function ManagerResidents() {
 
     setSendingInviteId(resident.id)
     try {
-      const buildingName = userProfile?.buildings?.name || userProfile?.building_name || 'Your Building'
+      const buildingName = userProfile?.buildings?.name || userProfile?.buildings?.address || 'Your Building'
       const fullName = `${resident.firstName} ${resident.lastName}`.trim()
       const emailResult = await sendInviteEmail(resident.email, fullName, buildingName)
       if (emailResult.success) {
@@ -461,7 +461,7 @@ function ManagerResidents() {
     }
   }
 
-  const buildingName = userProfile?.buildings?.name || userProfile?.building_name || 'Your Building'
+  const buildingName = userProfile?.buildings?.name || userProfile?.buildings?.address || 'Your Building'
 
   return (
     <div className="manager-residents" onClick={handleClickOutside}>

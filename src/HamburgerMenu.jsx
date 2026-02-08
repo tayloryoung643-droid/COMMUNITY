@@ -193,7 +193,7 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' 
         </div>
         <div className="global-menu-profile-info">
           <span className="global-menu-profile-building">
-            {isDemoMode ? 'The Paramount' : (userProfile?.buildings?.name || 'Your Building')}
+            {isDemoMode ? 'The Paramount' : (userProfile?.buildings?.name || userProfile?.buildings?.address || 'Your Building')}
           </span>
           <span className="global-menu-profile-user">
             {isDemoMode
