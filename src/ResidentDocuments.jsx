@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import {
   ArrowLeft,
   FileText,
+  Camera,
   Search,
   Eye,
   Download,
@@ -70,8 +71,10 @@ const DEMO_DOCUMENTS = [
 ]
 
 function ResidentDocuments({ onBack }) {
-  const { userProfile, isDemoMode, buildingBackgroundUrl } = useAuth()
+  const { userProfile, isDemoMode, isResidentLed, buildingBackgroundUrl } = useAuth()
   const isInDemoMode = isDemoMode || userProfile?.is_demo === true
+  const pageTitle = isResidentLed ? 'Community Photos' : 'Documents'
+  const PageIcon = isResidentLed ? Camera : FileText
 
   const [documents, setDocuments] = useState([])
   const [loading, setLoading] = useState(true)
@@ -268,7 +271,7 @@ function ResidentDocuments({ onBack }) {
             <div className="weather-condition">{weatherData.conditionText}</div>
           </div>
           <div className="inner-page-title-container">
-            <h1 className="inner-page-title">Documents</h1>
+            <h1 className="inner-page-title">{pageTitle}</h1>
           </div>
         </div>
         <div className="documents-loading-state">
@@ -305,7 +308,7 @@ function ResidentDocuments({ onBack }) {
           <Search size={18} />
           <input
             type="text"
-            placeholder="Search documents..."
+            placeholder={isResidentLed ? 'Search photos...' : 'Search documents...'}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
           />
@@ -337,12 +340,12 @@ function ResidentDocuments({ onBack }) {
         <div className="docs-list-container">
           {filteredDocuments.length === 0 ? (
             <div className="docs-empty-state animate-in delay-3">
-              <FileText size={48} />
-              <h3>No Documents</h3>
+              <PageIcon size={48} />
+              <h3>{isResidentLed ? 'No Photos' : 'No Documents'}</h3>
               <p>
                 {searchQuery || filterType !== 'all'
-                  ? 'No documents match your search'
-                  : 'Building documents will appear here'}
+                  ? (isResidentLed ? 'No photos match your search' : 'No documents match your search')
+                  : (isResidentLed ? 'Community photos will appear here' : 'Building documents will appear here')}
               </p>
             </div>
           ) : filterType === 'all' && groupedDocuments ? (

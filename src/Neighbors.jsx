@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Hand, Users, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
+import { ArrowLeft, Hand, Users, UserPlus, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { supabase } from './lib/supabase'
 import { useAuth } from './contexts/AuthContext'
 import './Neighbors.css'
@@ -23,7 +23,7 @@ const DEMO_NEIGHBORS = [
 
 const COLORS = ["blue", "purple", "cyan", "green", "pink", "orange"]
 
-function Neighbors({ onBack, isDemoMode, userProfile }) {
+function Neighbors({ onBack, isDemoMode, userProfile, onNavigate }) {
   // Get cached building background URL from context
   const { buildingBackgroundUrl } = useAuth()
 
@@ -206,6 +206,15 @@ function Neighbors({ onBack, isDemoMode, userProfile }) {
       </div>
 
       <main className="neighbors-content">
+        {/* Invite Neighbors CTA */}
+        <button
+          className="invite-neighbors-cta animate-in delay-1"
+          onClick={() => onNavigate && onNavigate('Invite Neighbors')}
+        >
+          <UserPlus size={18} />
+          <span>Invite Neighbors</span>
+        </button>
+
         {loading ? (
           <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgba(255,255,255,0.6)' }}>
             Loading neighbors...

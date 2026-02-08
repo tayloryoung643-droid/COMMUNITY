@@ -237,13 +237,7 @@ export async function searchBuildingsByAddress(query) {
     // Search by address OR name (case-insensitive)
     const { data, error } = await supabase
       .from('buildings')
-      .select(`
-        id,
-        name,
-        address,
-        access_code,
-        building_mode
-      `)
+      .select('*')
       .or(`address.ilike.%${searchTerm}%,name.ilike.%${searchTerm}%`)
       .limit(10)
 
@@ -273,4 +267,55 @@ export async function searchBuildingsByAddress(query) {
     console.error('Error in searchBuildingsByAddress:', error)
     return []
   }
+}
+
+/**
+ * Get a building by its invite slug
+ */
+export async function getBuildingByInviteSlug(slug) {
+  if (!slug) return null
+  const { data, error } = await supabase
+    .from('buildings')
+    .select('*')
+    .eq('invite_slug', slug)
+    .single()
+
+  if (error) return null
+  return data
+}
+
+/**
+ * Normalize an address for duplicate detection
+ */
+export function normalizeAddress(address) {
+  if (!address) return ''
+  return address
+    .toLowerCase()
+    .trim()
+    .replace(/\bstreet\b/g, 'st')
+    .replace(/\bavenue\b/g, 'ave')
+    .replace(/\bdrive\b/g, 'dr')
+    .replace(/\bboulevard\b/g, 'blvd')
+    .replace(/\broad\b/g, 'rd')
+    .replace(/\blane\b/g, 'ln')
+    .replace(/\bcourt\b/g, 'ct')
+    .replace(/\bapartment\b/g, 'apt')
+    .replace(/\bsuite\b/g, 'ste')
+    .replace(/[.,#]/g, '')
+    .replace(/\s+/g, ' ')
+}
+
+/**
+ * Update a building's data
+ */
+export async function updateBuilding(buildingId, data) {
+  const { data: updated, error } = await supabase
+    .from('buildings')
+    .update(data)
+    .eq('id', buildingId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return updated
 }

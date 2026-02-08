@@ -308,6 +308,32 @@
   text-overflow: ellipsis;
 }
 
+.building-result-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.building-mode-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.building-mode-badge.managed {
+  background: rgba(91, 138, 138, 0.12);
+  color: #5B8A8A;
+}
+
+.building-mode-badge.community {
+  background: rgba(194, 148, 68, 0.12);
+  color: #b08630;
+}
+
 .resident-count {
   display: inline-flex;
   align-items: center;

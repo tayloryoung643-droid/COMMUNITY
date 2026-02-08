@@ -35,6 +35,7 @@ import Join from './Join'
 import ResidentMessages from './ResidentMessages'
 import ResidentFAQ from './ResidentFAQ'
 import ResidentDocuments from './ResidentDocuments'
+import InviteNeighbors from './InviteNeighbors'
 
 function App() {
   const { user, userProfile, loading, isDemoMode, signIn, signOut, loginAsDemo, refreshUserProfile } = useAuth()
@@ -592,6 +593,8 @@ function App() {
       setCurrentScreen('faq')
     } else if (featureTitle === 'Documents' || featureTitle === 'documents') {
       setCurrentScreen('documents')
+    } else if (featureTitle === 'Invite Neighbors') {
+      setCurrentScreen('invite-neighbors')
     }
   }
 
@@ -630,7 +633,8 @@ function App() {
   const residentScreens = [
     'home', 'announcements', 'packages', 'events', 'neighbors', 'emergency',
     'elevator-booking', 'community', 'bulletin-board', 'settings', 'building-info',
-    'calendar', 'building', 'event-detail', 'post-detail', 'messages', 'faq', 'documents'
+    'calendar', 'building', 'event-detail', 'post-detail', 'messages', 'faq', 'documents',
+    'invite-neighbors'
   ]
   const showBottomNav = residentScreens.includes(currentScreen)
 
@@ -665,7 +669,7 @@ function App() {
   if (currentScreen === 'neighbors') {
     return (
       <MobileShell bottomNav={bottomNav}>
-        <Neighbors onBack={handleBack} isDemoMode={isDemoMode} userProfile={userProfile} />
+        <Neighbors onBack={handleBack} isDemoMode={isDemoMode} userProfile={userProfile} onNavigate={handleNavigation} />
       </MobileShell>
     )
   }
@@ -775,6 +779,16 @@ function App() {
     return (
       <MobileShell bottomNav={bottomNav}>
         <ResidentDocuments
+          onBack={() => setCurrentScreen('building')}
+        />
+      </MobileShell>
+    )
+  }
+
+  if (currentScreen === 'invite-neighbors') {
+    return (
+      <MobileShell bottomNav={bottomNav}>
+        <InviteNeighbors
           onBack={() => setCurrentScreen('building')}
         />
       </MobileShell>

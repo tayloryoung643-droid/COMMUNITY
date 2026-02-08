@@ -114,28 +114,36 @@ function ResidentAddressSearch({ onBack, onSelectBuilding, onCreateBuilding }) {
               <>
                 <p className="results-label">Buildings found:</p>
                 <div className="results-list">
-                  {searchResults.map((building) => (
-                    <button
-                      key={building.id}
-                      className="building-result-card"
-                      onClick={() => handleSelectBuilding(building)}
-                    >
-                      <div className="building-result-icon">
-                        <Building2 size={20} />
-                      </div>
-                      <div className="building-result-info">
-                        <h4>{building.name}</h4>
-                        <p>{building.address}</p>
-                        {building.resident_count > 0 && (
-                          <span className="resident-count">
-                            <Users size={12} />
-                            {building.resident_count} resident{building.resident_count !== 1 ? 's' : ''}
-                          </span>
-                        )}
-                      </div>
-                      <ArrowRight size={18} className="result-arrow" />
-                    </button>
-                  ))}
+                  {searchResults.map((building) => {
+                    const isResidentLed = building.building_mode === 'resident_only'
+                    return (
+                      <button
+                        key={building.id}
+                        className="building-result-card"
+                        onClick={() => handleSelectBuilding(building)}
+                      >
+                        <div className="building-result-icon">
+                          <Building2 size={20} />
+                        </div>
+                        <div className="building-result-info">
+                          <div className="building-result-name-row">
+                            <h4>{building.name}</h4>
+                            <span className={`building-mode-badge ${isResidentLed ? 'community' : 'managed'}`}>
+                              {isResidentLed ? 'Community' : 'Managed'}
+                            </span>
+                          </div>
+                          <p>{building.address}</p>
+                          {building.resident_count > 0 && (
+                            <span className="resident-count">
+                              <Users size={12} />
+                              {building.resident_count} resident{building.resident_count !== 1 ? 's' : ''}
+                            </span>
+                          )}
+                        </div>
+                        <ArrowRight size={18} className="result-arrow" />
+                      </button>
+                    )
+                  })}
                 </div>
               </>
             )}

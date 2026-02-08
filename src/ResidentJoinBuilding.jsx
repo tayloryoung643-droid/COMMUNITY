@@ -8,12 +8,15 @@ import {
   ArrowLeft,
   ArrowRight,
   Loader2,
-  CheckCircle
+  CheckCircle,
+  Clock
 } from 'lucide-react'
 import { supabase } from './lib/supabase'
 import './ResidentJoinBuilding.css'
 
 function ResidentJoinBuilding({ building, onBack, onSuccess }) {
+  const isResidentLed = building?.building_mode === 'resident_only'
+  const joinPolicy = building?.join_policy || 'open'
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -22,6 +25,7 @@ function ResidentJoinBuilding({ building, onBack, onSuccess }) {
   })
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [joinRequestPending, setJoinRequestPending] = useState(false)
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -143,6 +147,21 @@ function ResidentJoinBuilding({ building, onBack, onSuccess }) {
 
       console.log('[ResidentJoin] User profile created/updated with building_id:', building.id)
 
+      // For managed buildings with manager_approval, submit a join request instead
+      if (!isResidentLed && joinPolicy === 'manager_approval') {
+        await supabase.from('join_requests').insert({
+          building_id: building.id,
+          user_id: userId,
+          user_name: formData.name,
+          user_email: formData.email,
+          unit_number: formData.unitNumber || null,
+          status: 'pending',
+        })
+        setJoinRequestPending(true)
+        setIsLoading(false)
+        return
+      }
+
       // Success!
       onSuccess({
         user: authData.user,
@@ -181,9 +200,24 @@ function ResidentJoinBuilding({ building, onBack, onSuccess }) {
               <h3 className="building-banner-name">{building.name}</h3>
               <p className="building-banner-address">{building.address}</p>
             </div>
-            <CheckCircle size={20} className="building-banner-check" />
+            <span className={`join-building-type-badge ${isResidentLed ? 'community' : 'managed'}`}>
+              {isResidentLed ? 'Community' : 'Managed'}
+            </span>
           </div>
 
+          {/* Join Request Pending State */}
+          {joinRequestPending ? (
+            <div className="join-request-pending">
+              <Clock size={32} className="pending-icon" />
+              <h2>Request Submitted</h2>
+              <p>Your building manager will review your request. You'll be notified once approved.</p>
+              <button className="join-back-btn" onClick={onBack}>
+                <ArrowLeft size={16} />
+                Back to search
+              </button>
+            </div>
+          ) : (
+          <>
           {/* Header */}
           <div className="join-building-header">
             <h1>Create your account</h1>
@@ -274,6 +308,8 @@ function ResidentJoinBuilding({ building, onBack, onSuccess }) {
           <p className="join-terms">
             By joining, you agree to our Terms of Service and Privacy Policy
           </p>
+          </>
+          )}
         </div>
       </div>
     </div>

@@ -19,6 +19,7 @@ function ResidentCreateBuilding({ initialAddress, onBack, onSuccess }) {
     // Building info
     buildingAddress: initialAddress || '',
     buildingName: '',
+    totalUnits: '',
     // User info
     name: '',
     email: '',
@@ -59,11 +60,17 @@ function ResidentCreateBuilding({ initialAddress, onBack, onSuccess }) {
 
   // Generate a building code from address
   const generateBuildingCode = (address) => {
-    // Take first letters of words and add random numbers
     const words = address.split(/\s+/).filter(w => w.length > 2)
     const prefix = words.slice(0, 3).map(w => w[0].toUpperCase()).join('')
     const suffix = Math.floor(Math.random() * 9000 + 1000)
     return `${prefix}${suffix}`
+  }
+
+  // Generate a URL-safe invite slug
+  const generateInviteSlug = (name) => {
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    const suffix = Math.random().toString(36).substring(2, 7)
+    return `${slug}-${suffix}`
   }
 
   const handleSubmit = async () => {
@@ -103,6 +110,7 @@ function ResidentCreateBuilding({ initialAddress, onBack, onSuccess }) {
       // 2. Create the building
       const buildingName = formData.buildingName.trim() || formData.buildingAddress
       const buildingCode = generateBuildingCode(formData.buildingAddress)
+      const inviteSlug = generateInviteSlug(buildingName)
 
       console.log('[ResidentCreate] Creating building...')
       const { data: newBuilding, error: buildingError } = await supabase
@@ -111,7 +119,9 @@ function ResidentCreateBuilding({ initialAddress, onBack, onSuccess }) {
           name: buildingName,
           address: formData.buildingAddress,
           access_code: buildingCode,
-          building_mode: 'resident_only', // Resident-created building
+          building_mode: 'resident_only',
+          invite_slug: inviteSlug,
+          total_units: formData.totalUnits ? parseInt(formData.totalUnits, 10) : null,
         })
         .select()
         .single()
@@ -266,6 +276,21 @@ function ResidentCreateBuilding({ initialAddress, onBack, onSuccess }) {
                   />
                 </div>
                 <span className="input-hint">Leave blank to use the address as the name</span>
+              </div>
+
+              <div className="input-group">
+                <label>Number of Units <span className="optional">(optional)</span></label>
+                <div className="input-wrapper">
+                  <Hash size={18} className="input-icon" />
+                  <input
+                    type="number"
+                    placeholder="e.g., 24"
+                    value={formData.totalUnits}
+                    onChange={(e) => handleChange('totalUnits', e.target.value)}
+                    min="1"
+                  />
+                </div>
+                <span className="input-hint">Helps track how many neighbors have joined</span>
               </div>
             </div>
 

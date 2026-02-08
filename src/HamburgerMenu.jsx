@@ -46,7 +46,7 @@ const DEMO_NOTIFICATIONS = [
 ]
 
 function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' }) {
-  const { userProfile, isDemoMode } = useAuth()
+  const { userProfile, isDemoMode, isResidentLed } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)
@@ -235,13 +235,15 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' 
           <Calendar size={22} />
           <span>Calendar</span>
         </button>
-        <button
-          className={`global-menu-item ${activeItem === 'Packages' ? 'active' : ''}`}
-          onClick={() => handleMenuItemClick('Packages')}
-        >
-          <Package size={22} />
-          <span>Packages</span>
-        </button>
+        {!isResidentLed && (
+          <button
+            className={`global-menu-item ${activeItem === 'Packages' ? 'active' : ''}`}
+            onClick={() => handleMenuItemClick('Packages')}
+          >
+            <Package size={22} />
+            <span>Packages</span>
+          </button>
+        )}
         <button
           className="global-menu-item"
           onClick={() => handleMenuItemClick('Bulletin Board')}
@@ -250,19 +252,28 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' 
           <span>Bulletin Board</span>
         </button>
         <button
+          className="global-menu-item"
+          onClick={() => handleMenuItemClick('Invite Neighbors')}
+        >
+          <Users size={22} />
+          <span>Invite Neighbors</span>
+        </button>
+        <button
           className={`global-menu-item ${activeItem === 'Building' ? 'active' : ''}`}
           onClick={() => handleMenuItemClick('Building')}
         >
           <Building2 size={22} />
           <span>Building</span>
         </button>
-        <button
-          className="global-menu-item"
-          onClick={() => handleMenuItemClick('Elevator Booking')}
-        >
-          <CalendarClock size={22} />
-          <span>Book Elevator</span>
-        </button>
+        {!isResidentLed && (
+          <button
+            className="global-menu-item"
+            onClick={() => handleMenuItemClick('Elevator Booking')}
+          >
+            <CalendarClock size={22} />
+            <span>Book Elevator</span>
+          </button>
+        )}
         <button
           className="global-menu-item"
           onClick={() => { setMenuOpen(false); setShowFeedbackModal(true) }}

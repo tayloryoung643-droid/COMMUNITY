@@ -45,6 +45,31 @@
   letter-spacing: -0.02em;
 }
 
+/* Invite CTA button */
+.invite-neighbors-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: calc(100% - 32px);
+  padding: 14px;
+  margin: 0 16px 16px;
+  max-width: 768px;
+  background: rgba(90, 122, 106, 0.12);
+  border: 1px solid rgba(90, 122, 106, 0.2);
+  border-radius: 14px;
+  color: #5a7a6a;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.invite-neighbors-cta:hover {
+  background: rgba(90, 122, 106, 0.2);
+}
+
 /* Content */
 .neighbors-content {
   padding: 0 16px 100px;

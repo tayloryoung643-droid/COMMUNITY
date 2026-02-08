@@ -273,11 +273,14 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const isResidentLed = userProfile?.buildings?.building_mode === 'resident_only'
+
   const value = {
     user,
     userProfile,
     loading,
     isDemoMode,
+    isResidentLed,
     buildingBackgroundUrl,
     signUp,
     signIn,

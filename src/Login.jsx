@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
-import { Menu, X, Key, UserPlus, Sparkles, Search } from 'lucide-react'
-import { validateBuildingCode } from './services/buildingService'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { Menu, X, Search, UserPlus, Sparkles, MapPin, Building2, Users, ArrowRight, Loader2 } from 'lucide-react'
+import { searchBuildingsByAddress } from './services/buildingService'
 import { submitFeedback } from './services/feedbackService'
 import './Login.css'
 
@@ -24,13 +24,18 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
   // Auth state
   const [activeTab, setActiveTab] = useState('resident')
   const [authMode, setAuthMode] = useState('signin')
-  const [buildingCode, setBuildingCode] = useState('')
   const [residentEmail, setResidentEmail] = useState('')
   const [residentPassword, setResidentPassword] = useState('')
   const [managerEmail, setManagerEmail] = useState('')
   const [managerPassword, setManagerPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+
+  // Address search state (replaces building code)
+  const [addressQuery, setAddressQuery] = useState('')
+  const [addressResults, setAddressResults] = useState([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [hasSearched, setHasSearched] = useState(false)
 
   // UI state
   const [showContact, setShowContact] = useState(false)
@@ -76,7 +81,33 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
   // Clear error on input change
   const clearError = () => { if (error) setError('') }
 
-  // === AUTH HANDLERS (preserved from original Login.jsx) ===
+  // === ADDRESS SEARCH (debounced) ===
+  const performAddressSearch = useCallback(async (query) => {
+    if (!query.trim() || query.length < 3) {
+      setAddressResults([])
+      setHasSearched(false)
+      return
+    }
+    setIsSearching(true)
+    try {
+      const results = await searchBuildingsByAddress(query)
+      setAddressResults(results)
+      setHasSearched(true)
+    } catch (err) {
+      console.error('Address search error:', err)
+      setAddressResults([])
+      setHasSearched(true)
+    } finally {
+      setIsSearching(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    const timer = setTimeout(() => performAddressSearch(addressQuery), 300)
+    return () => clearTimeout(timer)
+  }, [addressQuery, performAddressSearch])
+
+  // === AUTH HANDLERS ===
 
   const handleResidentEmailLogin = async () => {
     if (!residentEmail.trim()) { setError('Please enter your email'); return }
@@ -90,23 +121,8 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
     }
   }
 
-  const handleResidentCodeLogin = async () => {
-    if (!buildingCode.trim()) { setError('Please enter a building code'); return }
-    setError('')
-    setIsLoading(true)
-    try {
-      const { valid, building } = await validateBuildingCode(buildingCode)
-      if (valid && building) {
-        onResidentLogin(buildingCode, building)
-      } else {
-        setError('Invalid building code. Use the Demo login button to explore the app.')
-      }
-    } catch (err) {
-      console.error('Error validating building code:', err)
-      setError('Unable to verify building code. Please try again or use Demo login.')
-    } finally {
-      setIsLoading(false)
-    }
+  const handleSelectBuilding = (building) => {
+    onResidentLogin(building.access_code, building)
   }
 
   const handleManagerLogin = async () => {
@@ -275,19 +291,19 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
         </div>
         <div className="landing-steps">
           <div className="landing-step">
-            <div className="landing-step-number"><Key size={22} /></div>
-            <div className="landing-step-title">Get your code</div>
-            <div className="landing-step-desc">Your building manager will share a building code with you</div>
+            <div className="landing-step-number"><Search size={22} /></div>
+            <div className="landing-step-title">Find your building</div>
+            <div className="landing-step-desc">Search for your building by address or start a new community</div>
           </div>
           <div className="landing-step">
             <div className="landing-step-number"><UserPlus size={22} /></div>
             <div className="landing-step-title">Sign up & join</div>
-            <div className="landing-step-desc">Create your account and enter the code to join your building</div>
+            <div className="landing-step-desc">Create your account and join your building in seconds</div>
           </div>
           <div className="landing-step">
             <div className="landing-step-number"><Sparkles size={22} /></div>
             <div className="landing-step-title">You're in!</div>
-            <div className="landing-step-desc">Start getting package alerts, seeing events, and connecting with neighbors</div>
+            <div className="landing-step-desc">Discover events, connect with neighbors, and stay in the loop</div>
           </div>
         </div>
         <div className="landing-center-cta">
@@ -462,29 +478,74 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
             </div>
           )}
 
-          {/* Resident Join Form */}
+          {/* Resident Join Form — Address Search */}
           {activeTab === 'resident' && authMode === 'join' && (
             <div className="landing-auth-form">
               <div className="landing-input-group">
-                <label className="landing-input-label">Building Code</label>
-                <input
-                  type="text"
-                  className="landing-input"
-                  placeholder="Enter code from your building manager"
-                  value={buildingCode}
-                  onChange={(e) => { setBuildingCode(e.target.value.toUpperCase()); clearError() }}
-                  onKeyDown={(e) => e.key === 'Enter' && handleResidentCodeLogin()}
-                />
-                <span className="landing-input-helper">Get this code from your property manager</span>
+                <label className="landing-input-label">Find your building</label>
+                <div className="landing-search-input-wrapper">
+                  <MapPin size={16} className="landing-search-icon" />
+                  <input
+                    type="text"
+                    className="landing-input landing-input-with-icon"
+                    placeholder="Search by address or building name..."
+                    value={addressQuery}
+                    onChange={(e) => { setAddressQuery(e.target.value); clearError() }}
+                    autoFocus
+                  />
+                  {isSearching && <Loader2 size={16} className="landing-search-spinner" />}
+                </div>
+                <span className="landing-input-helper">Start typing to search (min 3 characters)</span>
               </div>
-              <button className="landing-auth-submit" onClick={handleResidentCodeLogin} disabled={isLoading}>
-                {isLoading ? 'Joining...' : 'Join Building →'}
-              </button>
-              <div className="landing-auth-divider"><span>or</span></div>
-              <button className="landing-find-building-btn" onClick={onResidentSignupClick}>
-                <Search size={16} />
-                <span>Find my building by address</span>
-              </button>
+
+              {/* Search Results */}
+              {!isSearching && addressResults.length > 0 && (
+                <div className="landing-search-results">
+                  {addressResults.map((building) => {
+                    const isResidentLed = building.building_mode === 'resident_only'
+                    return (
+                      <button
+                        key={building.id}
+                        className="landing-search-result-card"
+                        onClick={() => handleSelectBuilding(building)}
+                      >
+                        <div className="landing-result-left">
+                          <Building2 size={18} className="landing-result-icon" />
+                          <div className="landing-result-info">
+                            <span className="landing-result-name">{building.name}</span>
+                            <span className="landing-result-address">{building.address}</span>
+                          </div>
+                        </div>
+                        <div className="landing-result-right">
+                          <span className={`landing-result-badge ${isResidentLed ? 'community' : 'managed'}`}>
+                            {isResidentLed ? 'Community' : 'Managed'}
+                          </span>
+                          {building.resident_count > 0 && (
+                            <span className="landing-result-count">
+                              <Users size={12} /> {building.resident_count}
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* No Results — Create Building CTA */}
+              {!isSearching && hasSearched && addressResults.length === 0 && addressQuery.length >= 3 && (
+                <button className="landing-create-building-card" onClick={onResidentSignupClick}>
+                  <div className="landing-create-card-inner">
+                    <Building2 size={20} />
+                    <div>
+                      <span className="landing-create-title">Building not found?</span>
+                      <span className="landing-create-desc">Start your own building community</span>
+                    </div>
+                    <ArrowRight size={16} />
+                  </div>
+                </button>
+              )}
+
               <div className="landing-auth-footer">
                 Already have an account?{' '}
                 <button className="landing-auth-link" onClick={() => setAuthMode('signin')}>

@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Calendar, Wrench, ClipboardList, HelpCircle, FileText, User, Settings, Phone, ChevronRight, Home as HomeIcon, MessageSquare, Building2, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
+import { Calendar, Wrench, ClipboardList, HelpCircle, FileText, Camera, User, Users, Settings, Phone, ChevronRight, Home as HomeIcon, MessageSquare, Building2, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import HamburgerMenu from './HamburgerMenu'
 import FeedbackModal from './components/FeedbackModal'
 import './Building.css'
 
 function Building({ onNavigate }) {
-  const { userProfile, isDemoMode, buildingBackgroundUrl } = useAuth()
+  const { userProfile, isDemoMode, isResidentLed, buildingBackgroundUrl } = useAuth()
   const isInDemoMode = isDemoMode || userProfile?.is_demo === true
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)
 
@@ -76,24 +76,26 @@ function Building({ onNavigate }) {
 
       {/* Content */}
       <div className="building-content">
-        {/* Quick Actions Section */}
-        <section className="building-section">
-          <h2 className="section-title">Quick Actions</h2>
-          <div className="quick-actions-grid">
-            <button className="quick-action-card teal" onClick={() => handleFeatureClick('Elevator Booking')}>
-              <div className="quick-action-icon">
-                <Calendar size={24} />
-              </div>
-              <span className="quick-action-label">Book Elevator</span>
-            </button>
-            <button className="quick-action-card orange" onClick={() => handleFeatureClick('Maintenance')}>
-              <div className="quick-action-icon">
-                <Wrench size={24} />
-              </div>
-              <span className="quick-action-label">Maintenance Request</span>
-            </button>
-          </div>
-        </section>
+        {/* Quick Actions Section - hidden for resident-led buildings */}
+        {!isResidentLed && (
+          <section className="building-section">
+            <h2 className="section-title">Quick Actions</h2>
+            <div className="quick-actions-grid">
+              <button className="quick-action-card teal" onClick={() => handleFeatureClick('Elevator Booking')}>
+                <div className="quick-action-icon">
+                  <Calendar size={24} />
+                </div>
+                <span className="quick-action-label">Book Elevator</span>
+              </button>
+              <button className="quick-action-card orange" onClick={() => handleFeatureClick('Maintenance')}>
+                <div className="quick-action-icon">
+                  <Wrench size={24} />
+                </div>
+                <span className="quick-action-label">Maintenance Request</span>
+              </button>
+            </div>
+          </section>
+        )}
 
         {/* Building Info Section */}
         <section className="building-section">
@@ -113,18 +115,27 @@ function Building({ onNavigate }) {
               <span className="list-item-label">Bulletin Board</span>
               <ChevronRight size={18} className="list-item-arrow" />
             </button>
-            <button className="list-item" onClick={() => handleFeatureClick('FAQ')}>
-              <div className="list-item-icon">
-                <HelpCircle size={20} />
-              </div>
-              <span className="list-item-label">Building FAQ</span>
-              <ChevronRight size={18} className="list-item-arrow" />
-            </button>
+            {!isResidentLed && (
+              <button className="list-item" onClick={() => handleFeatureClick('FAQ')}>
+                <div className="list-item-icon">
+                  <HelpCircle size={20} />
+                </div>
+                <span className="list-item-label">Building FAQ</span>
+                <ChevronRight size={18} className="list-item-arrow" />
+              </button>
+            )}
             <button className="list-item" onClick={() => handleFeatureClick('Documents')}>
               <div className="list-item-icon">
-                <FileText size={20} />
+                {isResidentLed ? <Camera size={20} /> : <FileText size={20} />}
               </div>
-              <span className="list-item-label">Documents & Forms</span>
+              <span className="list-item-label">{isResidentLed ? 'Community Photos' : 'Documents & Forms'}</span>
+              <ChevronRight size={18} className="list-item-arrow" />
+            </button>
+            <button className="list-item" onClick={() => handleFeatureClick('Invite Neighbors')}>
+              <div className="list-item-icon">
+                <Users size={20} />
+              </div>
+              <span className="list-item-label">Invite Neighbors</span>
               <ChevronRight size={18} className="list-item-arrow" />
             </button>
           </div>
@@ -148,13 +159,15 @@ function Building({ onNavigate }) {
               <span className="list-item-label">Settings</span>
               <ChevronRight size={18} className="list-item-arrow" />
             </button>
-            <button className="list-item" onClick={() => handleFeatureClick('messages')}>
-              <div className="list-item-icon">
-                <Phone size={20} />
-              </div>
-              <span className="list-item-label">Contact Management</span>
-              <ChevronRight size={18} className="list-item-arrow" />
-            </button>
+            {!isResidentLed && (
+              <button className="list-item" onClick={() => handleFeatureClick('messages')}>
+                <div className="list-item-icon">
+                  <Phone size={20} />
+                </div>
+                <span className="list-item-label">Contact Management</span>
+                <ChevronRight size={18} className="list-item-arrow" />
+              </button>
+            )}
             <button className="list-item" onClick={() => setShowFeedbackModal(true)}>
               <div className="list-item-icon">
                 <HelpCircle size={20} />

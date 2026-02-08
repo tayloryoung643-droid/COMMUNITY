@@ -358,6 +358,72 @@
   line-height: 1.5;
 }
 
+/* Building type badge */
+.join-building-type-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.join-building-type-badge.managed {
+  background: rgba(91, 138, 138, 0.15);
+  color: #5B8A8A;
+}
+
+.join-building-type-badge.community {
+  background: rgba(194, 148, 68, 0.15);
+  color: #b08630;
+}
+
+/* Join request pending state */
+.join-request-pending {
+  text-align: center;
+  padding: 32px 16px;
+}
+
+.join-request-pending .pending-icon {
+  color: #b08630;
+  margin-bottom: 16px;
+}
+
+.join-request-pending h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2D3748;
+  margin: 0 0 8px 0;
+}
+
+.join-request-pending p {
+  font-size: 14px;
+  color: #6B7280;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.join-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #5B8A8A;
+  background: rgba(91, 138, 138, 0.08);
+  border: 1px solid rgba(91, 138, 138, 0.2);
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.join-back-btn:hover {
+  background: rgba(91, 138, 138, 0.15);
+}
+
 /* Mobile */
 @media (max-width: 768px) {
   .join-building-container {

@@ -13,7 +13,7 @@ import './Home.css'
 
 function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
   // Get cached building background URL from context
-  const { buildingBackgroundUrl } = useAuth()
+  const { buildingBackgroundUrl, isResidentLed } = useAuth()
 
   const floor = "12"
   const userUnit = userProfile?.unit_number || "1201"
@@ -560,8 +560,8 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
             </div>
           )}
 
-          {/* Packages Card - Demo or Real */}
-          {isDemoMode ? (
+          {/* Packages Card - Demo or Real (hidden for resident-led buildings) */}
+          {!isResidentLed && (isDemoMode ? (
             <>
               <button className="today-card" onClick={() => handleFeatureClick('Packages')}>
                 <div className="today-card-icon package-icon"><Package size={20} /></div>
@@ -609,7 +609,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
                 <span className="today-card-subtitle">Check back later</span>
               </div>
             </div>
-          )}
+          ))}
 
           {/* Event Card - Demo or Real */}
           {isDemoMode ? (
@@ -653,6 +653,24 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
               </div>
             </div>
           )}
+
+          {/* Invite Neighbors Adoption Banner */}
+          {(() => {
+            const totalUnits = userProfile?.buildings?.total_units
+            if (!totalUnits) return null
+            return (
+              <button className="invite-adoption-banner" onClick={() => handleFeatureClick('Invite Neighbors')}>
+                <div className="invite-adoption-icon">
+                  <UserPlus size={20} />
+                </div>
+                <div className="invite-adoption-content">
+                  <span className="invite-adoption-title">Grow your community</span>
+                  <span className="invite-adoption-subtitle">{totalUnits} units in your building — invite your neighbors!</span>
+                </div>
+                <ChevronRight size={18} className="invite-adoption-arrow" />
+              </button>
+            )
+          })()}
 
           {/* Bulletin Board Preview */}
           {(() => {

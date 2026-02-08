@@ -27,7 +27,7 @@ import {
   ChevronDown,
   ArrowRight
 } from 'lucide-react'
-import { uploadBuildingBackgroundImage, removeBuildingBackgroundImage, getBuildingById } from './services/buildingService'
+import { uploadBuildingBackgroundImage, removeBuildingBackgroundImage, getBuildingById, updateBuilding } from './services/buildingService'
 import { updateUserProfile, uploadProfilePhoto, updateBuildingInfo, changePassword, getResidentCount } from './services/settingsService'
 import { getInvitations, hasFAQEntries, hasInvitations, getInvitationStats } from './services/invitationService'
 import ResidentImporter from './ResidentImporter'
@@ -84,6 +84,10 @@ function ManagerSettings({ onNavigate }) {
     description: '',
     totalUnits: ''
   })
+
+  // Join policy state
+  const [joinPolicy, setJoinPolicy] = useState('open')
+  const [savingPolicy, setSavingPolicy] = useState(false)
 
   // Invite state
   const [accessCodeVisible, setAccessCodeVisible] = useState(false)
@@ -161,6 +165,9 @@ function ManagerSettings({ onNavigate }) {
           })
           if (building.background_image_url) {
             setBackgroundImageUrl(building.background_image_url)
+          }
+          if (building.join_policy) {
+            setJoinPolicy(building.join_policy)
           }
           // Update checklist
           setChecklistItems(prev => ({
@@ -714,6 +721,85 @@ function ManagerSettings({ onNavigate }) {
               />
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Join Settings */}
+      <div className="settings-card">
+        <div className="card-header">
+          <h3>Join Settings</h3>
+          <p>Control how new residents join your building</p>
+        </div>
+        <div className="card-body">
+          <div className="join-policy-options">
+            {[
+              {
+                id: 'open',
+                icon: '🔓',
+                title: 'Open Join',
+                desc: 'Anyone with an invite link joins instantly. Fastest way to grow your building.',
+                tag: 'Recommended'
+              },
+              {
+                id: 'unit_verification',
+                icon: '🏠',
+                title: 'Unit Verification',
+                desc: 'New residents must enter a valid unit number that matches your resident list.'
+              },
+              {
+                id: 'manager_approval',
+                icon: '🔐',
+                title: 'Manager Approval',
+                desc: 'You manually approve or deny every join request. Maximum control.'
+              }
+            ].map(option => (
+              <button
+                key={option.id}
+                className={`join-policy-card ${joinPolicy === option.id ? 'selected' : ''}`}
+                onClick={async () => {
+                  setJoinPolicy(option.id)
+                  if (isInDemoMode) {
+                    showToastMessage('Demo mode — join policy not saved')
+                    return
+                  }
+                  setSavingPolicy(true)
+                  try {
+                    await updateBuilding(buildingId, { join_policy: option.id })
+                    showToastMessage('Join policy updated!')
+                  } catch (err) {
+                    console.error('[ManagerSettings] Join policy save error:', err)
+                    showToastMessage('Failed to update join policy.')
+                  } finally {
+                    setSavingPolicy(false)
+                  }
+                }}
+              >
+                <div className="join-policy-icon">{option.icon}</div>
+                <div className="join-policy-info">
+                  <div className="join-policy-title-row">
+                    <span className="join-policy-title">{option.title}</span>
+                    {option.tag && <span className="join-policy-tag">{option.tag}</span>}
+                  </div>
+                  <span className="join-policy-desc">{option.desc}</span>
+                </div>
+                <div className={`join-policy-radio ${joinPolicy === option.id ? 'checked' : ''}`} />
+              </button>
+            ))}
+          </div>
+
+          {joinPolicy === 'unit_verification' && (
+            <div className="join-policy-detail-box">
+              <Info size={16} />
+              <p>Residents will need to enter a unit number when joining. Make sure you've imported your resident list in the Invite tab so units can be verified.</p>
+            </div>
+          )}
+
+          {joinPolicy === 'manager_approval' && (
+            <div className="join-policy-detail-box">
+              <Info size={16} />
+              <p>You'll receive a notification for each join request. Approve or deny from the Residents page. Pending requests will appear in your dashboard.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
