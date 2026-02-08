@@ -676,22 +676,31 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
                 const authorName = listing.author?.full_name || 'Neighbor'
                 const authorAvatar = listing.author?.avatar_signed_url || null
                 return (
-                  <button key={listing.id} className="bulletin-preview-card" onClick={() => handleFeatureClick('Bulletin Board')}>
-                    <div className="bulletin-card-top-row">
-                      <div className="bulletin-author-avatar">
-                        {authorAvatar ? (
-                          <img src={authorAvatar} alt="" />
-                        ) : (
-                          authorName.charAt(0)
-                        )}
-                      </div>
-                      <span className="bulletin-author-name">{authorName}</span>
-                      <span className="bulletin-preview-badge">{catLabel}</span>
+                  <button key={listing.id} className="today-card bulletin-post-card" onClick={() => handleFeatureClick('Bulletin Board')}>
+                    <div className="today-card-icon bulletin-avatar-icon">
+                      {authorAvatar ? (
+                        <img src={authorAvatar} alt="" style={{
+                          width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%'
+                        }} />
+                      ) : (
+                        authorName.charAt(0)
+                      )}
                     </div>
-                    <span className="bulletin-preview-card-title">{listing.title}</span>
-                    <div className="bulletin-preview-meta">
-                      <span className="bulletin-preview-price">{price}</span>
-                      <span className="bulletin-preview-time">{timeAgo} ago</span>
+                    <div className="today-card-content">
+                      <div className="community-post-header">
+                        <span className="community-post-author">{authorName}</span>
+                        <span
+                          className="community-post-badge"
+                          style={{ background: 'rgba(90, 122, 106, 0.1)', color: '#5a7a6a' }}
+                        >
+                          {catLabel}
+                        </span>
+                      </div>
+                      <span className="today-card-subtitle community-post-preview">{listing.title}</span>
+                      <div className="community-post-footer">
+                        <span className="post-stat bulletin-price">{price}</span>
+                        <span className="post-stat">{timeAgo} ago</span>
+                      </div>
                     </div>
                   </button>
                 )

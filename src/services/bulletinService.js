@@ -10,13 +10,15 @@ export async function getListings(buildingId) {
 
   if (error) throw error
 
-  // Then fetch author info for each listing
+  // Then fetch author info for each listing (handle both author_id and user_id columns)
   if (data && data.length > 0) {
-    const authorIds = [...new Set(data.filter(l => l.author_id).map(l => l.author_id))]
+    const authorIds = [...new Set(
+      data.map(l => l.author_id || l.user_id).filter(Boolean)
+    )]
     if (authorIds.length > 0) {
       const { data: authors } = await supabase
         .from('users')
-        .select('id, full_name, first_name, last_name, unit_number, role')
+        .select('id, full_name, first_name, last_name, unit_number, role, avatar_url')
         .in('id', authorIds)
 
       const authorMap = {}
@@ -24,9 +26,27 @@ export async function getListings(buildingId) {
         authors.forEach(a => { authorMap[a.id] = a })
       }
 
+      // Generate signed avatar URLs
+      const avatarUrlMap = {}
+      const authorsWithAvatars = (authors || []).filter(a => a.avatar_url)
+      await Promise.all(
+        authorsWithAvatars.map(async (author) => {
+          try {
+            const { data: urlData } = await supabase.storage
+              .from('profile-images')
+              .createSignedUrl(author.avatar_url, 3600)
+            if (urlData?.signedUrl) avatarUrlMap[author.id] = urlData.signedUrl
+          } catch (e) { /* ignore */ }
+        })
+      )
+
       // Attach author to each listing
       data.forEach(listing => {
-        listing.author = authorMap[listing.author_id] || null
+        const aid = listing.author_id || listing.user_id
+        listing.author = authorMap[aid] || null
+        if (listing.author) {
+          listing.author.avatar_signed_url = avatarUrlMap[aid] || null
+        }
       })
     }
   }
@@ -44,21 +64,41 @@ export async function getListingsByCategory(buildingId, category) {
 
   if (error) throw error
 
-  // Fetch author info
+  // Fetch author info (handle both author_id and user_id columns)
   if (data && data.length > 0) {
-    const authorIds = [...new Set(data.filter(l => l.author_id).map(l => l.author_id))]
+    const authorIds = [...new Set(
+      data.map(l => l.author_id || l.user_id).filter(Boolean)
+    )]
     if (authorIds.length > 0) {
       const { data: authors } = await supabase
         .from('users')
-        .select('id, full_name, first_name, last_name, unit_number, role')
+        .select('id, full_name, first_name, last_name, unit_number, role, avatar_url')
         .in('id', authorIds)
 
       const authorMap = {}
       if (authors) {
         authors.forEach(a => { authorMap[a.id] = a })
       }
+
+      const avatarUrlMap = {}
+      const authorsWithAvatars = (authors || []).filter(a => a.avatar_url)
+      await Promise.all(
+        authorsWithAvatars.map(async (author) => {
+          try {
+            const { data: urlData } = await supabase.storage
+              .from('profile-images')
+              .createSignedUrl(author.avatar_url, 3600)
+            if (urlData?.signedUrl) avatarUrlMap[author.id] = urlData.signedUrl
+          } catch (e) { /* ignore */ }
+        })
+      )
+
       data.forEach(listing => {
-        listing.author = authorMap[listing.author_id] || null
+        const aid = listing.author_id || listing.user_id
+        listing.author = authorMap[aid] || null
+        if (listing.author) {
+          listing.author.avatar_signed_url = avatarUrlMap[aid] || null
+        }
       })
     }
   }
@@ -108,8 +148,11 @@ export async function getActiveListings(buildingId) {
   if (error) throw error
 
   // Fetch author info (including avatar_url for profile photos)
+  // Handle both author_id and user_id columns (schema may vary)
   if (data && data.length > 0) {
-    const authorIds = [...new Set(data.filter(l => l.author_id).map(l => l.author_id))]
+    const authorIds = [...new Set(
+      data.map(l => l.author_id || l.user_id).filter(Boolean)
+    )]
     if (authorIds.length > 0) {
       const { data: authors } = await supabase
         .from('users')
@@ -136,9 +179,10 @@ export async function getActiveListings(buildingId) {
       )
 
       data.forEach(listing => {
-        listing.author = authorMap[listing.author_id] || null
+        const aid = listing.author_id || listing.user_id
+        listing.author = authorMap[aid] || null
         if (listing.author) {
-          listing.author.avatar_signed_url = avatarUrlMap[listing.author_id] || null
+          listing.author.avatar_signed_url = avatarUrlMap[aid] || null
         }
       })
     }
