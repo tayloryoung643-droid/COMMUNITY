@@ -116,9 +116,31 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
           console.error('[Home] Events fetch error:', eventsError)
         }
 
-        // Fetch community posts with dynamic like/comment counts
+        // Fetch community posts with dynamic like/comment counts + avatar signed URLs
         try {
           const postsData = await getCommunityPosts(buildingId)
+          // Generate signed avatar URLs for post authors
+          const avatarUrlMap = {}
+          const authorsWithAvatars = (postsData || [])
+            .filter(p => p.author?.avatar_url)
+            .map(p => ({ id: p.author.id, avatar_url: p.author.avatar_url }))
+            .filter((a, i, arr) => arr.findIndex(x => x.id === a.id) === i)
+          await Promise.all(
+            authorsWithAvatars.map(async (author) => {
+              try {
+                const { data: urlData } = await supabase.storage
+                  .from('profile-images')
+                  .createSignedUrl(author.avatar_url, 3600)
+                if (urlData?.signedUrl) avatarUrlMap[author.id] = urlData.signedUrl
+              } catch (e) { /* ignore */ }
+            })
+          )
+          // Attach signed URLs to posts
+          ;(postsData || []).forEach(post => {
+            if (post.author?.id && avatarUrlMap[post.author.id]) {
+              post.author.avatar_signed_url = avatarUrlMap[post.author.id]
+            }
+          })
           setRealPosts(postsData || [])
           console.log('[Home] Posts fetched:', postsData?.length || 0)
         } catch (postsError) {
@@ -364,6 +386,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
       price: '$150/mo',
       category: 'parking',
       created_at: new Date(Date.now() - 7200000).toISOString(),
+      author: { full_name: 'David Kim', avatar_signed_url: null },
     },
     {
       id: 'demo-bl-2',
@@ -371,6 +394,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
       price: 0,
       category: 'for_sale',
       created_at: new Date(Date.now() - 18000000).toISOString(),
+      author: { full_name: 'Sarah Mitchell', avatar_signed_url: null },
     },
     {
       id: 'demo-bl-3',
@@ -378,6 +402,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
       price: '$20/walk',
       category: 'iso',
       created_at: new Date(Date.now() - 43200000).toISOString(),
+      author: { full_name: 'Emily Chen', avatar_signed_url: null },
     },
   ]
 
@@ -427,6 +452,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
     type: post.type || 'share',
     text: post.content || post.text,
     author: post.author?.full_name || 'Neighbor',
+    authorAvatarUrl: post.author?.avatar_signed_url || null,
     unit: post.author?.role?.includes('manager') ? 'Management' : (post.author?.unit_number ? `Unit ${post.author.unit_number}` : ''),
     timestamp: new Date(post.created_at).getTime(),
     likes: post.likes_count ?? post.likes ?? 0,
@@ -647,9 +673,21 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
                 const ago = Date.now() - new Date(listing.created_at).getTime()
                 const timeAgo = ago < 3600000 ? `${Math.floor(ago / 60000)}m` : ago < 86400000 ? `${Math.floor(ago / 3600000)}h` : `${Math.floor(ago / 86400000)}d`
                 const catLabel = listing.category === 'iso' ? 'Looking For' : (listing.category || 'General').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+                const authorName = listing.author?.full_name || 'Neighbor'
+                const authorAvatar = listing.author?.avatar_signed_url || null
                 return (
                   <button key={listing.id} className="bulletin-preview-card" onClick={() => handleFeatureClick('Bulletin Board')}>
-                    <span className="bulletin-preview-badge">{catLabel}</span>
+                    <div className="bulletin-card-top-row">
+                      <div className="bulletin-author-avatar">
+                        {authorAvatar ? (
+                          <img src={authorAvatar} alt="" />
+                        ) : (
+                          authorName.charAt(0)
+                        )}
+                      </div>
+                      <span className="bulletin-author-name">{authorName}</span>
+                      <span className="bulletin-preview-badge">{catLabel}</span>
+                    </div>
                     <span className="bulletin-preview-card-title">{listing.title}</span>
                     <div className="bulletin-preview-meta">
                       <span className="bulletin-preview-price">{price}</span>
@@ -710,7 +748,16 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
             allCommunityPosts.slice(0, 3).map((post) => (
               <button key={post.id} className="today-card community-post-card" onClick={() => handleCommunityPostClick(post)}>
                 <div className="today-card-icon community-icon">
-                  {post.author.charAt(0)}
+                  {post.authorAvatarUrl ? (
+                    <img src={post.authorAvatarUrl} alt="" style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: '50%'
+                    }} />
+                  ) : (
+                    post.author.charAt(0)
+                  )}
                 </div>
                 <div className="today-card-content">
                   <div className="community-post-header">

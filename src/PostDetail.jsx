@@ -325,9 +325,18 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
           <div className="post-detail-author">
             <div
               className="post-detail-avatar"
-              style={{ background: `linear-gradient(135deg, ${typeConfig.color}, ${typeConfig.color}88)` }}
+              style={{ background: post.authorAvatarUrl ? 'transparent' : `linear-gradient(135deg, ${typeConfig.color}, ${typeConfig.color}88)` }}
             >
-              {post.author.charAt(0)}
+              {post.authorAvatarUrl ? (
+                <img src={post.authorAvatarUrl} alt="" style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  borderRadius: '50%'
+                }} />
+              ) : (
+                post.author.charAt(0)
+              )}
             </div>
             <div className="post-detail-author-info">
               <span className="post-detail-author-name">{post.author}</span>

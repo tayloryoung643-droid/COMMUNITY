@@ -193,6 +193,19 @@ function CommunityFeed({ onNavigate }) {
             .neq('id', userProfile.id)
             .order('unit_number', { ascending: true })
           if (!error && data) {
+            // Generate signed avatar URLs for neighbors with photos
+            const avatarUrlMap = {}
+            const neighborsWithAvatars = data.filter(u => u.avatar_url)
+            await Promise.all(
+              neighborsWithAvatars.map(async (u) => {
+                try {
+                  const { data: urlData } = await supabase.storage
+                    .from('profile-images')
+                    .createSignedUrl(u.avatar_url, 3600)
+                  if (urlData?.signedUrl) avatarUrlMap[u.id] = urlData.signedUrl
+                } catch (e) { /* ignore */ }
+              })
+            )
             const COLORS = ['blue', 'purple', 'cyan', 'green', 'pink', 'orange']
             const transformed = data.map((user, index) => ({
               id: user.id,
@@ -200,6 +213,7 @@ function CommunityFeed({ onNavigate }) {
               unit: user.unit_number || 'N/A',
               floor: user.unit_number ? parseInt(user.unit_number.toString().slice(0, -2)) || 1 : 1,
               color: COLORS[index % COLORS.length],
+              avatarUrl: avatarUrlMap[user.id] || null,
               waved: false
             }))
             setNeighbors(transformed)
@@ -698,7 +712,16 @@ function CommunityFeed({ onNavigate }) {
                         {floorNeighbors.map((neighbor) => (
                           <div key={neighbor.id} className="sidebar-resident-row">
                             <div className={`sidebar-avatar avatar-ring-${neighbor.color}`}>
-                              {getInitials(neighbor.name)}
+                              {neighbor.avatarUrl ? (
+                                <img src={neighbor.avatarUrl} alt="" style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover',
+                                  borderRadius: '50%'
+                                }} />
+                              ) : (
+                                getInitials(neighbor.name)
+                              )}
                             </div>
                             <div className="sidebar-resident-info">
                               <span className="sidebar-resident-name">{neighbor.name}</span>

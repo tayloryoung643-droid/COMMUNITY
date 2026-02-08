@@ -550,6 +550,7 @@
   color: white;
   background: #7A7265;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 /* Sidebar Resident Info */
