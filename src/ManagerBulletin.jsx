@@ -619,7 +619,7 @@ function ManagerBulletin() {
       try {
         await createListing({
           building_id: userProfile.building_id,
-          author_id: authorId,  // Schema uses author_id
+          user_id: authorId,
           category: listingForm.category,
           title: listingForm.title,
           description: listingForm.description,

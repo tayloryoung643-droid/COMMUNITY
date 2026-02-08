@@ -673,7 +673,8 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
                 const ago = Date.now() - new Date(listing.created_at).getTime()
                 const timeAgo = ago < 3600000 ? `${Math.floor(ago / 60000)}m` : ago < 86400000 ? `${Math.floor(ago / 3600000)}h` : `${Math.floor(ago / 86400000)}d`
                 const catLabel = listing.category === 'iso' ? 'Looking For' : (listing.category || 'General').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-                const authorName = listing.author?.full_name || 'Neighbor'
+                const isManager = listing.author?.role === 'manager' || listing.author?.role === 'building_manager'
+                const authorName = isManager ? 'Management' : (listing.author?.full_name || 'Management')
                 const authorAvatar = listing.author?.avatar_signed_url || null
                 return (
                   <button key={listing.id} className="today-card bulletin-post-card" onClick={() => handleFeatureClick('Bulletin Board')}>

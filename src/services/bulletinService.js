@@ -10,10 +10,10 @@ export async function getListings(buildingId) {
 
   if (error) throw error
 
-  // Then fetch author info for each listing (handle both author_id and user_id columns)
+  // Fetch poster info via user_id (primary column) with author_id fallback for legacy rows
   if (data && data.length > 0) {
     const authorIds = [...new Set(
-      data.map(l => l.author_id || l.user_id).filter(Boolean)
+      data.map(l => l.user_id || l.author_id).filter(Boolean)
     )]
     if (authorIds.length > 0) {
       const { data: authors } = await supabase
@@ -40,9 +40,8 @@ export async function getListings(buildingId) {
         })
       )
 
-      // Attach author to each listing
       data.forEach(listing => {
-        const aid = listing.author_id || listing.user_id
+        const aid = listing.user_id || listing.author_id
         listing.author = authorMap[aid] || null
         if (listing.author) {
           listing.author.avatar_signed_url = avatarUrlMap[aid] || null
@@ -64,10 +63,10 @@ export async function getListingsByCategory(buildingId, category) {
 
   if (error) throw error
 
-  // Fetch author info (handle both author_id and user_id columns)
+  // Fetch poster info via user_id (primary column) with author_id fallback for legacy rows
   if (data && data.length > 0) {
     const authorIds = [...new Set(
-      data.map(l => l.author_id || l.user_id).filter(Boolean)
+      data.map(l => l.user_id || l.author_id).filter(Boolean)
     )]
     if (authorIds.length > 0) {
       const { data: authors } = await supabase
@@ -94,7 +93,7 @@ export async function getListingsByCategory(buildingId, category) {
       )
 
       data.forEach(listing => {
-        const aid = listing.author_id || listing.user_id
+        const aid = listing.user_id || listing.author_id
         listing.author = authorMap[aid] || null
         if (listing.author) {
           listing.author.avatar_signed_url = avatarUrlMap[aid] || null
@@ -147,11 +146,10 @@ export async function getActiveListings(buildingId) {
 
   if (error) throw error
 
-  // Fetch author info (including avatar_url for profile photos)
-  // Handle both author_id and user_id columns (schema may vary)
+  // Fetch poster info via user_id (primary column) with author_id fallback for legacy rows
   if (data && data.length > 0) {
     const authorIds = [...new Set(
-      data.map(l => l.author_id || l.user_id).filter(Boolean)
+      data.map(l => l.user_id || l.author_id).filter(Boolean)
     )]
     if (authorIds.length > 0) {
       const { data: authors } = await supabase
@@ -179,7 +177,7 @@ export async function getActiveListings(buildingId) {
       )
 
       data.forEach(listing => {
-        const aid = listing.author_id || listing.user_id
+        const aid = listing.user_id || listing.author_id
         listing.author = authorMap[aid] || null
         if (listing.author) {
           listing.author.avatar_signed_url = avatarUrlMap[aid] || null

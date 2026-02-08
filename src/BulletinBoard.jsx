@@ -330,7 +330,7 @@ function BulletinBoard({ onBack }) {
 
         await createListing({
           building_id: userProfile.building_id,
-          author_id: userProfile.id,  // Schema uses author_id, not user_id
+          user_id: userProfile.id,
           category: dbCategory,
           title: postForm.title,
           description: postForm.details,
