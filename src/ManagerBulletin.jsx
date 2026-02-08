@@ -620,6 +620,7 @@ function ManagerBulletin() {
         await createListing({
           building_id: userProfile.building_id,
           author_id: authorId,
+          user_id: authorId,
           category: listingForm.category,
           title: listingForm.title,
           description: listingForm.description,

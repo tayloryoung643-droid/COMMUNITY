@@ -1,19 +1,31 @@
 import { supabase } from '../lib/supabase'
 
-// Join author via the author_id foreign key — same pattern used by
-// aiBuildingDataService and managerDashboardService
-const LISTING_SELECT = '*, author:author_id(id, full_name, first_name, last_name, unit_number, role, avatar_url)'
+// Attach author info to listings — checks BOTH author_id and user_id columns
+// because listings created at different times may use either column.
+// Uses select('*') so listings with NULL poster ID still appear.
+async function attachAuthors(listings) {
+  // Collect poster IDs from whichever column is set on each listing
+  const posterIds = [...new Set(
+    listings.map(l => l.author_id || l.user_id).filter(Boolean)
+  )]
+  if (posterIds.length === 0) return
 
-// Generate signed avatar URLs for authors that have avatar_url stored
-async function attachSignedAvatarUrls(listings) {
-  const authorsWithAvatars = listings
-    .filter(l => l.author?.avatar_url)
-    .map(l => ({ id: l.author.id, avatar_url: l.author.avatar_url }))
-    .filter((a, i, arr) => arr.findIndex(x => x.id === a.id) === i)
+  const { data: authors, error } = await supabase
+    .from('users')
+    .select('id, full_name, unit_number, role, avatar_url')
+    .in('id', posterIds)
 
-  if (authorsWithAvatars.length === 0) return
+  if (error) {
+    console.error('[bulletinService] Error fetching authors:', error)
+    return
+  }
 
+  const authorMap = {}
+  ;(authors || []).forEach(a => { authorMap[a.id] = a })
+
+  // Generate signed avatar URLs
   const avatarUrlMap = {}
+  const authorsWithAvatars = (authors || []).filter(a => a.avatar_url)
   await Promise.all(
     authorsWithAvatars.map(async (author) => {
       try {
@@ -26,7 +38,9 @@ async function attachSignedAvatarUrls(listings) {
   )
 
   listings.forEach(listing => {
-    if (listing.author?.id && avatarUrlMap[listing.author.id]) {
+    const aid = listing.author_id || listing.user_id
+    listing.author = authorMap[aid] || null
+    if (listing.author && avatarUrlMap[listing.author.id]) {
       listing.author.avatar_signed_url = avatarUrlMap[listing.author.id]
     }
   })
@@ -35,14 +49,14 @@ async function attachSignedAvatarUrls(listings) {
 export async function getListings(buildingId) {
   const { data, error } = await supabase
     .from('bulletin_listings')
-    .select(LISTING_SELECT)
+    .select('*')
     .eq('building_id', buildingId)
     .order('created_at', { ascending: false })
 
   if (error) throw error
 
   if (data && data.length > 0) {
-    await attachSignedAvatarUrls(data)
+    await attachAuthors(data)
   }
 
   return data
@@ -51,7 +65,7 @@ export async function getListings(buildingId) {
 export async function getListingsByCategory(buildingId, category) {
   const { data, error } = await supabase
     .from('bulletin_listings')
-    .select(LISTING_SELECT)
+    .select('*')
     .eq('building_id', buildingId)
     .eq('category', category)
     .order('created_at', { ascending: false })
@@ -59,7 +73,7 @@ export async function getListingsByCategory(buildingId, category) {
   if (error) throw error
 
   if (data && data.length > 0) {
-    await attachSignedAvatarUrls(data)
+    await attachAuthors(data)
   }
 
   return data
@@ -99,7 +113,7 @@ export async function deleteListing(listingId) {
 export async function getActiveListings(buildingId) {
   const { data, error } = await supabase
     .from('bulletin_listings')
-    .select(LISTING_SELECT)
+    .select('*')
     .eq('building_id', buildingId)
     .eq('status', 'active')
     .order('created_at', { ascending: false })
@@ -107,7 +121,7 @@ export async function getActiveListings(buildingId) {
   if (error) throw error
 
   if (data && data.length > 0) {
-    await attachSignedAvatarUrls(data)
+    await attachAuthors(data)
   }
 
   return data
