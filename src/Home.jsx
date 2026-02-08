@@ -158,8 +158,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
           buildingId,
           packages: packages?.length || 0,
           events: events?.length || 0,
-          joiners: joiners?.length || 0,
-          posts: posts?.length || 0
+          joiners: joiners?.length || 0
         })
       } catch (error) {
         console.error('[Home] Error fetching data:', error)

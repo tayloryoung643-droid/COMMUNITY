@@ -898,14 +898,23 @@ function CommunityFeed({ onNavigate }) {
                               <div className="post-menu" onClick={(e) => e.stopPropagation()}>
                                 <button
                                   className="menu-item"
-                                  onClick={() => handleStartEdit(post)}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    e.preventDefault()
+                                    handleStartEdit(post)
+                                  }}
                                 >
                                   <Edit3 size={14} />
                                   <span>Edit Post</span>
                                 </button>
+                                <div className="menu-divider" />
                                 <button
                                   className="menu-item danger"
-                                  onClick={() => handleDeletePost(post)}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    e.preventDefault()
+                                    handleDeletePost(post)
+                                  }}
                                 >
                                   <Trash2 size={14} />
                                   <span>Delete Post</span>
