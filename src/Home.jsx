@@ -306,7 +306,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
         'Packages': 'package_open',
         'Calendar': 'event_rsvp',
         'Community': 'post_open',
-        'Bulletin': 'bulletin_open'
+        'Bulletin Board': 'bulletin_open'
       }
       const eventType = eventTypeMap[featureTitle] || 'home_view'
       logEngagementEvent({
@@ -638,7 +638,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
                   <ClipboardList size={16} />
                   Bulletin Board
                 </h3>
-                <button className="view-all-link-inline" onClick={() => handleFeatureClick('Bulletin')}>
+                <button className="view-all-link-inline" onClick={() => handleFeatureClick('Bulletin Board')}>
                   View all →
                 </button>
               </div>
@@ -648,7 +648,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
                 const timeAgo = ago < 3600000 ? `${Math.floor(ago / 60000)}m` : ago < 86400000 ? `${Math.floor(ago / 3600000)}h` : `${Math.floor(ago / 86400000)}d`
                 const catLabel = listing.category === 'iso' ? 'Looking For' : (listing.category || 'General').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
                 return (
-                  <button key={listing.id} className="bulletin-preview-card" onClick={() => handleFeatureClick('Bulletin')}>
+                  <button key={listing.id} className="bulletin-preview-card" onClick={() => handleFeatureClick('Bulletin Board')}>
                     <span className="bulletin-preview-badge">{catLabel}</span>
                     <span className="bulletin-preview-card-title">{listing.title}</span>
                     <div className="bulletin-preview-meta">
@@ -660,7 +660,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
               })}
             </div>
           ) : !isDemoMode && (
-            <button className="today-card bulletin-card" onClick={() => handleFeatureClick('Bulletin')}>
+            <button className="today-card bulletin-card" onClick={() => handleFeatureClick('Bulletin Board')}>
               <div className="today-card-icon bulletin-icon" style={{ opacity: 0.5 }}>
                 <ClipboardList size={20} />
               </div>
