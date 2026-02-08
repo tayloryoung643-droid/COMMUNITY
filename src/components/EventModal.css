@@ -1,10 +1,24 @@
 /* EventModal - Shared event modal component styles */
+/* Fallbacks for --md-* variables (only defined in .manager-dashboard scope) */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 200;
+}
 
 .event-modal {
   background: rgba(45, 60, 75, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--md-border);
+  border: 1px solid var(--md-border, rgba(139, 115, 85, 0.08));
   border-radius: var(--radius-xl);
   width: 100%;
   max-width: 560px;
@@ -30,13 +44,13 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-lg);
-  border-bottom: 1px solid var(--md-border-subtle);
+  border-bottom: 1px solid var(--md-border-subtle, rgba(139, 115, 85, 0.05));
 }
 
 .event-modal .modal-header h3 {
   font-size: var(--font-size-lg);
   font-weight: 600;
-  color: var(--md-text-heading);
+  color: var(--md-text-heading, #1A1A1A);
   margin: 0;
 }
 
@@ -49,14 +63,14 @@
   background: transparent;
   border: none;
   border-radius: var(--radius-md);
-  color: var(--md-text-muted);
+  color: var(--md-text-muted, #8A8075);
   cursor: pointer;
   transition: all var(--transition-base);
 }
 
 .event-modal .modal-close:hover {
   background: rgba(255, 255, 255, 0.08);
-  color: var(--md-text-primary);
+  color: var(--md-text-primary, #1A1A1A);
 }
 
 .event-modal .modal-body {
@@ -71,7 +85,7 @@
   display: block;
   font-size: var(--font-size-sm);
   font-weight: 500;
-  color: var(--md-text-secondary);
+  color: var(--md-text-secondary, #4A4A4A);
   margin-bottom: var(--spacing-sm);
 }
 
@@ -81,9 +95,9 @@
   width: 100%;
   padding: var(--spacing-md);
   font-size: var(--font-size-base);
-  color: var(--md-text-primary);
+  color: var(--md-text-primary, #1A1A1A);
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--md-border);
+  border: 1px solid var(--md-border, rgba(139, 115, 85, 0.08));
   border-radius: var(--radius-md);
   transition: all var(--transition-base);
 }
@@ -92,13 +106,13 @@
 .event-modal .form-group textarea:focus,
 .event-modal .form-group select:focus {
   outline: none;
-  border-color: var(--md-accent);
+  border-color: var(--md-accent, #5B9A9A);
   background: rgba(255, 255, 255, 0.08);
 }
 
 .event-modal .form-group input::placeholder,
 .event-modal .form-group textarea::placeholder {
-  color: var(--md-text-muted);
+  color: var(--md-text-muted, #8A8075);
 }
 
 .event-modal .form-row {
@@ -126,7 +140,7 @@
 .event-modal .checkbox-label input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  accent-color: var(--md-accent);
+  accent-color: var(--md-accent, #5B9A9A);
   cursor: pointer;
 }
 
@@ -135,16 +149,16 @@
   justify-content: flex-end;
   gap: var(--spacing-sm);
   padding: var(--spacing-lg);
-  border-top: 1px solid var(--md-border-subtle);
+  border-top: 1px solid var(--md-border-subtle, rgba(139, 115, 85, 0.05));
 }
 
 .event-modal .btn-secondary {
   padding: var(--spacing-sm) var(--spacing-lg);
   font-size: var(--font-size-sm);
   font-weight: 500;
-  color: var(--md-text-secondary);
+  color: var(--md-text-secondary, #4A4A4A);
   background: transparent;
-  border: 1px solid var(--md-border);
+  border: 1px solid var(--md-border, rgba(139, 115, 85, 0.08));
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all var(--transition-base);
@@ -152,7 +166,7 @@
 
 .event-modal .btn-secondary:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-color: var(--md-border-hover);
+  border-color: var(--md-border-hover, rgba(139, 115, 85, 0.15));
 }
 
 .event-modal .btn-primary {
@@ -162,8 +176,8 @@
   padding: var(--spacing-sm) var(--spacing-lg);
   font-size: var(--font-size-sm);
   font-weight: 500;
-  color: var(--md-bg-primary);
-  background: var(--md-accent);
+  color: #FFFFFF;
+  background: var(--md-accent, #5B9A9A);
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -171,7 +185,7 @@
 }
 
 .event-modal .btn-primary:hover:not(:disabled) {
-  background: var(--md-accent-hover);
+  background: var(--md-accent-light, #6BAAAA);
   transform: translateY(-1px);
 }
 

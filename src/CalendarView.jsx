@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react'
-import { Calendar, ChevronRight, ChevronLeft, List, Grid3X3, Sun, Cloud, CloudRain, Snowflake, Moon, AlertCircle } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Calendar, ChevronRight, ChevronLeft, List, Grid3X3, Sun, Cloud, CloudRain, Snowflake, Moon, AlertCircle, Plus, MoreVertical, Edit3, Trash2 } from 'lucide-react'
 import HamburgerMenu from './HamburgerMenu'
 import { useAuth } from './contexts/AuthContext'
 import { eventsData } from './eventsData'
-import { getEvents } from './services/eventService'
+import { getEvents, deleteEvent } from './services/eventService'
+import { supabase } from './lib/supabase'
+import EventModal from './components/EventModal'
 import EmptyState from './components/EmptyState'
 import './CalendarView.css'
 
@@ -18,15 +20,37 @@ function CalendarView({ onNavigate }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  // Event creation/editing state
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [editingEvent, setEditingEvent] = useState(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [eventToDelete, setEventToDelete] = useState(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [openMenuId, setOpenMenuId] = useState(null)
+
+  // Creator name lookup
+  const [creatorMap, setCreatorMap] = useState({})
+
+  const menuRef = useRef(null)
+
+  // Close menu on outside click
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpenMenuId(null)
+      }
+    }
+    if (openMenuId) {
+      document.addEventListener('mousedown', handleClick)
+      return () => document.removeEventListener('mousedown', handleClick)
+    }
+  }, [openMenuId])
+
   // Detect mobile viewport and default to list view
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth <= 480
       setIsMobile(mobile)
-      // Auto-switch to list view on mobile if user hasn't manually chosen
-      if (mobile && viewMode === 'calendar') {
-        // Only auto-switch on initial load, not on resize
-      }
     }
 
     checkMobile()
@@ -71,6 +95,30 @@ function CalendarView({ onNavigate }) {
 
   const WeatherIcon = getWeatherIcon(weatherData.condition)
 
+  // Fetch creator names for events
+  async function fetchCreatorNames(events) {
+    const creatorIds = [...new Set(events.map(e => e.created_by).filter(Boolean))]
+    if (creatorIds.length === 0) return
+
+    try {
+      const { data: users, error } = await supabase
+        .from('users')
+        .select('id, full_name, role')
+        .in('id', creatorIds)
+
+      if (error) {
+        console.warn('[CalendarView] Error fetching creator names:', error)
+        return
+      }
+
+      const map = {}
+      ;(users || []).forEach(u => { map[u.id] = u })
+      setCreatorMap(map)
+    } catch (err) {
+      console.warn('[CalendarView] Error fetching creator names:', err)
+    }
+  }
+
   // Load events based on demo mode
   useEffect(() => {
     async function loadCalendarEvents() {
@@ -94,7 +142,10 @@ function CalendarView({ onNavigate }) {
 
       try {
         const data = await getEvents(buildingId)
-        // data will be [] if table is empty - this is SUCCESS, not an error
+        // Fetch creator names
+        if (data && data.length > 0) {
+          await fetchCreatorNames(data)
+        }
         const transformedData = (data || []).map(event => ({
           id: event.id,
           title: event.title || 'Untitled Event',
@@ -106,13 +157,17 @@ function CalendarView({ onNavigate }) {
           color: event.category === 'maintenance' ? '#f59e0b' : '#3b82f6',
           icon: Calendar,
           actionRequired: event.action_required || false,
-          affectedUnits: event.affected_units
+          affectedUnits: event.affected_units,
+          created_by: event.created_by,
+          // Keep raw data for editing
+          start_time: event.start_time,
+          end_time: event.end_time,
+          event_time: event.event_time
         }))
         setCalendarItems(transformedData)
-        setError(null) // Clear any previous error
+        setError(null)
         console.log('[CalendarView] SUCCESS - events loaded:', transformedData.length)
       } catch (err) {
-        // Only set error for actual failures (network, permission, table doesn't exist)
         console.error('[CalendarView] ERROR loading events:', {
           message: err.message,
           code: err.code,
@@ -120,7 +175,7 @@ function CalendarView({ onNavigate }) {
           hint: err.hint
         })
         setError(`Failed to load events: ${err.message || 'Unknown error'}`)
-        setCalendarItems([]) // Show empty state alongside error
+        setCalendarItems([])
       } finally {
         setLoading(false)
       }
@@ -128,6 +183,98 @@ function CalendarView({ onNavigate }) {
 
     loadCalendarEvents()
   }, [isInDemoMode, userProfile])
+
+  // Refresh events after create/edit/delete
+  const refreshEvents = async () => {
+    if (isInDemoMode) return
+
+    const buildingId = userProfile?.building_id
+    if (!buildingId) return
+
+    try {
+      const data = await getEvents(buildingId)
+      if (data && data.length > 0) {
+        await fetchCreatorNames(data)
+      }
+      const transformedData = (data || []).map(event => ({
+        id: event.id,
+        title: event.title || 'Untitled Event',
+        date: event.start_time?.split('T')[0] || event.date,
+        time: event.event_time || (event.start_time ? new Date(event.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : 'TBD'),
+        location: event.location || 'TBD',
+        description: event.description || '',
+        category: event.category || 'social',
+        color: event.category === 'maintenance' ? '#f59e0b' : '#3b82f6',
+        icon: Calendar,
+        actionRequired: event.action_required || false,
+        affectedUnits: event.affected_units,
+        created_by: event.created_by,
+        start_time: event.start_time,
+        end_time: event.end_time,
+        event_time: event.event_time
+      }))
+      setCalendarItems(transformedData)
+    } catch (err) {
+      console.error('[CalendarView] Error refreshing events:', err)
+    }
+  }
+
+  // Modal success handler
+  const handleEventSuccess = (demoEvent) => {
+    if (isInDemoMode && demoEvent) {
+      // In demo mode, add/update event locally
+      if (editingEvent) {
+        setCalendarItems(prev => prev.map(e => e.id === demoEvent.id ? demoEvent : e))
+      } else {
+        setCalendarItems(prev => [...prev, demoEvent])
+      }
+    } else {
+      refreshEvents()
+    }
+    setEditingEvent(null)
+  }
+
+  // Delete handler
+  const handleDeleteEvent = async () => {
+    if (!eventToDelete) return
+
+    if (isInDemoMode) {
+      setCalendarItems(prev => prev.filter(e => e.id !== eventToDelete.id))
+      setShowDeleteConfirm(false)
+      setEventToDelete(null)
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      await deleteEvent(eventToDelete.id)
+      await refreshEvents()
+      setShowDeleteConfirm(false)
+      setEventToDelete(null)
+    } catch (err) {
+      console.error('[CalendarView] Error deleting event:', err)
+      alert('Failed to delete event. Please try again.')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  // Check if user can edit/delete an event
+  const canManageEvent = (event) => {
+    if (!userProfile) return false
+    if (userProfile.id === event.created_by) return true
+    if (userProfile.role === 'manager' || userProfile.role === 'building_manager') return true
+    return false
+  }
+
+  // Get creator display label
+  const getCreatorLabel = (event) => {
+    if (!event.created_by) return null
+    const creator = creatorMap[event.created_by]
+    if (!creator) return null
+    if (creator.role === 'manager' || creator.role === 'building_manager') return 'Building Event'
+    return `Hosted by ${creator.full_name}`
+  }
 
   // Handler to open event detail
   const handleEventClick = (event) => {
@@ -244,6 +391,69 @@ function CalendarView({ onNavigate }) {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))
   }
 
+  // Render a single event card (used in both list and calendar views)
+  const renderEventCard = (item, { isPast = false } = {}) => {
+    const IconComponent = item.icon
+    const isMaintenance = item.category === 'maintenance'
+    const showMenu = canManageEvent(item)
+    const creatorLabel = getCreatorLabel(item)
+
+    return (
+      <article
+        key={item.id}
+        className={`calendar-card ${isMaintenance ? 'maintenance-card' : ''} ${item.actionRequired ? 'action-required' : ''}`}
+        style={isPast ? { opacity: 0.6 } : undefined}
+        onClick={() => handleEventClick(item)}
+      >
+        <div className={`calendar-icon ${isMaintenance ? 'maintenance-icon' : ''}`} style={{ background: `${item.color}${isMaintenance ? '30' : '15'}` }}>
+          <IconComponent size={20} style={{ color: item.color }} />
+        </div>
+        <div className="calendar-details">
+          <h3 className="calendar-title">{item.title}</h3>
+          <span className="calendar-meta">{formatDate(item.date)} • {item.time}</span>
+          {creatorLabel && <span className="event-hosted-by">{creatorLabel}</span>}
+          {item.description && !isPast && <p className="calendar-description">{item.description}</p>}
+          {item.actionRequired && <span className="action-required-badge"><AlertCircle size={12} />Action Required</span>}
+        </div>
+        {showMenu && (
+          <div className="event-card-menu" ref={openMenuId === item.id ? menuRef : null}>
+            <button
+              className="event-menu-btn"
+              onClick={(e) => {
+                e.stopPropagation()
+                setOpenMenuId(openMenuId === item.id ? null : item.id)
+              }}
+              aria-label="Event options"
+            >
+              <MoreVertical size={18} />
+            </button>
+            {openMenuId === item.id && (
+              <div className="event-card-menu-dropdown">
+                <button onClick={(e) => {
+                  e.stopPropagation()
+                  setOpenMenuId(null)
+                  setEditingEvent(item)
+                }}>
+                  <Edit3 size={14} />
+                  Edit
+                </button>
+                <button className="delete-option" onClick={(e) => {
+                  e.stopPropagation()
+                  setOpenMenuId(null)
+                  setEventToDelete(item)
+                  setShowDeleteConfirm(true)
+                }}>
+                  <Trash2 size={14} />
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </article>
+    )
+  }
+
   // CSS variable for building background image
   const bgStyle = buildingBackgroundUrl ? { '--building-bg-image': `url(${buildingBackgroundUrl})` } : {}
 
@@ -273,6 +483,12 @@ function CalendarView({ onNavigate }) {
       </div>
 
       <main className="calendar-view-content">
+        {/* Create Event Button */}
+        <button className="create-event-button" onClick={() => setShowCreateModal(true)}>
+          <Plus size={20} />
+          <span>Create Event</span>
+        </button>
+
         {/* View Toggle */}
         <div className="calendar-view-controls">
           <button
@@ -338,23 +554,7 @@ function CalendarView({ onNavigate }) {
                             {group.title}
                           </div>
                         )}
-                        {group.items.map(item => {
-                          const IconComponent = item.icon
-                          const isMaintenance = item.category === 'maintenance'
-                          return (
-                            <article key={item.id} className={`calendar-card ${isMaintenance ? 'maintenance-card' : ''} ${item.actionRequired ? 'action-required' : ''}`} onClick={() => handleEventClick(item)}>
-                              <div className={`calendar-icon ${isMaintenance ? 'maintenance-icon' : ''}`} style={{ background: `${item.color}${isMaintenance ? '30' : '15'}` }}>
-                                <IconComponent size={20} style={{ color: item.color }} />
-                              </div>
-                              <div className="calendar-details">
-                                <h3 className="calendar-title">{item.title}</h3>
-                                <span className="calendar-meta">{formatDate(item.date)} • {item.time}</span>
-                                {item.description && <p className="calendar-description">{item.description}</p>}
-                                {item.actionRequired && <span className="action-required-badge"><AlertCircle size={12} />Action Required</span>}
-                              </div>
-                            </article>
-                          )
-                        })}
+                        {group.items.map(item => renderEventCard(item))}
                       </div>
                     ))}
                   </div>
@@ -364,20 +564,7 @@ function CalendarView({ onNavigate }) {
                       <div className="event-group-header">
                         <h2 className="event-group-title" style={{ opacity: 0.6 }}>Past</h2>
                       </div>
-                      {pastGroups[0].items.map(item => {
-                        const IconComponent = item.icon
-                        return (
-                          <article key={item.id} className="calendar-card" style={{ opacity: 0.6 }} onClick={() => handleEventClick(item)}>
-                            <div className="calendar-icon" style={{ background: `${item.color}15` }}>
-                              <IconComponent size={20} style={{ color: item.color }} />
-                            </div>
-                            <div className="calendar-details">
-                              <h3 className="calendar-title">{item.title}</h3>
-                              <span className="calendar-meta">{formatDate(item.date)} • {item.time}</span>
-                            </div>
-                          </article>
-                        )
-                      })}
+                      {pastGroups[0].items.map(item => renderEventCard(item, { isPast: true }))}
                     </div>
                   )}
                 </>
@@ -386,7 +573,7 @@ function CalendarView({ onNavigate }) {
             {groupedEvents.length === 0 && calendarItems.length === 0 && (
               <div className="no-events-message" style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
                 <p style={{ fontSize: '16px', fontWeight: 500 }}>No events yet</p>
-                <p style={{ fontSize: '14px', marginTop: '4px' }}>Your building manager will post events here</p>
+                <p style={{ fontSize: '14px', marginTop: '4px' }}>Create one to get things started!</p>
               </div>
             )}
             {groupedEvents.length === 0 && calendarItems.length > 0 && (
@@ -503,6 +690,38 @@ function CalendarView({ onNavigate }) {
         )
         )}
       </main>
+
+      {/* Event Modal (create & edit) */}
+      <EventModal
+        isOpen={showCreateModal || !!editingEvent}
+        onClose={() => {
+          setShowCreateModal(false)
+          setEditingEvent(null)
+        }}
+        onSuccess={handleEventSuccess}
+        userProfile={userProfile}
+        isInDemoMode={isInDemoMode}
+        editingEvent={editingEvent}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && eventToDelete && (
+        <div className="delete-confirm-overlay" onClick={() => { setShowDeleteConfirm(false); setEventToDelete(null) }}>
+          <div className="delete-confirm-dialog" onClick={e => e.stopPropagation()}>
+            <h3>Delete Event</h3>
+            <p>Are you sure you want to delete "{eventToDelete.title}"? This can't be undone.</p>
+            <div className="delete-confirm-actions">
+              <button className="delete-confirm-cancel" onClick={() => { setShowDeleteConfirm(false); setEventToDelete(null) }}>
+                Cancel
+              </button>
+              <button className="delete-confirm-btn" onClick={handleDeleteEvent} disabled={isDeleting}>
+                <Trash2 size={16} />
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
