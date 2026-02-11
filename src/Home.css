@@ -202,6 +202,66 @@
 }
 
 /* ============================================
+   GRADIENT-ONLY MODE — Dark text on light gradient
+   Applied when no building photo is uploaded
+   ============================================ */
+.home-gradient-mode .weather-widget {
+  color: #2C2520;
+}
+
+.home-gradient-mode .weather-datetime {
+  color: rgba(44, 37, 32, 0.5);
+}
+
+.home-gradient-mode .weather-icon {
+  color: rgba(44, 37, 32, 0.5);
+  opacity: 1;
+}
+
+.home-gradient-mode .weather-temp {
+  color: rgba(44, 37, 32, 0.6);
+  text-shadow: none;
+}
+
+.home-gradient-mode .weather-condition {
+  color: rgba(44, 37, 32, 0.4);
+}
+
+.home-gradient-mode .hero-the {
+  color: rgba(44, 37, 32, 0.6);
+  text-shadow: none;
+}
+
+.home-gradient-mode .hero-building-name {
+  color: #2C2520;
+  text-shadow: none;
+}
+
+.home-gradient-mode .hamburger-btn {
+  color: #2C2520;
+  background: rgba(44, 37, 32, 0.06);
+  border-color: rgba(44, 37, 32, 0.08);
+}
+
+.home-gradient-mode .hamburger-btn:hover {
+  background: rgba(44, 37, 32, 0.1);
+}
+
+.home-gradient-mode .notification-btn {
+  color: #2C2520;
+  background: rgba(44, 37, 32, 0.06);
+  border-color: rgba(44, 37, 32, 0.08);
+}
+
+.home-gradient-mode .notification-btn:hover {
+  background: rgba(44, 37, 32, 0.1);
+}
+
+.home-gradient-mode .today-section .section-title {
+  color: #8B7E74;
+}
+
+/* ============================================
    MAIN CONTENT - Full width of container
    ============================================ */
 /* Reset any browser defaults on main element within home page */

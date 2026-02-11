@@ -168,12 +168,31 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
       <section className="mystery-hero">
         <div className="mystery-hero-inner">
           <div className="mystery-hero-logo mystery-fade mystery-fade-1">
-            <span className="mystery-hero-logo-icon">🏠</span>
+            <svg className="mystery-hero-logo-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" width="44" height="44">
+              <rect x="10" y="12" width="16" height="24" rx="1.5" fill="#8B7E74" opacity="0.7"/>
+              <rect x="22" y="6" width="12" height="30" rx="1.5" fill="#6B5E52" opacity="0.8"/>
+              <rect x="13" y="16" width="3" height="3" rx="0.5" fill="#F5F0EB" opacity="0.9"/>
+              <rect x="19" y="16" width="3" height="3" rx="0.5" fill="#F5F0EB" opacity="0.9"/>
+              <rect x="13" y="22" width="3" height="3" rx="0.5" fill="#F5F0EB" opacity="0.9"/>
+              <rect x="19" y="22" width="3" height="3" rx="0.5" fill="#F5F0EB" opacity="0.9"/>
+              <rect x="13" y="28" width="3" height="3" rx="0.5" fill="#F5F0EB" opacity="0.7"/>
+              <rect x="19" y="28" width="3" height="3" rx="0.5" fill="#F5F0EB" opacity="0.7"/>
+              <rect x="25" y="10" width="3" height="3" rx="0.5" fill="#F5F0EB" opacity="0.9"/>
+              <rect x="25" y="16" width="3" height="3" rx="0.5" fill="#F5F0EB" opacity="0.9"/>
+              <rect x="25" y="22" width="3" height="3" rx="0.5" fill="#F5F0EB" opacity="0.9"/>
+              <rect x="25" y="28" width="3" height="3" rx="0.5" fill="#F5F0EB" opacity="0.7"/>
+              <rect x="31" y="10" width="1.5" height="3" rx="0.5" fill="#F5F0EB" opacity="0.6"/>
+              <rect x="31" y="16" width="1.5" height="3" rx="0.5" fill="#F5F0EB" opacity="0.6"/>
+              <rect x="31" y="22" width="1.5" height="3" rx="0.5" fill="#F5F0EB" opacity="0.6"/>
+              <rect x="13" y="16" width="3" height="3" rx="0.5" fill="#C8A84E" opacity="0.5"/>
+              <rect x="25" y="16" width="3" height="3" rx="0.5" fill="#C8A84E" opacity="0.4"/>
+              <line x1="6" y1="36" x2="38" y2="36" stroke="#8B7E74" strokeWidth="0.5" opacity="0.3"/>
+            </svg>
             <span className="mystery-hero-logo-text">COMMUNITY</span>
           </div>
           <h1 className="mystery-hero-tagline mystery-fade mystery-fade-2">
             Fall in love with<br />
-            <span className="mystery-hero-accent">your community.</span>
+            <span className="mystery-hero-accent">where you live.</span>
           </h1>
           <button
             className="mystery-hero-btn mystery-fade mystery-fade-3"

@@ -489,7 +489,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
 
   return (
     <div
-      className="home-page"
+      className={`home-page${!buildingBackgroundUrl ? ' home-gradient-mode' : ''}`}
       style={buildingBackgroundUrl ? { '--hero-image': `url(${buildingBackgroundUrl})` } : {}}
     >
       {/* Loading splash for initial data load */}
