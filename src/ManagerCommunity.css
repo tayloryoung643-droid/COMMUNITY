@@ -343,7 +343,9 @@
   top: 100%;
   right: 0;
   min-width: 180px;
-  background: #FFFFFF;
+  background: var(--md-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(139, 115, 85, 0.08);
   border-radius: var(--radius-lg);
   padding: var(--spacing-xs);
@@ -591,7 +593,9 @@
 
 .announcement-modal,
 .post-modal {
-  background: #FFFFFF;
+  background: var(--md-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(139, 115, 85, 0.08);
   border-radius: var(--radius-xl);
   width: 100%;

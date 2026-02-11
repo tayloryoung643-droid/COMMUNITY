@@ -1,18 +1,6 @@
 /* Manager Calendar */
 .manager-calendar {
   padding: var(--spacing-lg);
-
-  /* CSS Variables for text colors */
-  --md-text-primary: #1A1A1A;
-  --md-text-secondary: #4A4A4A;
-  --md-text-muted: #8A8075;
-  --md-card-bg: #FFFFFF;
-  --md-card-border: rgba(139, 115, 85, 0.08);
-  --md-card-border-hover: rgba(139, 115, 85, 0.15);
-  --md-accent: #5B9A9A;
-  --md-accent-soft: #82AAAA;
-  --md-green: #34D399;
-  --md-red: #ef4444;
 }
 
 /* Header */
@@ -205,7 +193,7 @@
 /* Event Card */
 .event-card {
   position: relative;
-  background: #FFFCF7;
+  background: var(--md-card-bg);
   border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: var(--radius-xl);
   padding: var(--spacing-lg);
@@ -215,7 +203,7 @@
 }
 
 .event-card:hover {
-  background: #FFFDF9;
+  background: var(--md-card-bg);
   border-color: rgba(0, 0, 0, 0.1);
   box-shadow: 0 4px 12px rgba(120, 100, 70, 0.1);
 }
@@ -300,7 +288,9 @@
   top: 100%;
   right: 0;
   min-width: 180px;
-  background: #FFFFFF;
+  background: var(--md-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--md-card-border);
   border-radius: var(--radius-lg);
   padding: var(--spacing-xs);
@@ -399,7 +389,7 @@
 .event-title {
   font-size: var(--font-size-lg);
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--md-text-primary);
   margin: 0;
 }
 
@@ -549,12 +539,12 @@
 .day-cell {
   min-height: 100px;
   padding: var(--spacing-sm);
-  background: #FFFFFF;
+  background: var(--md-card-bg);
   transition: all var(--transition-base);
 }
 
 .day-cell.empty {
-  background: #FAF8F5;
+  background: var(--md-bg-base);
 }
 
 .day-cell.has-events {
@@ -625,7 +615,9 @@
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
-  background: #FFFFFF;
+  background: var(--md-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--md-card-border);
   border-radius: var(--radius-xl);
   display: flex;
@@ -867,7 +859,7 @@
   align-items: center;
   gap: var(--spacing-md);
   padding: var(--spacing-sm) var(--spacing-md);
-  background: #FAF8F5;
+  background: var(--md-bg-base);
   border-radius: var(--radius-md);
 }
 

@@ -430,7 +430,9 @@
   top: 100%;
   right: 0;
   min-width: 200px;
-  background: #FFFFFF;
+  background: var(--md-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(139, 115, 85, 0.15);
   border-radius: var(--radius-lg);
   padding: var(--spacing-xs);
@@ -513,7 +515,7 @@
   padding: var(--spacing-sm) var(--spacing-md);
   font-size: var(--font-size-sm);
   color: var(--md-text-secondary);
-  background: #FAF8F5;
+  background: var(--md-bg-base);
   border: 1px solid rgba(139, 115, 85, 0.08);
   border-radius: var(--radius-md);
   margin-bottom: var(--spacing-sm);
@@ -624,7 +626,7 @@
 }
 
 .calendar-day {
-  background: #FAF8F5;
+  background: var(--md-bg-base);
   border: 1px solid rgba(139, 115, 85, 0.08);
   border-radius: var(--radius-lg);
   padding: var(--spacing-sm);
@@ -737,7 +739,9 @@
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
-  background: #FFFFFF;
+  background: var(--md-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(139, 115, 85, 0.15);
   border-radius: var(--radius-xl);
   box-shadow: 0 8px 32px rgba(120, 100, 70, 0.12);
@@ -815,7 +819,7 @@
   font-size: var(--font-size-sm);
   font-family: inherit;
   color: var(--md-text-primary);
-  background: #FAF8F5;
+  background: #FFFFFF;
   border: 1px solid rgba(139, 115, 85, 0.15);
   border-radius: var(--radius-md);
   transition: all var(--transition-base);

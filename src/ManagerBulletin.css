@@ -358,7 +358,7 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  background: #FFFFFF;
+  background: var(--md-card-bg);
   border: 1px solid rgba(139, 115, 85, 0.15);
   border-radius: var(--radius-md);
   color: var(--md-text-secondary);
@@ -368,7 +368,7 @@
 }
 
 .listing-menu-btn:hover {
-  background: #FFFFFF;
+  background: var(--md-card-bg);
   border-color: rgba(139, 115, 85, 0.25);
   box-shadow: 0 2px 8px rgba(120, 100, 70, 0.12);
 }
@@ -379,7 +379,9 @@
   right: 0;
   min-width: 180px;
   margin-top: var(--spacing-xs);
-  background: #FFFFFF;
+  background: var(--md-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(139, 115, 85, 0.12);
   border-radius: var(--radius-lg);
   padding: var(--spacing-xs);
@@ -550,7 +552,9 @@
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
-  background: #FFFFFF;
+  background: var(--md-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(139, 115, 85, 0.12);
   border-radius: var(--radius-xl);
   display: flex;

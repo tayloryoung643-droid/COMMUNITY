@@ -304,9 +304,9 @@ p {
   background: #F5F0E8; /* Noticeably warmer cream - visible warmth */
 }
 
-/* Building image - compact hero for tighter spacing */
+/* Hero background - compact hero for tighter spacing */
 /* Uses CSS variable --building-bg-image set by each page component */
-/* Falls back to default if variable is not set */
+/* Falls back to warm gradient when no building photo is uploaded */
 .resident-inner-page::before {
   content: "";
   position: absolute;
@@ -316,7 +316,7 @@ p {
   height: 28vh;
   min-height: 200px;
   max-height: 280px;
-  background-image: var(--building-bg-image, url('https://jsjocdxqxfcashrhjbgn.supabase.co/storage/v1/object/public/building-images/5e3b6dae-b373-414e-9707-b6e182525ea6/background.jpg'));
+  background: var(--building-bg-image, linear-gradient(170deg, #C8B89A 0%, #D8CBB2 15%, #E8DFD0 35%, #F2ECE3 55%, #F5F0EB 75%, #F5F0EB 100%));
   background-size: cover;
   background-position: center;
   z-index: 0;

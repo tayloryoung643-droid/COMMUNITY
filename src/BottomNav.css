@@ -10,7 +10,9 @@
   align-items: center;
   justify-content: space-evenly;
   height: 72px;
-  background: #FFFCF7;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   padding: 0;
   padding-bottom: env(safe-area-inset-bottom, 0);

@@ -411,7 +411,9 @@
   top: 100%;
   right: 0;
   margin-top: 4px;
-  background: #FFFFFF;
+  background: var(--md-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--md-card-border);
   border-radius: 8px;
   min-width: 180px;
@@ -596,7 +598,9 @@
 }
 
 .modal-content {
-  background: #FFFFFF;
+  background: var(--md-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--md-card-border);
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(120, 100, 70, 0.12);

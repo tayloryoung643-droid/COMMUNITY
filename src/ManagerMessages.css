@@ -2,7 +2,7 @@
 .manager-messages {
   display: flex;
   height: calc(100vh - 140px);
-  background: #FFFFFF;
+  background: var(--md-card-bg);
   border-radius: var(--radius-xl);
   overflow: hidden;
   border: 1px solid var(--md-card-border);
@@ -665,7 +665,9 @@
 
 /* New Message Modal */
 .new-message-modal {
-  background: #FFFFFF;
+  background: var(--md-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(139, 115, 85, 0.08);
   border-radius: var(--radius-xl);
   box-shadow: 0 8px 32px rgba(120, 100, 70, 0.12);
@@ -720,7 +722,7 @@
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-md);
-  background: #FFFFFF;
+  background: var(--md-card-bg);
   border: 1px solid var(--md-border-hover);
   border-radius: var(--radius-md);
   margin-bottom: var(--spacing-lg);

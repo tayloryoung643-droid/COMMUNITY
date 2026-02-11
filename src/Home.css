@@ -86,6 +86,7 @@
   width: 100%;
   overflow: hidden;
   box-sizing: border-box;
+  background: linear-gradient(170deg, #C8B89A 0%, #D8CBB2 15%, #E8DFD0 35%, #F2ECE3 55%, #F5F0EB 75%, #F5F0EB 100%);
 }
 
 .hero-image {

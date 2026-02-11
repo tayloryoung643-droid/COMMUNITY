@@ -344,13 +344,6 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
     }
   }
 
-  // Default hero image URL
-  const defaultHeroImageUrl = "https://jsjocdxqxfcashrhjbgn.supabase.co/storage/v1/object/public/building-images/5e3b6dae-b373-414e-9707-b6e182525ea6/background.jpg"
-
-  // Hero image URL - use building's custom background if available, otherwise default
-  // Used in BOTH the hero card AND the ambient background
-  const heroImageUrl = buildingBackgroundUrl || defaultHeroImageUrl
-
   // Building name - use real building name for authenticated users
   const buildingName = isDemoMode
     ? 'Paramount'
@@ -497,7 +490,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
   return (
     <div
       className="home-page"
-      style={{ '--hero-image': `url(${heroImageUrl})` }}
+      style={buildingBackgroundUrl ? { '--hero-image': `url(${buildingBackgroundUrl})` } : {}}
     >
       {/* Loading splash for initial data load */}
       {!initialLoadDone && (
@@ -512,12 +505,14 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
         {/* Hero Section with Building Image */}
         <section className="hero-section">
           <div className="hero-image-container">
-            {/* THE SAME building image - sharp in the hero card */}
-            <img
-              src={heroImageUrl}
-              alt="The Paramount Building"
-              className="hero-image"
-            />
+            {/* Building image - only rendered when a custom photo exists */}
+            {buildingBackgroundUrl && (
+              <img
+                src={buildingBackgroundUrl}
+                alt="Building"
+                className="hero-image"
+              />
+            )}
             <div className="hero-warm-overlay"></div>
             <div className="hero-gradient-overlay"></div>
 

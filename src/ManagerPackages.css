@@ -245,7 +245,9 @@
   right: 0;
   min-width: 160px;
   margin-top: var(--spacing-xs);
-  background: #FFFFFF;
+  background: var(--md-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(139, 115, 85, 0.12);
   border-radius: var(--radius-lg);
   padding: var(--spacing-xs);
@@ -513,7 +515,9 @@
   top: 100%;
   right: 0;
   min-width: 180px;
-  background: #FFFFFF;
+  background: var(--md-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(139, 115, 85, 0.12);
   border-radius: var(--radius-lg);
   padding: var(--spacing-xs);
@@ -690,7 +694,9 @@
   width: 100%;
   max-width: 480px;
   max-height: 90vh;
-  background: #FFFFFF;
+  background: var(--md-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(139, 115, 85, 0.12);
   border-radius: var(--radius-xl);
   box-shadow: 0 8px 32px rgba(120, 100, 70, 0.12);

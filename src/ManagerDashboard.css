@@ -3,23 +3,23 @@
    Matching Resident UI aesthetic exactly
    ============================================ */
 
-/* Theme Variables - Warm Light Theme (matching Resident side) */
+/* Theme Variables - Unified Warm Theme */
 .manager-dashboard {
-  /* Background - Warm cream (matches Resident) */
-  --md-bg-base: #FAF8F5;
-  --md-bg-gradient: #FAF8F5;
+  /* Background - Warm cream gradient */
+  --md-bg-base: #F5F0EB;
+  --md-bg-gradient: linear-gradient(170deg, #C8B89A 0%, #D8CBB2 15%, #E8DFD0 35%, #F2ECE3 55%, #F5F0EB 75%, #F5F0EB 100%);
 
-  /* Sidebar - Solid white */
-  --md-sidebar-bg: #FFFFFF;
-  --md-sidebar-blur: 0px;
+  /* Sidebar - Translucent white glass */
+  --md-sidebar-bg: rgba(255, 255, 255, 0.85);
+  --md-sidebar-blur: 20px;
 
-  /* Cards - Solid white with warm shadows */
-  --md-card-bg: #FFFFFF;
-  --md-card-blur: 0px;
-  --md-card-border: rgba(139, 115, 85, 0.08);
-  --md-card-border-hover: rgba(139, 115, 85, 0.15);
-  --md-card-shadow: 0 2px 8px rgba(120, 100, 70, 0.06), 0 4px 16px rgba(120, 100, 70, 0.03);
-  --md-card-shadow-hover: 0 4px 12px rgba(120, 100, 70, 0.08), 0 8px 24px rgba(120, 100, 70, 0.05);
+  /* Cards - Glass effect with blur */
+  --md-card-bg: rgba(255, 255, 255, 0.7);
+  --md-card-blur: 20px;
+  --md-card-border: rgba(255, 255, 255, 0.5);
+  --md-card-border-hover: rgba(255, 255, 255, 0.7);
+  --md-card-shadow: 0 2px 12px rgba(44, 37, 32, 0.05);
+  --md-card-shadow-hover: 0 4px 16px rgba(44, 37, 32, 0.08);
 
   /* Primary accent - Teal (matches Resident UI) */
   --md-accent: #5B9A9A;
@@ -36,16 +36,16 @@
   --md-purple: #8B5CF6;
   --md-purple-subtle: rgba(139, 92, 246, 0.10);
 
-  /* Text - Dark text for light background */
-  --md-text-primary: #1A1A1A;
-  --md-text-secondary: #4A4A4A;
-  --md-text-muted: #8A8075;
-  --md-text-heading: #1A1A1A;
+  /* Text - Dark charcoal for warm background */
+  --md-text-primary: #2C2520;
+  --md-text-secondary: #6B5E52;
+  --md-text-muted: #8B7E74;
+  --md-text-heading: #2C2520;
 
   /* Borders - Subtle warm */
-  --md-border: rgba(139, 115, 85, 0.08);
-  --md-border-subtle: rgba(139, 115, 85, 0.05);
-  --md-border-hover: rgba(139, 115, 85, 0.15);
+  --md-border: rgba(200, 185, 165, 0.2);
+  --md-border-subtle: rgba(200, 185, 165, 0.1);
+  --md-border-hover: rgba(200, 185, 165, 0.3);
 
   /* Status colors - Softer/muted versions */
   --md-green: #059669;
@@ -54,7 +54,7 @@
   --md-blue: #2563EB;
 }
 
-/* Manager Dashboard Layout - Light Warm Theme */
+/* Manager Dashboard Layout - Unified Warm Theme */
 .manager-dashboard {
   display: flex;
   min-height: 100vh;
@@ -62,6 +62,7 @@
   position: relative;
   overflow: hidden;
 }
+
 
 /* Mobile Header */
 .mobile-header {
@@ -71,7 +72,9 @@
   left: 0;
   right: 0;
   height: 60px;
-  background: #FFFFFF;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--md-border);
   padding: 0 var(--spacing-md);
   align-items: center;
@@ -101,10 +104,12 @@
   z-index: 199;
 }
 
-/* Sidebar - Clean white navigation panel */
+/* Sidebar - Translucent glass navigation panel */
 .sidebar {
   width: 260px;
   background: var(--md-sidebar-bg);
+  backdrop-filter: blur(var(--md-sidebar-blur));
+  -webkit-backdrop-filter: blur(var(--md-sidebar-blur));
   border-right: 1px solid var(--md-border);
   display: flex;
   flex-direction: column;
@@ -388,7 +393,7 @@
 }
 
 .notification-btn:hover {
-  background: #FFFFFF;
+  background: var(--md-card-bg);
   border-color: var(--md-border-hover);
   color: var(--md-text-primary);
 }
@@ -428,13 +433,15 @@
   gap: var(--spacing-md);
 }
 
-/* Stat Cards - Solid white with warm shadows */
+/* Stat Cards - Glass effect */
 .stat-card {
   display: flex;
   align-items: flex-start;
   gap: var(--spacing-md);
   padding: var(--spacing-lg);
   background: var(--md-card-bg);
+  backdrop-filter: blur(var(--md-card-blur));
+  -webkit-backdrop-filter: blur(var(--md-card-blur));
   border: 1px solid var(--md-card-border);
   border-radius: var(--radius-xl);
   box-shadow: var(--md-card-shadow);
@@ -458,22 +465,22 @@
 }
 
 .stat-blue .stat-icon {
-  background: rgba(37, 99, 235, 0.08);
+  background: rgba(200, 170, 120, 0.12);
   color: #2563EB;
 }
 
 .stat-yellow .stat-icon {
-  background: rgba(217, 119, 6, 0.08);
+  background: rgba(200, 170, 120, 0.12);
   color: #D97706;
 }
 
 .stat-purple .stat-icon {
-  background: rgba(139, 92, 246, 0.08);
+  background: rgba(200, 170, 120, 0.12);
   color: #7C3AED;
 }
 
 .stat-cyan .stat-icon {
-  background: rgba(91, 154, 154, 0.08);
+  background: rgba(200, 170, 120, 0.12);
   color: var(--md-accent-soft);
 }
 
@@ -511,9 +518,11 @@
   gap: var(--spacing-lg);
 }
 
-/* Dashboard Cards - Solid white with warm shadows */
+/* Dashboard Cards - Glass effect */
 .dashboard-card {
   background: var(--md-card-bg);
+  backdrop-filter: blur(var(--md-card-blur));
+  -webkit-backdrop-filter: blur(var(--md-card-blur));
   border: 1px solid var(--md-card-border);
   border-radius: var(--radius-xl);
   padding: var(--spacing-lg);
@@ -651,16 +660,16 @@
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-lg);
-  background: #FFFFFF;
-  border: 1px solid var(--md-border);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(200, 185, 165, 0.2);
   border-radius: var(--radius-lg);
-  color: var(--md-text-secondary);
+  color: #6B5E52;
   cursor: pointer;
   transition: all var(--transition-base);
 }
 
 .quick-action-btn:hover {
-  background: #FFFFFF;
+  background: var(--md-card-bg);
   border-color: var(--md-border-hover);
   color: var(--md-text-primary);
   transform: translateY(-2px);
@@ -698,15 +707,15 @@
   align-items: center;
   gap: var(--spacing-md);
   padding: var(--spacing-md);
-  background: #FFFFFF;
+  background: var(--md-card-bg);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--md-border);
+  border: 1px solid var(--md-card-border);
   cursor: pointer;
   transition: all var(--transition-base);
 }
 
 .event-item:hover {
-  background: #FFFFFF;
+  background: rgba(255, 255, 255, 0.85);
   border-color: var(--md-border-hover);
   box-shadow: var(--md-card-shadow);
 }
@@ -894,7 +903,9 @@
   right: 0;
   width: 400px;
   max-height: 500px;
-  background: #FFFFFF;
+  background: var(--md-card-bg);
+  backdrop-filter: blur(var(--md-card-blur));
+  -webkit-backdrop-filter: blur(var(--md-card-blur));
   border: 1px solid var(--md-border);
   border-radius: var(--radius-xl);
   box-shadow: 0 8px 32px rgba(120, 100, 70, 0.12), 0 2px 8px rgba(120, 100, 70, 0.06);
@@ -1051,7 +1062,9 @@
 }
 
 .modal-content {
-  background: #FFFFFF;
+  background: var(--md-card-bg);
+  backdrop-filter: blur(var(--md-card-blur));
+  -webkit-backdrop-filter: blur(var(--md-card-blur));
   border: 1px solid var(--md-border);
   border-radius: var(--radius-xl);
   width: 100%;
@@ -1290,10 +1303,10 @@
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-lg);
-  background: #FFFFFF;
-  border: 1px solid var(--md-border);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(200, 185, 165, 0.2);
   border-radius: var(--radius-md);
-  color: var(--md-text-secondary);
+  color: #6B5E52;
   font-size: var(--font-size-sm);
   font-weight: 500;
   cursor: pointer;
@@ -1301,7 +1314,7 @@
 }
 
 .btn-secondary:hover {
-  background: #FAF8F5;
+  background: var(--md-card-bg);
   border-color: var(--md-border-hover);
   color: var(--md-text-primary);
 }
@@ -1316,7 +1329,9 @@
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-md) var(--spacing-lg);
-  background: #FFFFFF;
+  background: var(--md-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--md-green);
   border-radius: var(--radius-lg);
   color: var(--md-green);
@@ -1354,7 +1369,9 @@
   justify-content: center;
   width: 80px;
   height: 80px;
-  background: #FFFFFF;
+  background: var(--md-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--md-border);
   border-radius: var(--radius-xl);
   color: var(--md-text-muted);
@@ -1546,7 +1563,7 @@
   min-height: 500px;
   text-align: center;
   padding: var(--spacing-2xl);
-  background: #FFFFFF;
+  background: var(--md-card-bg);
   border-radius: 24px;
   border: 1px solid var(--md-border);
   box-shadow: var(--md-card-shadow);
@@ -1653,7 +1670,7 @@
 
 /* Narrative Card - Solid white with warm shadows */
 .narrative-card {
-  background: #FFFFFF;
+  background: var(--md-card-bg);
   border: 1px solid var(--md-border);
   border-radius: 20px;
   padding: var(--spacing-lg);
@@ -1891,7 +1908,7 @@
   align-items: center;
   gap: var(--spacing-xs);
   padding: var(--spacing-md);
-  background: #FAF8F5;
+  background: var(--md-bg-base);
   border: 1px solid var(--md-border);
   border-radius: 14px;
   cursor: pointer;
@@ -1899,7 +1916,7 @@
 }
 
 .quick-action-v2:hover {
-  background: #FFFFFF;
+  background: var(--md-card-bg);
   border-color: var(--md-border-hover);
   transform: translateY(-2px);
   box-shadow: var(--md-card-shadow);
