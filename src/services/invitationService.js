@@ -251,7 +251,7 @@ export async function sendInviteEmail(email, fullName, buildingName) {
     const response = await fetch('/api/send-invite', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, fullName, token, buildingName })
+      body: JSON.stringify({ email, fullName, token, buildingName, invite_type: 'manager' })
     })
 
     const result = await response.json()

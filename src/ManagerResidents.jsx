@@ -284,13 +284,21 @@ function ManagerResidents() {
     setAddFormLoading(true)
     try {
       const fullName = `${addForm.firstName} ${addForm.lastName}`.trim()
-      await addSingleResident(buildingId, user?.id, {
+      const emailTrimmed = addForm.email?.trim() || null
+      const saved = await addSingleResident(buildingId, user?.id, {
         name: fullName,
-        email: addForm.email?.trim() || null,
+        email: emailTrimmed,
         unit: addForm.unit || null,
         phone: addForm.phone || null,
         moveInDate: addForm.moveInDate || null
       })
+
+      // Auto-send invite email if resident has an email address
+      if (emailTrimmed && saved?.id) {
+        const buildingName = userProfile?.buildings?.name || userProfile?.buildings?.address || 'Your Building'
+        await sendSingleInvite(saved.id, emailTrimmed, fullName, buildingName)
+      }
+
       resetAddForm()
       setShowAddModal(false)
       fetchAllResidents()
