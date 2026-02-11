@@ -47,7 +47,7 @@
   pointer-events: none;
 }
 
-/* Gradient overlay - fades to warm cream background matching BM page */
+/* Gradient overlay - fades to warm cream background matching BM page (#F5F0EB) */
 .bm-hero-gradient-overlay {
   position: absolute;
   inset: 0;
@@ -56,11 +56,11 @@
     180deg,
     transparent 0%,
     transparent 35%,
-    rgba(250, 248, 245, 0.3) 48%,
-    rgba(250, 248, 245, 0.6) 60%,
-    rgba(250, 248, 245, 0.88) 75%,
-    rgba(250, 248, 245, 0.98) 88%,
-    #FAF8F5 100%
+    rgba(245, 240, 235, 0.3) 48%,
+    rgba(245, 240, 235, 0.6) 60%,
+    rgba(245, 240, 235, 0.88) 75%,
+    rgba(245, 240, 235, 0.98) 88%,
+    #F5F0EB 100%
   );
 }
 

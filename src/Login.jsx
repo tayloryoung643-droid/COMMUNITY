@@ -574,8 +574,8 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
                 </div>
               )}
 
-              {/* No Results — Create Building CTA */}
-              {!isSearching && hasSearched && addressResults.length === 0 && addressQuery.length >= 3 && (
+              {/* Create Building CTA — always visible once searching */}
+              {!isSearching && hasSearched && addressQuery.length >= 3 && (
                 <button className="landing-create-building-card" onClick={() => onResidentCreateBuilding(addressQuery)}>
                   <div className="landing-create-card-inner">
                     <Building2 size={20} />
