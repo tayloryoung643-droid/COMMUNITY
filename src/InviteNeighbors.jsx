@@ -64,9 +64,9 @@ function InviteNeighbors({ onBack }) {
   const WeatherIcon = getWeatherIcon(weatherData.condition)
 
   const building = userProfile?.buildings
-  const inviteSlug = building?.invite_slug
+  const buildingId = userProfile?.building_id
   const totalUnits = building?.total_units
-  const inviteUrl = inviteSlug ? `${window.location.origin}/join/${inviteSlug}` : null
+  const inviteUrl = buildingId ? `${window.location.origin}/join/${buildingId}` : null
 
   // Load invites + resident count
   useEffect(() => {
@@ -141,8 +141,7 @@ function InviteNeighbors({ onBack }) {
         inviteeName: form.name || `Unit ${form.unit}`,
         inviteeEmail: form.email,
         unitNumber: form.unit,
-        buildingName: building?.name,
-        inviteSlug,
+        buildingName: building?.name || building?.address || 'your building',
       })
       // Refresh invites
       const updated = await getInvitesForBuilding(userProfile.building_id)

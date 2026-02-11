@@ -8,14 +8,15 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { email, fullName, token, buildingName } = req.body;
+  const { email, fullName, token, buildingName, joinUrl: customJoinUrl } = req.body;
 
   // Validate required fields
-  if (!email || !token || !buildingName) {
-    return res.status(400).json({ error: 'Missing required fields: email, token, buildingName' });
+  if (!email || !buildingName) {
+    return res.status(400).json({ error: 'Missing required fields: email, buildingName' });
   }
 
-  const joinUrl = `https://www.communityhq.space/join?token=${token}`;
+  // Support both token-based (manager) and URL-based (resident) invites
+  const joinUrl = customJoinUrl || (token ? `https://www.communityhq.space/join?token=${token}` : 'https://www.communityhq.space');
   const displayName = fullName || 'Neighbor';
 
   // Get first name for personalization

@@ -51,7 +51,7 @@ function App() {
   const [selectedBuilding, setSelectedBuilding] = useState(null)
   const [searchedAddress, setSearchedAddress] = useState('')
 
-  // Check for /join URL path with token on initial load
+  // Check for /join URL path on initial load
   useEffect(() => {
     const path = window.location.pathname
     const params = new URLSearchParams(window.location.search)
@@ -70,11 +70,34 @@ function App() {
     const isJoinPath = path === '/join' || path === '/join/' || path.startsWith('/join?')
 
     if (isJoinPath && token) {
-      // Ensure token is in the URL for the Join component to read
+      // Token-based invite (from manager)
       if (!params.get('token')) {
         window.history.replaceState({}, '', `/join?token=${token}`)
       }
       setCurrentScreen('join')
+      return
+    }
+
+    // Match /join/[building-id] — shareable invite link from residents
+    const buildingIdMatch = path.match(/^\/join\/([0-9a-f-]{36})$/i)
+    if (buildingIdMatch) {
+      const buildingId = buildingIdMatch[1]
+      // Look up the building and route to join flow
+      supabase
+        .from('buildings')
+        .select('*')
+        .eq('id', buildingId)
+        .single()
+        .then(({ data: buildingData, error }) => {
+          if (!error && buildingData) {
+            setSelectedBuilding(buildingData)
+            setCurrentScreen('resident-join-building')
+          } else {
+            console.warn('[App] Building not found for invite link:', buildingId)
+            window.history.replaceState({}, '', '/')
+            setCurrentScreen('login')
+          }
+        })
     }
   }, [])
 
@@ -821,7 +844,10 @@ function App() {
     return (
       <ResidentJoinBuilding
         building={selectedBuilding}
-        onBack={() => setCurrentScreen('resident-address-search')}
+        onBack={() => {
+          window.history.replaceState({}, '', '/')
+          setCurrentScreen('login')
+        }}
         onSuccess={handleResidentSignupSuccess}
       />
     )
