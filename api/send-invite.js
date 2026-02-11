@@ -18,15 +18,11 @@ export default async function handler(req, res) {
   // Support both token-based (manager) and URL-based (resident) invites
   const joinUrl = customJoinUrl || (token ? `https://www.communityhq.space/join?token=${token}` : 'https://www.communityhq.space');
 
-  // Determine if name is real or just an email address
-  const isEmailLike = !fullName || fullName.includes('@');
-  const greeting = isEmailLike ? 'Hi there' : `Hi ${fullName.split(' ')[0]}`;
-
-  // Adjust copy based on invite source
+  // Adjust context line based on invite source
   const isResident = invite_type === 'resident';
-  const inviteLine = isResident
-    ? `your neighbor at ${buildingName} invited you to join Community — a private space just for residents of ${buildingName}.`
-    : `your building manager has invited you to Community — a private space just for residents of ${buildingName}.`;
+  const contextLine = isResident
+    ? `Your neighbor at ${buildingName} thought you'd love this.`
+    : `Your building manager at ${buildingName} invited you to join.`;
 
   try {
     const { data, error } = await resend.emails.send({
@@ -40,95 +36,74 @@ export default async function handler(req, res) {
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
-        <body style="margin: 0; padding: 0; background-color: #f9f8f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;">
-          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f9f8f6;">
+        <body style="margin: 0; padding: 0; background-color: #F5F0EB; font-family: Arial, Helvetica, sans-serif;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #F5F0EB;">
             <tr>
               <td align="center" style="padding: 40px 20px;">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 520px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 520px;">
 
-                  <!-- Hero Image -->
+                  <!-- Brand -->
                   <tr>
-                    <td style="padding: 0;">
-                      <img src="https://jsjocdxqxfcashrhjbgn.supabase.co/storage/v1/object/public/building-images/5e3b6dae-b373-414e-9707-b6e182525ea6/background.jpg" alt="" width="100%" style="display: block; width: 100%; height: auto; max-height: 200px; object-fit: cover;">
+                    <td align="center" style="padding: 0 30px 40px;">
+                      <p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 3px; color: #8B7E74; text-transform: uppercase;">COMMUNITY</p>
                     </td>
                   </tr>
 
-                  <!-- Content -->
+                  <!-- Tagline -->
                   <tr>
-                    <td style="padding: 40px 36px 32px;">
+                    <td align="center" style="padding: 0 30px 40px;">
+                      <p style="margin: 0 0 4px; font-family: Georgia, 'Times New Roman', Times, serif; font-size: 28px; font-weight: 300; line-height: 1.3; color: #2C2520;">Fall in love with</p>
+                      <p style="margin: 0; font-family: Georgia, 'Times New Roman', Times, serif; font-size: 28px; font-weight: 300; font-style: italic; line-height: 1.3; color: #8B6914;">your community.</p>
+                    </td>
+                  </tr>
 
-                      <!-- Brand -->
-                      <p style="margin: 0 0 24px; font-size: 13px; font-weight: 600; letter-spacing: 0.5px; color: #5B8A8A; text-transform: uppercase;">
-                        Community
-                      </p>
-
-                      <!-- Headline -->
-                      <h1 style="margin: 0 0 24px; font-size: 28px; font-weight: 600; line-height: 1.25; color: #1a1a1a;">
-                        Join your neighbors at ${buildingName}
-                      </h1>
-
-                      <!-- Opening -->
-                      <p style="margin: 0 0 28px; font-size: 16px; line-height: 1.6; color: #4a4a4a;">
-                        ${greeting}, ${inviteLine}
-                      </p>
-
-                      <!-- Value Section -->
-                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 32px;">
-                        <tr>
-                          <td style="padding: 20px 24px; background-color: #f9f8f6; border-radius: 12px;">
-                            <p style="margin: 0 0 16px; font-size: 15px; line-height: 1.7; color: #3a3a3a;">
-                              <span style="color: #5B8A8A;">✓</span>&nbsp;&nbsp;Never miss a package delivery
-                            </p>
-                            <p style="margin: 0 0 16px; font-size: 15px; line-height: 1.7; color: #3a3a3a;">
-                              <span style="color: #5B8A8A;">✓</span>&nbsp;&nbsp;Know what's happening in your building
-                            </p>
-                            <p style="margin: 0 0 16px; font-size: 15px; line-height: 1.7; color: #3a3a3a;">
-                              <span style="color: #5B8A8A;">✓</span>&nbsp;&nbsp;Book amenities without back-and-forth
-                            </p>
-                            <p style="margin: 0 0 16px; font-size: 15px; line-height: 1.7; color: #3a3a3a;">
-                              <span style="color: #5B8A8A;">✓</span>&nbsp;&nbsp;Connect with neighbors when it matters
-                            </p>
-                            <p style="margin: 0; font-size: 15px; line-height: 1.7; color: #3a3a3a;">
-                              <span style="color: #5B8A8A;">✓</span>&nbsp;&nbsp;Get building updates in one place
-                            </p>
-                          </td>
-                        </tr>
-                      </table>
-
-                      <!-- CTA -->
+                  <!-- Divider -->
+                  <tr>
+                    <td align="center" style="padding: 0 80px 32px;">
                       <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                         <tr>
-                          <td align="center">
-                            <a href="${joinUrl}" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #5B8A8A 0%, #4A7878 100%); color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 10px;">
-                              Join Your Building
-                            </a>
-                          </td>
+                          <td style="border-top: 1px solid #E0D5C8; font-size: 0; line-height: 0;">&nbsp;</td>
                         </tr>
                       </table>
-
-                      <!-- Reassurance -->
-                      <p style="margin: 20px 0 0; font-size: 14px; line-height: 1.5; color: #888; text-align: center;">
-                        You'll create your account and confirm your unit. That's it.
-                      </p>
-
                     </td>
                   </tr>
 
-                  <!-- Light Urgency -->
+                  <!-- Context Line -->
                   <tr>
-                    <td style="padding: 0 36px 32px;">
-                      <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #666; text-align: center; font-style: italic;">
-                        The earlier you join, the more useful Community becomes for everyone.
-                      </p>
+                    <td align="center" style="padding: 0 30px 36px;">
+                      <p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 15px; line-height: 1.6; color: #6B5E52;">${contextLine}</p>
+                    </td>
+                  </tr>
+
+                  <!-- CTA Button -->
+                  <tr>
+                    <td align="center" style="padding: 0 30px 16px;">
+                      <table role="presentation" cellspacing="0" cellpadding="0">
+                        <tr>
+                          <td align="center" style="background-color: #2C2520; border-radius: 50px;">
+                            <a href="${joinUrl}" target="_blank" style="display: inline-block; padding: 16px 40px; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 1px; color: #F5F0EB; text-decoration: none; text-transform: uppercase;">Join Your Building &rarr;</a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Plain text URL fallback -->
+                  <tr>
+                    <td align="center" style="padding: 0 30px 40px;">
+                      <p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 11px; line-height: 1.5; color: #B5A99D; word-break: break-all;"><a href="${joinUrl}" style="color: #B5A99D; text-decoration: underline;">${joinUrl}</a></p>
                     </td>
                   </tr>
 
                   <!-- Footer -->
                   <tr>
-                    <td style="padding: 24px 36px; border-top: 1px solid #eee;">
-                      <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #999; text-align: center;">
-                        If you didn't expect this invite, you can safely ignore this email.
-                      </p>
+                    <td align="center" style="padding: 0 30px 8px;">
+                      <p style="margin: 0; font-family: Georgia, 'Times New Roman', Times, serif; font-size: 13px; font-style: italic; color: #B5A99D;">Your building, connected.</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center" style="padding: 0 30px 40px;">
+                      <p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 11px; line-height: 1.5; color: #C8BFAD;">If you didn't expect this invite, you can safely ignore this email.</p>
                     </td>
                   </tr>
 
