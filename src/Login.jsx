@@ -177,14 +177,12 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
           </h1>
           <button
             className="mystery-hero-btn mystery-fade mystery-fade-3"
-            onClick={() => scrollTo('auth-section')}
+            onClick={() => scrollTo('hero-content')}
           >
             Get Started
           </button>
         </div>
-        <div className="mystery-scroll-hint mystery-fade mystery-fade-4" onClick={() => {
-          document.querySelector('.landing-nav')?.scrollIntoView({ behavior: 'smooth' })
-        }}>
+        <div className="mystery-scroll-hint mystery-fade mystery-fade-4" onClick={() => scrollTo('hero-content')}>
           <div className="mystery-scroll-arrow" />
         </div>
       </section>
@@ -215,7 +213,7 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
       </nav>
 
       {/* ===== HERO ===== */}
-      <section className="landing-hero">
+      <section id="hero-content" className="landing-hero">
         <div className="landing-hero-content">
           <div className="landing-hero-left">
             <div className="landing-badge">
