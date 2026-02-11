@@ -164,6 +164,31 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
       <div className="landing-bg" />
       <div className="landing-bg-pattern" />
 
+      {/* ===== MYSTERY HERO — Full-screen first impression ===== */}
+      <section className="mystery-hero">
+        <div className="mystery-hero-inner">
+          <div className="mystery-hero-logo mystery-fade mystery-fade-1">
+            <span className="mystery-hero-logo-icon">🏠</span>
+            <span className="mystery-hero-logo-text">COMMUNITY</span>
+          </div>
+          <h1 className="mystery-hero-tagline mystery-fade mystery-fade-2">
+            Fall in love with<br />
+            <span className="mystery-hero-accent">your community.</span>
+          </h1>
+          <button
+            className="mystery-hero-btn mystery-fade mystery-fade-3"
+            onClick={() => scrollTo('auth-section')}
+          >
+            Get Started
+          </button>
+        </div>
+        <div className="mystery-scroll-hint mystery-fade mystery-fade-4" onClick={() => {
+          document.querySelector('.landing-nav')?.scrollIntoView({ behavior: 'smooth' })
+        }}>
+          <div className="mystery-scroll-arrow" />
+        </div>
+      </section>
+
       {/* ===== NAV BAR ===== */}
       <nav className="landing-nav">
         <div className="landing-nav-inner">
