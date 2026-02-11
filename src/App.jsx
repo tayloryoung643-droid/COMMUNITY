@@ -963,6 +963,8 @@ function App() {
         onRegisterClick={handleRegisterClick}
         onDemoLogin={handleDemoLogin}
         onResidentSignupClick={handleResidentSignupClick}
+        onResidentSelectBuilding={handleResidentSelectBuilding}
+        onResidentCreateBuilding={handleResidentCreateBuilding}
         authError={authError}
       />
     </>

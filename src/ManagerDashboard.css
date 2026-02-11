@@ -7,7 +7,7 @@
 .manager-dashboard {
   /* Background - Warm cream gradient */
   --md-bg-base: #F5F0EB;
-  --md-bg-gradient: linear-gradient(170deg, #C8B89A 0%, #D8CBB2 15%, #E8DFD0 35%, #F2ECE3 55%, #F5F0EB 75%, #F5F0EB 100%);
+  --md-bg-gradient: #F5F0EB;
 
   /* Sidebar - Translucent white glass */
   --md-sidebar-bg: rgba(255, 255, 255, 0.85);

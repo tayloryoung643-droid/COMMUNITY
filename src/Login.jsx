@@ -20,7 +20,7 @@ const managerFeatures = [
   { icon: '📊', title: 'Dashboard & Analytics', desc: 'See who\'s engaged, track packages, and monitor building activity.' },
 ]
 
-function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, onResidentSignupClick, onResidentEmailLogin, authError }) {
+function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, onResidentSignupClick, onResidentSelectBuilding, onResidentCreateBuilding, onResidentEmailLogin, authError }) {
   // Auth state
   const [activeTab, setActiveTab] = useState('resident')
   const [authMode, setAuthMode] = useState('signin')
@@ -122,7 +122,7 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
   }
 
   const handleSelectBuilding = (building) => {
-    onResidentLogin(building.access_code, building)
+    onResidentSelectBuilding(building)
   }
 
   const handleManagerLogin = async () => {
@@ -576,12 +576,12 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
 
               {/* No Results — Create Building CTA */}
               {!isSearching && hasSearched && addressResults.length === 0 && addressQuery.length >= 3 && (
-                <button className="landing-create-building-card" onClick={onResidentSignupClick}>
+                <button className="landing-create-building-card" onClick={() => onResidentCreateBuilding(addressQuery)}>
                   <div className="landing-create-card-inner">
                     <Building2 size={20} />
                     <div>
-                      <span className="landing-create-title">Building not found?</span>
-                      <span className="landing-create-desc">Start your own building community</span>
+                      <span className="landing-create-title">Can't find your building?</span>
+                      <span className="landing-create-desc">Register it →</span>
                     </div>
                     <ArrowRight size={16} />
                   </div>
