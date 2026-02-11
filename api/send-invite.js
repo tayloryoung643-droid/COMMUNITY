@@ -21,7 +21,7 @@ export default async function handler(req, res) {
   // Adjust context line based on invite source
   const isResident = invite_type === 'resident';
   const contextLine = isResident
-    ? `Your neighbor at ${buildingName} thought you'd love this.`
+    ? `Your neighbors at ${buildingName} are waiting for you.`
     : `Your building manager at ${buildingName} invited you to join.`;
 
   try {

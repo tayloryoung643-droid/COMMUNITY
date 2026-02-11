@@ -271,7 +271,7 @@ function InviteNeighbors({ onBack }) {
                   <div className="invite-list-info">
                     <span className="invite-list-name">{invite.invitee_name || 'Invited'}</span>
                     {invite.unit_number && (
-                      <span className="invite-list-unit">Unit {invite.unit_number}</span>
+                      <span className="invite-list-unit">Unit {invite.unit_number.length > 10 ? invite.unit_number.slice(0, 10) + '...' : invite.unit_number}</span>
                     )}
                   </div>
                   <span className={`invite-list-status ${invite.status}`}>
