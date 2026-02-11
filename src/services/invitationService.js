@@ -359,8 +359,12 @@ export async function addSingleResident(buildingId, invitedBy, resident) {
     email: resident.email || null,
     unit: resident.unit || null,
     phone: resident.phone || null,
-    move_in_date: resident.moveInDate || null,
     status: 'not_invited'
+  }
+
+  // Only include move_in_date if provided (column may not exist before migration)
+  if (resident.moveInDate) {
+    row.move_in_date = resident.moveInDate
   }
 
   const { data, error } = await supabase

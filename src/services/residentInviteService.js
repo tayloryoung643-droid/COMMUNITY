@@ -55,6 +55,7 @@ export async function sendResidentInvite({ buildingId, invitedBy, inviteeName, i
         fullName: inviteeName,
         buildingName: buildingName || 'your building',
         joinUrl,
+        invite_type: 'resident',
       }),
     })
   } catch (emailErr) {

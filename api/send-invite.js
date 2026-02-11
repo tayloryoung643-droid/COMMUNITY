@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { email, fullName, token, buildingName, joinUrl: customJoinUrl } = req.body;
+  const { email, fullName, token, buildingName, joinUrl: customJoinUrl, invite_type } = req.body;
 
   // Validate required fields
   if (!email || !buildingName) {
@@ -17,10 +17,16 @@ export default async function handler(req, res) {
 
   // Support both token-based (manager) and URL-based (resident) invites
   const joinUrl = customJoinUrl || (token ? `https://www.communityhq.space/join?token=${token}` : 'https://www.communityhq.space');
-  const displayName = fullName || 'Neighbor';
 
-  // Get first name for personalization
-  const firstName = displayName.split(' ')[0];
+  // Determine if name is real or just an email address
+  const isEmailLike = !fullName || fullName.includes('@');
+  const greeting = isEmailLike ? 'Hi there' : `Hi ${fullName.split(' ')[0]}`;
+
+  // Adjust copy based on invite source
+  const isResident = invite_type === 'resident';
+  const inviteLine = isResident
+    ? `your neighbor at ${buildingName} invited you to join Community — a private space just for residents of ${buildingName}.`
+    : `your building manager has invited you to Community — a private space just for residents of ${buildingName}.`;
 
   try {
     const { data, error } = await resend.emails.send({
@@ -63,7 +69,7 @@ export default async function handler(req, res) {
 
                       <!-- Opening -->
                       <p style="margin: 0 0 28px; font-size: 16px; line-height: 1.6; color: #4a4a4a;">
-                        Hi ${firstName}, your building manager has invited you to Community — a private space just for residents of ${buildingName}.
+                        ${greeting}, ${inviteLine}
                       </p>
 
                       <!-- Value Section -->
