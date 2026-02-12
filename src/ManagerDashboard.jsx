@@ -262,7 +262,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
         subtitle: 'Posts and discussions'
       },
       'calendar': {
-        title: 'Calendar',
+        title: 'Events',
         subtitle: 'Events and maintenance'
       },
       'packages': {
@@ -306,7 +306,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
     { id: 'messages', label: 'Messages', icon: MessageSquare, badge: 2 },
     { id: 'divider1', divider: true },
     { id: 'community', label: 'Community', icon: Users },
-    { id: 'calendar', label: 'Calendar', icon: Calendar },
+    { id: 'calendar', label: 'Events', icon: Calendar },
     { id: 'packages', label: 'Packages', icon: Package },
     { id: 'elevator', label: 'Elevator Booking', icon: ArrowUpDown },
     { id: 'bulletin', label: 'Bulletin Board', icon: ClipboardList },

@@ -6,7 +6,7 @@ import './Login.css'
 
 const features = [
   { icon: '📦', title: 'Package Tracking', desc: 'Get notified the moment your delivery arrives. No more guessing.' },
-  { icon: '📅', title: 'Events & Calendar', desc: 'Building BBQs, maintenance schedules, and community meetups — all in one place.' },
+  { icon: '📅', title: 'Events', desc: 'Building BBQs, maintenance schedules, and community meetups — all in one place.' },
   { icon: '💬', title: 'Community Feed', desc: 'Share recommendations, ask neighbors for help, or post building updates.' },
   { icon: '🏢', title: 'Building Info', desc: 'FAQs, documents, elevator booking, and building rules at your fingertips.' },
   { icon: '👋', title: 'Meet Your Neighbors', desc: 'Put faces to door numbers. Connect with people in your building.' },

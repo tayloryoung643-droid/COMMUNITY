@@ -680,7 +680,7 @@ function ManagerCalendar() {
       {/* Header */}
       <div className="calendar-header">
         <div className="calendar-header-left">
-          <h2>Calendar</h2>
+          <h2>Events</h2>
           <p>Manage building events and schedules</p>
         </div>
         <div className="calendar-header-actions">

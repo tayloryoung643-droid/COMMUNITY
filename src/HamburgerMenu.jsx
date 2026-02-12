@@ -89,7 +89,7 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' 
     const screenMap = {
       'home': 'Home',
       'community': 'Community',
-      'calendar': 'Calendar',
+      'calendar': 'Events',
       'packages': 'Packages',
       'building': 'Building',
       'messages': 'Messages',
@@ -233,7 +233,7 @@ function HamburgerMenu({ onNavigate, unreadMessages = 0, currentScreen = 'home' 
           onClick={() => handleMenuItemClick('Calendar')}
         >
           <Calendar size={22} />
-          <span>Calendar</span>
+          <span>Events</span>
         </button>
         {!isResidentLed && (
           <button

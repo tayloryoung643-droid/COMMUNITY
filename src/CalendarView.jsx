@@ -478,7 +478,7 @@ function CalendarView({ onNavigate }) {
 
         {/* Page Title - centered like "The Paramount" */}
         <div className="inner-page-title-container">
-          <h1 className="inner-page-title">Calendar</h1>
+          <h1 className="inner-page-title">Events</h1>
         </div>
       </div>
 
