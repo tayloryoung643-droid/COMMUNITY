@@ -466,6 +466,41 @@
   text-align: center;
 }
 
+/* Terms Checkbox */
+.terms-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  width: 100%;
+  max-width: 400px;
+}
+
+.terms-checkbox {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: #5B9A9A;
+  cursor: pointer;
+}
+
+.terms-checkbox-text {
+  font-size: 13px;
+  color: #6B5E52;
+  line-height: 1.5;
+}
+
+.terms-checkbox-text a {
+  color: #5B9A9A;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.terms-checkbox-text a:hover {
+  text-decoration: underline;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .onboarding-header {

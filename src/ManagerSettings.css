@@ -100,6 +100,33 @@
   opacity: 1;
 }
 
+/* Legal Links in Sidebar */
+.settings-nav-legal {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--md-border, rgba(200, 185, 165, 0.2));
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-nav-legal-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--md-text-muted, #8B7E74);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.settings-nav-legal-link:hover {
+  color: var(--md-text-secondary, #6B5E52);
+  background: rgba(91, 154, 154, 0.06);
+}
+
 /* Settings Content */
 .settings-content {
   min-width: 0;

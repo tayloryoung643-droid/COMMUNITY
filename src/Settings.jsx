@@ -485,6 +485,26 @@ function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
           </div>
         </section>
 
+        {/* Legal */}
+        <section className="settings-section">
+          <h2 className="section-title">
+            <FileText size={18} />
+            <span>Legal</span>
+          </h2>
+          <div className="settings-card">
+            <a href="/terms" target="_blank" rel="noopener noreferrer" className="settings-legal-link">
+              <FileText size={16} />
+              <span>Terms of Service</span>
+              <ChevronRight size={16} className="logout-arrow" />
+            </a>
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="settings-legal-link">
+              <FileText size={16} />
+              <span>Privacy Policy</span>
+              <ChevronRight size={16} className="logout-arrow" />
+            </a>
+          </div>
+        </section>
+
         {/* Save Button */}
         <section className="settings-section">
           <button

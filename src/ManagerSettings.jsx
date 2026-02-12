@@ -25,7 +25,8 @@ import {
   Users,
   Check,
   ChevronDown,
-  ArrowRight
+  ArrowRight,
+  FileText
 } from 'lucide-react'
 import { uploadBuildingBackgroundImage, removeBuildingBackgroundImage, getBuildingById, updateBuilding } from './services/buildingService'
 import { updateUserProfile, uploadProfilePhoto, updateBuildingInfo, changePassword, getResidentCount } from './services/settingsService'
@@ -1012,6 +1013,16 @@ function ManagerSettings({ onNavigate }) {
               <ChevronRight size={16} className="nav-arrow" />
             </button>
           ))}
+          <div className="settings-nav-legal">
+            <a href="/terms" target="_blank" rel="noopener noreferrer" className="settings-nav-legal-link">
+              <FileText size={14} />
+              <span>Terms of Service</span>
+            </a>
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="settings-nav-legal-link">
+              <FileText size={14} />
+              <span>Privacy Policy</span>
+            </a>
+          </div>
         </nav>
 
         {/* Content Area */}

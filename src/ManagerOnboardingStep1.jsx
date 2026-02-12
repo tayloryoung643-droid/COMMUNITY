@@ -40,6 +40,7 @@ function ManagerOnboardingStep1({ onBack, onContinue, initialData }) {
   // Validation
   const [touched, setTouched] = useState({})
   const [submitAttempted, setSubmitAttempted] = useState(false)
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
 
   // Building code validation
   const validateBuildingCode = (code) => {
@@ -79,7 +80,8 @@ function ManagerOnboardingStep1({ onBack, onContinue, initialData }) {
       validateEmail(managerEmail) &&
       validatePhone(managerPhone) &&
       validatePassword(password) &&
-      password === confirmPassword
+      password === confirmPassword &&
+      agreedToTerms
     )
   }
 
@@ -449,8 +451,20 @@ function ManagerOnboardingStep1({ onBack, onContinue, initialData }) {
           </div>
         </section>
 
-        {/* Continue Button */}
+        {/* Terms Agreement */}
         <div className="form-actions">
+          <label className="terms-checkbox-label">
+            <input
+              type="checkbox"
+              checked={agreedToTerms}
+              onChange={(e) => setAgreedToTerms(e.target.checked)}
+              className="terms-checkbox"
+            />
+            <span className="terms-checkbox-text">
+              I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+            </span>
+          </label>
+
           <button
             className={`continue-btn ${isFormValid() ? '' : 'disabled'}`}
             onClick={handleContinue}
@@ -458,7 +472,10 @@ function ManagerOnboardingStep1({ onBack, onContinue, initialData }) {
             Continue to Step 2
             <ArrowRight size={20} />
           </button>
-          {submitAttempted && !isFormValid() && (
+          {submitAttempted && !isFormValid() && !agreedToTerms && (
+            <p className="form-error-hint">Please agree to the Terms of Service and Privacy Policy to continue</p>
+          )}
+          {submitAttempted && !isFormValid() && agreedToTerms && (
             <p className="form-error-hint">Please fill in all required fields correctly</p>
           )}
         </div>

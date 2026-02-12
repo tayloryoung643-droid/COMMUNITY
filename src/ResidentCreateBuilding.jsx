@@ -28,6 +28,7 @@ function ResidentCreateBuilding({ initialAddress, onBack, onSuccess }) {
   })
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -53,6 +54,10 @@ function ResidentCreateBuilding({ initialAddress, onBack, onSuccess }) {
     }
     if (!formData.password || formData.password.length < 8) {
       setError('Password must be at least 8 characters')
+      return false
+    }
+    if (!agreedToTerms) {
+      setError('Please agree to the Terms of Service and Privacy Policy to continue')
       return false
     }
     return true
@@ -351,6 +356,18 @@ function ResidentCreateBuilding({ initialAddress, onBack, onSuccess }) {
               </div>
             </div>
 
+            <label className="terms-checkbox-label">
+              <input
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={(e) => { setAgreedToTerms(e.target.checked); if (error) setError('') }}
+                className="terms-checkbox"
+              />
+              <span className="terms-checkbox-text">
+                I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+              </span>
+            </label>
+
             <button
               className="create-submit-btn"
               onClick={handleSubmit}
@@ -378,11 +395,6 @@ function ResidentCreateBuilding({ initialAddress, onBack, onSuccess }) {
               Invite neighbors to join once you're set up!
             </p>
           </div>
-
-          {/* Terms */}
-          <p className="create-terms">
-            By creating a building, you agree to our Terms of Service and Privacy Policy
-          </p>
         </div>
       </div>
     </div>

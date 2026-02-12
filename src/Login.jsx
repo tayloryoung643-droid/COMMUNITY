@@ -661,6 +661,8 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
             <button className="landing-footer-link" onClick={() => setShowContact(true)}>Contact Us</button>
             <button className="landing-footer-link" onClick={() => scrollTo('features')}>Features</button>
             <button className="landing-footer-link" onClick={() => scrollTo('managers')}>For Managers</button>
+            <a className="landing-footer-link" href="/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>
+            <a className="landing-footer-link" href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
           </div>
         </div>
         <div className="landing-footer-bottom">

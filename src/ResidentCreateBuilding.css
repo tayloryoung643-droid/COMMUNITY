@@ -365,13 +365,38 @@
   line-height: 1.5;
 }
 
-/* Terms */
-.create-terms {
-  font-size: 11px;
-  color: #9CA3AF;
-  text-align: center;
-  margin: 20px 0 0 0;
+/* Terms Checkbox */
+.terms-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  margin: 16px 0 4px;
+}
+
+.terms-checkbox {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: #5B9A9A;
+  cursor: pointer;
+}
+
+.terms-checkbox-text {
+  font-size: 13px;
+  color: #6B5E52;
   line-height: 1.5;
+}
+
+.terms-checkbox-text a {
+  color: #5B9A9A;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.terms-checkbox-text a:hover {
+  text-decoration: underline;
 }
 
 /* Mobile */

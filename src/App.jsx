@@ -36,6 +36,8 @@ import ResidentMessages from './ResidentMessages'
 import ResidentFAQ from './ResidentFAQ'
 import ResidentDocuments from './ResidentDocuments'
 import InviteNeighbors from './InviteNeighbors'
+import Terms from './Terms'
+import Privacy from './Privacy'
 
 function App() {
   const { user, userProfile, loading, isDemoMode, signIn, signOut, loginAsDemo, refreshUserProfile } = useAuth()
@@ -75,6 +77,16 @@ function App() {
         window.history.replaceState({}, '', `/join?token=${token}`)
       }
       setCurrentScreen('join')
+      return
+    }
+
+    // Legal pages — accessible without auth
+    if (path === '/terms' || path === '/terms/') {
+      setCurrentScreen('terms')
+      return
+    }
+    if (path === '/privacy' || path === '/privacy/') {
+      setCurrentScreen('privacy')
       return
     }
 
@@ -951,6 +963,14 @@ function App() {
         </MobileShell>
       </>
     )
+  }
+
+  // Legal pages — standalone, no shell
+  if (currentScreen === 'terms') {
+    return <Terms onBack={() => { window.history.replaceState({}, '', '/'); setCurrentScreen('login') }} />
+  }
+  if (currentScreen === 'privacy') {
+    return <Privacy onBack={() => { window.history.replaceState({}, '', '/'); setCurrentScreen('login') }} />
   }
 
   // Otherwise, show the Login screen
