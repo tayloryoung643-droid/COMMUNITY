@@ -146,16 +146,16 @@ BEGIN
     ),
     -- Bulletin board items last 7 days
     'bulletin_items_7d', COALESCE(
-      (SELECT COUNT(*) FROM listings
+      (SELECT COUNT(*) FROM bulletin_listings
        WHERE building_id = p_building_id
        AND created_at >= NOW() - INTERVAL '7 days'),
       0
     ),
     -- Active bulletin items
     'bulletin_active', COALESCE(
-      (SELECT COUNT(*) FROM listings
+      (SELECT COUNT(*) FROM bulletin_listings
        WHERE building_id = p_building_id
-       AND (expires_at IS NULL OR expires_at > NOW())),
+       AND status = 'active'),
       0
     )
   ) INTO result;

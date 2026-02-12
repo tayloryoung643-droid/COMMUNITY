@@ -1,0 +1,156 @@
+/* PostModal - Community post creation */
+
+.post-modal {
+  background: #FFFCF7;
+  border: 1px solid rgba(200, 185, 165, 0.2);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: postModalSlideUp 0.3s ease;
+  box-shadow: 0 24px 80px rgba(44, 37, 32, 0.15), 0 8px 24px rgba(44, 37, 32, 0.08);
+}
+
+@keyframes postModalSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.post-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(200, 185, 165, 0.15);
+}
+
+.post-modal .modal-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2C2520;
+  margin: 0;
+}
+
+.post-modal .modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #F3EEE5;
+  border: none;
+  border-radius: 10px;
+  color: #4A4A4A;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.post-modal .modal-close:hover {
+  background: #E8E3DA;
+  color: #2C2520;
+}
+
+/* Post Type Selector */
+.post-type-selector {
+  display: flex;
+  gap: 8px;
+  padding: 16px 20px 0;
+}
+
+.post-type-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid rgba(200, 185, 165, 0.2);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4A4A4A;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.post-type-btn:hover {
+  border-color: rgba(200, 185, 165, 0.4);
+}
+
+.post-modal .modal-body {
+  padding: 16px 20px;
+}
+
+.post-textarea {
+  width: 100%;
+  padding: 14px;
+  font-size: 15px;
+  font-family: inherit;
+  color: #2C2520;
+  background: #F5F0E8;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  outline: none;
+  resize: vertical;
+  min-height: 100px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.post-textarea:focus {
+  background: #FFFCF7;
+  border-color: #5B9A9A;
+}
+
+.post-textarea::placeholder {
+  color: #8B7E74;
+}
+
+.post-modal .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 20px;
+  border-top: 1px solid rgba(200, 185, 165, 0.15);
+}
+
+.post-modal .btn-secondary {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6B5E52;
+  background: transparent;
+  border: 1px solid rgba(200, 185, 165, 0.3);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.post-modal .btn-secondary:hover {
+  background: #F3EEE5;
+}
+
+.post-modal .btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #FFFFFF;
+  background: #5B9A9A;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.post-modal .btn-primary:hover:not(:disabled) {
+  background: #4A8585;
+}
+
+.post-modal .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

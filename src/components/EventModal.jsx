@@ -126,7 +126,7 @@ function EventModal({ isOpen, onClose, onSuccess, userProfile, isInDemoMode, edi
 
   return (
     <div className="modal-overlay" onClick={handleClose}>
-      <div className="modal-content event-modal" onClick={e => e.stopPropagation()}>
+      <div className="event-modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h3>{isEditing ? 'Edit Event' : 'Create Event'}</h3>
           <button className="modal-close" onClick={handleClose}>

@@ -643,6 +643,180 @@
   background: rgba(90, 122, 106, 0.12);
 }
 
+/* ============================================
+   QUICK CREATE BAR
+   ============================================ */
+.quick-create-bar {
+  width: 100%;
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-soft);
+}
+
+.quick-create-bar h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #5A3C1E;
+  margin: 0 0 12px 0;
+}
+
+.quick-create-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.quick-create-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  background: transparent;
+  border: 1px solid rgba(200, 185, 165, 0.3);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4A4A4A;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-create-btn:hover {
+  border-color: #C4956A;
+  color: #C4956A;
+  background: rgba(196, 149, 106, 0.06);
+}
+
+.quick-create-btn:active {
+  background: rgba(196, 149, 106, 0.12);
+}
+
+/* ============================================
+   WELCOME BANNER (Dismissable)
+   ============================================ */
+.welcome-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(196, 149, 106, 0.1) 0%, rgba(91, 154, 154, 0.08) 100%);
+  border: 1px solid rgba(196, 149, 106, 0.15);
+  border-radius: 14px;
+  margin-bottom: 16px;
+  animation: welcomeFadeIn 0.3s ease;
+}
+
+@keyframes welcomeFadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.welcome-banner-emoji {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.welcome-banner-text {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5A3C1E;
+  line-height: 1.4;
+}
+
+.welcome-banner-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #8A8075;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.welcome-banner-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #5A3C1E;
+}
+
+/* ============================================
+   SECTION HEADERS — Unified pattern
+   ============================================ */
+.home-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  margin-top: 20px;
+  padding: 0 2px;
+}
+
+.home-section-header:first-of-type {
+  margin-top: 0;
+}
+
+.home-section-header-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #3D2B1F;
+  margin: 0;
+}
+
+.home-section-header-title .section-emoji {
+  font-size: 15px;
+}
+
+.home-section-header .view-all-link-inline {
+  color: #C4956A;
+  font-weight: 600;
+}
+
+/* ============================================
+   EVENT CATEGORY BADGES
+   ============================================ */
+.event-category-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 8px;
+  letter-spacing: 0.02em;
+  margin-left: auto;
+}
+
+.event-category-badge[data-category="social"] {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+
+.event-category-badge[data-category="meeting"] {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.event-category-badge[data-category="maintenance"] {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.event-category-badge[data-category="announcement"] {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
 /* Bulletin Board Preview */
 .bulletin-preview-section {
   width: 100%;

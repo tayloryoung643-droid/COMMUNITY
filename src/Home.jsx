@@ -9,6 +9,9 @@ import { getActiveListings } from './services/bulletinService'
 import { useAuth } from './contexts/AuthContext'
 import FeedbackModal from './components/FeedbackModal'
 import LoadingSplash from './components/LoadingSplash'
+import EventModal from './components/EventModal'
+import PostModal from './components/PostModal'
+import BulletinModal from './components/BulletinModal'
 import './Home.css'
 
 function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
@@ -39,6 +42,16 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)
   const [initialLoadDone, setInitialLoadDone] = useState(isDemoMode)
   const [splashFading, setSplashFading] = useState(false)
+
+  // Quick Create modal state
+  const [showEventModal, setShowEventModal] = useState(false)
+  const [showPostModal, setShowPostModal] = useState(false)
+  const [showBulletinModal, setShowBulletinModal] = useState(false)
+
+  // Welcome banner (dismiss via localStorage)
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(
+    () => !localStorage.getItem('home-welcome-dismissed')
+  )
 
   // Home Intelligence state (context lines)
   const [contextLine1, setContextLine1] = useState(null)
@@ -191,6 +204,58 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
 
     fetchRealData()
   }, [isDemoMode, userProfile?.building_id])
+
+  // Refresh helpers — called after creating content from Quick Create bar
+  const refreshEvents = async () => {
+    const buildingId = userProfile?.building_id
+    if (!buildingId || isDemoMode) return
+    try {
+      const { data: events } = await supabase
+        .from('events')
+        .select('*')
+        .eq('building_id', buildingId)
+        .gte('start_time', new Date().toISOString())
+        .order('start_time', { ascending: true })
+        .limit(5)
+      if (events) {
+        const transformed = events.map(event => {
+          const eventDate = event.start_time ? new Date(event.start_time) : null
+          const dateStr = eventDate ? eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''
+          const timeStr = event.event_time || (eventDate ? eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '')
+          const location = event.location || ''
+          return {
+            id: event.id, title: event.title, date: dateStr, time: timeStr,
+            location, category: event.category || 'social', description: event.description || '',
+            subtitle: [dateStr, timeStr, location].filter(Boolean).join(' · ')
+          }
+        })
+        setRealEvents(transformed)
+      }
+    } catch (e) { console.error('[Home] Refresh events error:', e) }
+  }
+
+  const refreshPosts = async () => {
+    const buildingId = userProfile?.building_id
+    if (!buildingId || isDemoMode) return
+    try {
+      const postsData = await getCommunityPosts(buildingId)
+      setRealPosts(postsData || [])
+    } catch (e) { console.error('[Home] Refresh posts error:', e) }
+  }
+
+  const refreshBulletins = async () => {
+    const buildingId = userProfile?.building_id
+    if (!buildingId || isDemoMode) return
+    try {
+      const data = await getActiveListings(buildingId)
+      setBulletinListings(data || [])
+    } catch (e) { console.error('[Home] Refresh bulletins error:', e) }
+  }
+
+  const dismissWelcomeBanner = () => {
+    setShowWelcomeBanner(false)
+    localStorage.setItem('home-welcome-dismissed', 'true')
+  }
 
   // Handle splash fade-out when initial data load completes
   useEffect(() => {
@@ -555,6 +620,35 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
             </div>
           )}
 
+          {/* Quick Create Bar */}
+          <div className="quick-create-bar">
+            <h3>What's happening in your building?</h3>
+            <div className="quick-create-buttons">
+              <button className="quick-create-btn" onClick={() => setShowEventModal(true)}>
+                📅 Event
+              </button>
+              <button className="quick-create-btn" onClick={() => setShowPostModal(true)}>
+                💬 Post
+              </button>
+              <button className="quick-create-btn" onClick={() => setShowBulletinModal(true)}>
+                📋 Bulletin
+              </button>
+            </div>
+          </div>
+
+          {/* Welcome Banner (dismissable) */}
+          {showWelcomeBanner && (
+            <div className="welcome-banner">
+              <span className="welcome-banner-emoji">👋</span>
+              <span className="welcome-banner-text">
+                Your building at a glance — events, posts, and updates all in one place.
+              </span>
+              <button className="welcome-banner-close" onClick={dismissWelcomeBanner}>
+                <X size={16} />
+              </button>
+            </div>
+          )}
+
           {/* Packages Card - Demo or Real (hidden for resident-led buildings) */}
           {!isResidentLed && (isDemoMode ? (
             <>
@@ -606,45 +700,68 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
             </div>
           ))}
 
-          {/* Event Card - Demo or Real */}
+          {/* Upcoming Events Section */}
+          <div className="home-section-header">
+            <h3 className="home-section-header-title">
+              <span className="section-emoji">📅</span> Upcoming Events
+            </h3>
+            <button className="view-all-link-inline" onClick={() => handleFeatureClick('Calendar')}>
+              View all →
+            </button>
+          </div>
+
           {isDemoMode ? (
             <>
               <button className="today-card" onClick={() => handleFeatureClick('Calendar')}>
                 <div className="today-card-icon calendar-icon"><Calendar size={20} /></div>
                 <div className="today-card-content">
-                  <span className="today-card-title">Rooftop BBQ</span>
+                  <div className="community-post-header">
+                    <span className="today-card-title">Rooftop BBQ</span>
+                    <span className="event-category-badge" data-category="social">Social</span>
+                  </div>
                   <span className="today-card-subtitle">Tonight · 6:00 PM · Rooftop</span>
                 </div>
-                <span className="today-card-time">6:00 PM</span>
               </button>
               <button className="today-card" onClick={() => handleFeatureClick('Calendar')}>
                 <div className="today-card-icon calendar-icon"><Calendar size={20} /></div>
                 <div className="today-card-content">
-                  <span className="today-card-title">Wine & Cheese Social</span>
+                  <div className="community-post-header">
+                    <span className="today-card-title">Wine & Cheese Social</span>
+                    <span className="event-category-badge" data-category="social">Social</span>
+                  </div>
                   <span className="today-card-subtitle">This Friday · 7:00 PM · Rooftop Lounge</span>
                 </div>
-                <span className="today-card-time">Friday</span>
               </button>
             </>
-          ) : realEvents.length > 0 ? (
-            <button className="today-card" onClick={() => handleEventClick(realEvents[0])}>
-              <div className="today-card-icon calendar-icon">
-                <Calendar size={20} />
-              </div>
-              <div className="today-card-content">
-                <span className="today-card-title">{realEvents[0].title}</span>
-                <span className="today-card-subtitle">{realEvents[0].time || realEvents[0].date}</span>
-              </div>
-              <ChevronRight size={20} className="today-card-arrow" />
-            </button>
+          ) : upcomingEvents.length > 0 ? (
+            upcomingEvents.slice(0, 3).map(event => {
+              const catLabel = (event.category || 'social').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+              return (
+                <button key={event.id} className="today-card" onClick={() => handleEventClick(event)}>
+                  <div className="today-card-icon calendar-icon">
+                    <Calendar size={20} />
+                  </div>
+                  <div className="today-card-content">
+                    <div className="community-post-header">
+                      <span className="today-card-title">{event.title}</span>
+                      <span className="event-category-badge" data-category={event.category || 'social'}>
+                        {catLabel}
+                      </span>
+                    </div>
+                    <span className="today-card-subtitle">{event.subtitle || event.time || event.date}</span>
+                  </div>
+                  <ChevronRight size={20} className="today-card-arrow" />
+                </button>
+              )
+            })
           ) : (
             <div className="today-card empty-state-card">
               <div className="today-card-icon calendar-icon" style={{ opacity: 0.5 }}>
                 <Calendar size={20} />
               </div>
               <div className="today-card-content">
-                <span className="today-card-title" style={{ color: '#64748b' }}>No upcoming events</span>
-                <span className="today-card-subtitle">Check back later</span>
+                <span className="today-card-title" style={{ color: '#64748b' }}>No events yet — be the first to plan something!</span>
+                <span className="today-card-subtitle">Tap 📅 Event above to create one</span>
               </div>
             </div>
           )}
@@ -672,10 +789,9 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
             const listings = isDemoMode ? demoBulletinListings : bulletinListings
             return listings.length > 0 ? (
             <div className="bulletin-preview-section">
-              <div className="bulletin-preview-header">
-                <h3 className="bulletin-preview-title">
-                  <ClipboardList size={16} />
-                  Bulletin Board
+              <div className="home-section-header" style={{ marginTop: '20px' }}>
+                <h3 className="home-section-header-title">
+                  <span className="section-emoji">📋</span> Bulletin Board
                 </h3>
                 <button className="view-all-link-inline" onClick={() => handleFeatureClick('Bulletin Board')}>
                   View all →
@@ -759,10 +875,9 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
           })()}
 
           {/* Community Section */}
-          <div className="bulletin-preview-header" style={{ marginTop: '8px' }}>
-            <h3 className="bulletin-preview-title">
-              <MessageSquare size={16} />
-              Community
+          <div className="home-section-header" style={{ marginTop: '20px' }}>
+            <h3 className="home-section-header-title">
+              <span className="section-emoji">💬</span> Community
             </h3>
             <button className="view-all-link-inline" onClick={() => handleFeatureClick('Community')}>
               View all →
@@ -933,6 +1048,29 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
         buildingName={buildingName}
         isDemoMode={isDemoMode}
         pageContext="home"
+      />
+
+      {/* Quick Create Modals */}
+      <EventModal
+        isOpen={showEventModal}
+        onClose={() => setShowEventModal(false)}
+        onSuccess={() => { refreshEvents() }}
+        userProfile={userProfile}
+        isInDemoMode={isDemoMode}
+      />
+      <PostModal
+        isOpen={showPostModal}
+        onClose={() => setShowPostModal(false)}
+        onSuccess={() => { refreshPosts() }}
+        userProfile={userProfile}
+        isInDemoMode={isDemoMode}
+      />
+      <BulletinModal
+        isOpen={showBulletinModal}
+        onClose={() => setShowBulletinModal(false)}
+        onSuccess={() => { refreshBulletins() }}
+        userProfile={userProfile}
+        isInDemoMode={isDemoMode}
       />
     </div>
   )
