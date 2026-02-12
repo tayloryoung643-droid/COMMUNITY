@@ -7,6 +7,7 @@ import { getHomeIntelligence, logEngagementEvent } from './services/homeIntellig
 import { getPosts as getCommunityPosts } from './services/communityPostService'
 import { getActiveListings } from './services/bulletinService'
 import { useAuth } from './contexts/AuthContext'
+import { expandAllEvents } from './utils/recurrenceUtils'
 import FeedbackModal from './components/FeedbackModal'
 import LoadingSplash from './components/LoadingSplash'
 import EventModal from './components/EventModal'
@@ -104,22 +105,28 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
           .limit(5)
 
         if (!eventsError && events) {
+          // Expand recurring events for next 90 days
+          const today = new Date()
+          const ninetyDaysOut = new Date()
+          ninetyDaysOut.setDate(ninetyDaysOut.getDate() + 90)
+          const expandedEvents = expandAllEvents(events, today, ninetyDaysOut)
+
           // Transform events to match the expected format
-          const transformedEvents = events.map(event => {
+          const transformedEvents = expandedEvents.map(event => {
             const eventDate = event.start_time ? new Date(event.start_time) : null
             const dateStr = eventDate ? eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''
             const timeStr = event.event_time || (eventDate ? eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '')
             const location = event.location || ''
 
             return {
-              id: event.id,
+              id: event._occurrence ? `${event.id}-${event.start_time}` : event.id,
               title: event.title,
               date: dateStr,
               time: timeStr,
               location: location,
               category: event.category || 'social',
               description: event.description || '',
-              // Create subtitle for Coming Up section display
+              isRecurring: !!event.recurrence_rule,
               subtitle: [dateStr, timeStr, location].filter(Boolean).join(' · ')
             }
           })
@@ -218,14 +225,21 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
         .order('start_time', { ascending: true })
         .limit(5)
       if (events) {
-        const transformed = events.map(event => {
+        const today = new Date()
+        const ninetyDaysOut = new Date()
+        ninetyDaysOut.setDate(ninetyDaysOut.getDate() + 90)
+        const expandedEvents = expandAllEvents(events, today, ninetyDaysOut)
+
+        const transformed = expandedEvents.map(event => {
           const eventDate = event.start_time ? new Date(event.start_time) : null
           const dateStr = eventDate ? eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''
           const timeStr = event.event_time || (eventDate ? eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '')
           const location = event.location || ''
           return {
-            id: event.id, title: event.title, date: dateStr, time: timeStr,
+            id: event._occurrence ? `${event.id}-${event.start_time}` : event.id,
+            title: event.title, date: dateStr, time: timeStr,
             location, category: event.category || 'social', description: event.description || '',
+            isRecurring: !!event.recurrence_rule,
             subtitle: [dateStr, timeStr, location].filter(Boolean).join(' · ')
           }
         })
@@ -743,7 +757,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
                   </div>
                   <div className="today-card-content">
                     <div className="community-post-header">
-                      <span className="today-card-title">{event.title}</span>
+                      <span className="today-card-title">{event.title}{event.isRecurring ? ' 🔁' : ''}</span>
                       <span className="event-category-badge" data-category={event.category || 'social'}>
                         {catLabel}
                       </span>

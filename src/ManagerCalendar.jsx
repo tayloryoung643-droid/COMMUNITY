@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getEvents, createEvent, updateEvent, deleteEvent as deleteEventFromDb } from './services/eventService'
+import { expandAllEvents } from './utils/recurrenceUtils'
 import EventModal from './components/EventModal'
 import './ManagerCalendar.css'
 
@@ -258,10 +259,16 @@ function ManagerCalendar() {
       try {
         const data = await getEvents(buildingId)
         console.log('[ManagerCalendar] Raw events from Supabase:', data)
-        const transformedEvents = (data || []).map(event => {
-          console.log('[ManagerCalendar] Transforming event:', event)
+        // Expand recurring events (6 months back + 6 months ahead)
+        const rangeStart = new Date()
+        rangeStart.setMonth(rangeStart.getMonth() - 6)
+        const rangeEnd = new Date()
+        rangeEnd.setMonth(rangeEnd.getMonth() + 6)
+        const expandedData = expandAllEvents(data || [], rangeStart, rangeEnd)
+
+        const transformedEvents = expandedData.map(event => {
           return {
-            id: event.id,
+            id: event._occurrence ? `${event.id}-${event.start_time}` : event.id,
             date: event.start_time ? event.start_time.split('T')[0] : (event.date || new Date().toISOString().split('T')[0]),
             time: event.start_time ? new Date(event.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'All Day',
             endTime: event.end_time ? new Date(event.end_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
@@ -275,11 +282,12 @@ function ManagerCalendar() {
             allowRsvp: true,
             rsvpLimit: null,
             rsvps: [],
+            isRecurring: !!event.recurrence_rule,
             isFromSupabase: true
           }
         })
         setEvents(transformedEvents)
-        console.log('[ManagerCalendar] Transformed events:', transformedEvents)
+        console.log('[ManagerCalendar] Transformed events:', transformedEvents.length)
       } catch (err) {
         console.error('[ManagerCalendar] Error fetching events:', err)
       } finally {
@@ -436,8 +444,11 @@ function ManagerCalendar() {
 
         // Refresh events
         const data = await getEvents(userProfile.building_id)
-        const transformedEvents = (data || []).map(event => ({
-          id: event.id,
+        const rs = new Date(); rs.setMonth(rs.getMonth() - 6)
+        const re = new Date(); re.setMonth(re.getMonth() + 6)
+        const expanded = expandAllEvents(data || [], rs, re)
+        const transformedEvents = expanded.map(event => ({
+          id: event._occurrence ? `${event.id}-${event.start_time}` : event.id,
           date: event.start_time ? event.start_time.split('T')[0] : (event.date || new Date().toISOString().split('T')[0]),
           time: event.start_time ? new Date(event.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'All Day',
           endTime: event.end_time ? new Date(event.end_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
@@ -451,6 +462,7 @@ function ManagerCalendar() {
           allowRsvp: true,
           rsvpLimit: null,
           rsvps: [],
+          isRecurring: !!event.recurrence_rule,
           isFromSupabase: true
         }))
         setEvents(transformedEvents)
@@ -475,8 +487,11 @@ function ManagerCalendar() {
       // Real mode: refresh events from Supabase
       try {
         const data = await getEvents(userProfile.building_id)
-        const transformedEvents = (data || []).map(event => ({
-          id: event.id,
+        const rs = new Date(); rs.setMonth(rs.getMonth() - 6)
+        const re = new Date(); re.setMonth(re.getMonth() + 6)
+        const expanded = expandAllEvents(data || [], rs, re)
+        const transformedEvents = expanded.map(event => ({
+          id: event._occurrence ? `${event.id}-${event.start_time}` : event.id,
           date: event.start_time ? event.start_time.split('T')[0] : (event.date || new Date().toISOString().split('T')[0]),
           time: event.start_time ? new Date(event.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'All Day',
           endTime: event.end_time ? new Date(event.end_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
@@ -490,6 +505,7 @@ function ManagerCalendar() {
           allowRsvp: true,
           rsvpLimit: null,
           rsvps: [],
+          isRecurring: !!event.recurrence_rule,
           isFromSupabase: true
         }))
         setEvents(transformedEvents)
@@ -755,7 +771,7 @@ function ManagerCalendar() {
                         </div>
                         <div className="event-details">
                           <div className="event-details-header">
-                            <h3 className="event-title">{event.title || 'Untitled Event'}</h3>
+                            <h3 className="event-title">{event.title || 'Untitled Event'}{event.isRecurring ? ' 🔁' : ''}</h3>
                             <span
                               className="event-category-tag"
                               style={{ background: `${event.color || '#8b5cf6'}20`, color: event.color || '#8b5cf6' }}

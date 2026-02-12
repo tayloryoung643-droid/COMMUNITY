@@ -4,6 +4,7 @@ import HamburgerMenu from './HamburgerMenu'
 import { useAuth } from './contexts/AuthContext'
 import { eventsData } from './eventsData'
 import { getEvents, deleteEvent } from './services/eventService'
+import { expandAllEvents } from './utils/recurrenceUtils'
 import { supabase } from './lib/supabase'
 import EventModal from './components/EventModal'
 import EmptyState from './components/EmptyState'
@@ -146,8 +147,15 @@ function CalendarView({ onNavigate }) {
         if (data && data.length > 0) {
           await fetchCreatorNames(data)
         }
-        const transformedData = (data || []).map(event => ({
-          id: event.id,
+        // Expand recurring events for a wide range (6 months back + 6 months ahead)
+        const rangeStart = new Date()
+        rangeStart.setMonth(rangeStart.getMonth() - 6)
+        const rangeEnd = new Date()
+        rangeEnd.setMonth(rangeEnd.getMonth() + 6)
+        const expandedData = expandAllEvents(data || [], rangeStart, rangeEnd)
+
+        const transformedData = expandedData.map(event => ({
+          id: event._occurrence ? `${event.id}-${event.start_time}` : event.id,
           title: event.title || 'Untitled Event',
           date: event.start_time?.split('T')[0] || event.date,
           time: event.event_time || (event.start_time ? new Date(event.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : 'TBD'),
@@ -159,6 +167,7 @@ function CalendarView({ onNavigate }) {
           actionRequired: event.action_required || false,
           affectedUnits: event.affected_units,
           created_by: event.created_by,
+          isRecurring: !!event.recurrence_rule,
           // Keep raw data for editing
           start_time: event.start_time,
           end_time: event.end_time,
@@ -196,8 +205,14 @@ function CalendarView({ onNavigate }) {
       if (data && data.length > 0) {
         await fetchCreatorNames(data)
       }
-      const transformedData = (data || []).map(event => ({
-        id: event.id,
+      const rangeStart = new Date()
+      rangeStart.setMonth(rangeStart.getMonth() - 6)
+      const rangeEnd = new Date()
+      rangeEnd.setMonth(rangeEnd.getMonth() + 6)
+      const expandedData = expandAllEvents(data || [], rangeStart, rangeEnd)
+
+      const transformedData = expandedData.map(event => ({
+        id: event._occurrence ? `${event.id}-${event.start_time}` : event.id,
         title: event.title || 'Untitled Event',
         date: event.start_time?.split('T')[0] || event.date,
         time: event.event_time || (event.start_time ? new Date(event.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : 'TBD'),
@@ -209,6 +224,7 @@ function CalendarView({ onNavigate }) {
         actionRequired: event.action_required || false,
         affectedUnits: event.affected_units,
         created_by: event.created_by,
+        isRecurring: !!event.recurrence_rule,
         start_time: event.start_time,
         end_time: event.end_time,
         event_time: event.event_time
@@ -409,7 +425,7 @@ function CalendarView({ onNavigate }) {
           <IconComponent size={20} style={{ color: item.color }} />
         </div>
         <div className="calendar-details">
-          <h3 className="calendar-title">{item.title}</h3>
+          <h3 className="calendar-title">{item.title}{item.isRecurring ? ' 🔁' : ''}</h3>
           <span className="calendar-meta">{formatDate(item.date)} • {item.time}</span>
           {creatorLabel && <span className="event-hosted-by">{creatorLabel}</span>}
           {item.description && !isPast && <p className="calendar-description">{item.description}</p>}

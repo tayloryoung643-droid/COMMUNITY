@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { X, Plus, Check, Wine, Users, Wrench, Megaphone } from 'lucide-react'
+import { X, Plus, Check, Wine, Users, Wrench, Megaphone, Repeat } from 'lucide-react'
 import { createEvent, updateEvent } from '../services/eventService'
+import { buildRecurrenceRule, getRecurrenceLabel } from '../utils/recurrenceUtils'
 import './EventModal.css'
 
 const CATEGORIES = [
@@ -25,6 +26,9 @@ const EMPTY_FORM = {
 function EventModal({ isOpen, onClose, onSuccess, userProfile, isInDemoMode, editingEvent }) {
   const [form, setForm] = useState(EMPTY_FORM)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isRecurring, setIsRecurring] = useState(false)
+  const [recurrenceFreq, setRecurrenceFreq] = useState('weekly')
+  const [recurrenceEnd, setRecurrenceEnd] = useState('')
 
   const isEditing = !!editingEvent
 
@@ -42,12 +46,29 @@ function EventModal({ isOpen, onClose, onSuccess, userProfile, isInDemoMode, edi
         rsvpLimit: editingEvent.rsvp_limit || '',
         allowRsvp: editingEvent.allow_rsvp !== false
       })
+      if (editingEvent.recurrence_rule) {
+        setIsRecurring(true)
+        setRecurrenceFreq(editingEvent.recurrence_rule.freq || 'weekly')
+        setRecurrenceEnd(editingEvent.recurrence_end || '')
+      } else {
+        setIsRecurring(false)
+        setRecurrenceFreq('weekly')
+        setRecurrenceEnd('')
+      }
     } else {
       setForm(EMPTY_FORM)
+      setIsRecurring(false)
+      setRecurrenceFreq('weekly')
+      setRecurrenceEnd('')
     }
   }, [editingEvent])
 
-  const resetForm = () => setForm(EMPTY_FORM)
+  const resetForm = () => {
+    setForm(EMPTY_FORM)
+    setIsRecurring(false)
+    setRecurrenceFreq('weekly')
+    setRecurrenceEnd('')
+  }
 
   const handleClose = () => {
     resetForm()
@@ -97,7 +118,9 @@ function EventModal({ isOpen, onClose, onSuccess, userProfile, isInDemoMode, edi
           end_time: endTime,
           event_time: form.time || null,
           category: form.category,
-          location: form.location
+          location: form.location,
+          recurrence_rule: isRecurring ? buildRecurrenceRule(recurrenceFreq, form.date) : null,
+          recurrence_end: isRecurring && recurrenceEnd ? recurrenceEnd : null
         }
 
         if (isEditing) {
@@ -229,6 +252,51 @@ function EventModal({ isOpen, onClose, onSuccess, userProfile, isInDemoMode, edi
               </div>
             )}
           </div>
+
+          {/* Recurrence Section */}
+          <div className="recurrence-toggle">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={isRecurring}
+                onChange={e => setIsRecurring(e.target.checked)}
+              />
+              <Repeat size={16} />
+              <span>Make this recurring</span>
+            </label>
+          </div>
+
+          {isRecurring && (
+            <div className="recurrence-options">
+              <div className="form-group">
+                <label>Frequency</label>
+                <select
+                  value={recurrenceFreq}
+                  onChange={e => setRecurrenceFreq(e.target.value)}
+                >
+                  <option value="weekly">Every week</option>
+                  <option value="monthly_by_dow">Every month (by day of week)</option>
+                  <option value="monthly_by_date">Every month (by date)</option>
+                  <option value="yearly">Every year</option>
+                </select>
+              </div>
+              {form.date && (
+                <p className="recurrence-description">
+                  {getRecurrenceLabel(buildRecurrenceRule(recurrenceFreq, form.date))}
+                </p>
+              )}
+              <div className="form-group">
+                <label>Ends on (optional)</label>
+                <input
+                  type="date"
+                  value={recurrenceEnd}
+                  onChange={e => setRecurrenceEnd(e.target.value)}
+                  min={form.date || undefined}
+                  placeholder="No end date (defaults to 1 year)"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="modal-footer">
