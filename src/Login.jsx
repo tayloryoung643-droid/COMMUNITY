@@ -5,19 +5,19 @@ import { submitFeedback } from './services/feedbackService'
 import './Login.css'
 
 const features = [
-  { icon: '📦', title: 'Package Tracking', desc: 'Get notified the moment your delivery arrives. No more guessing.' },
-  { icon: '📅', title: 'Events', desc: 'Building BBQs, maintenance schedules, and community meetups — all in one place.' },
-  { icon: '💬', title: 'Community Feed', desc: 'Share recommendations, ask neighbors for help, or post building updates.' },
-  { icon: '🏢', title: 'Building Info', desc: 'FAQs, documents, elevator booking, and building rules at your fingertips.' },
-  { icon: '👋', title: 'Meet Your Neighbors', desc: 'Put faces to door numbers. Connect with people in your building.' },
-  { icon: '📋', title: 'Bulletin Board', desc: 'Selling furniture? Need a dog walker? Post it for your building to see.' },
+  { icon: '📢', title: 'Instant Announcements', desc: 'Building updates that reach every resident instantly. No more printed notices that nobody reads.' },
+  { icon: '💬', title: 'Community Feed', desc: 'Share recommendations, ask neighbors for help, or celebrate building wins together.' },
+  { icon: '👋', title: 'Meet Your Neighbors', desc: 'Put faces to door numbers. Connect with the people who live around you.' },
+  { icon: '📅', title: 'Events & Activities', desc: 'Building BBQs, game nights, maintenance schedules — with RSVPs and reminders built in.' },
+  { icon: '📋', title: 'Bulletin Board', desc: 'Buy, sell, trade, and find services from people in your building you already trust.' },
+  { icon: '🏢', title: 'Building Resources', desc: 'Packages, elevator booking, documents, and FAQs — everything your building needs, in one place.' },
 ]
 
 const managerFeatures = [
-  { icon: '👥', title: 'Resident Management', desc: 'Full building roster, invite tracking, and resident engagement at a glance.' },
-  { icon: '📢', title: 'Announcements', desc: 'Post building-wide updates that every resident sees immediately.' },
-  { icon: '🤖', title: 'AI Assistant', desc: 'Smart tools for FAQ generation, mass invites, and building communications.' },
-  { icon: '📊', title: 'Dashboard & Analytics', desc: 'See who\'s engaged, track packages, and monitor building activity.' },
+  { icon: '📢', title: 'Communication Hub', desc: 'Post building-wide updates that every resident sees. One place instead of emails, notices, and texts.' },
+  { icon: '👥', title: 'Resident Engagement', desc: 'Build a community where residents know each other. Happy residents stay longer.' },
+  { icon: '🤖', title: 'AI Assistant', desc: 'Handles routine questions so you don\'t have to. Less admin, more time for what matters.' },
+  { icon: '📊', title: 'Dashboard & Insights', desc: 'See who\'s engaged, track building activity, and understand your community at a glance.' },
 ]
 
 function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, onResidentSignupClick, onResidentSelectBuilding, onResidentCreateBuilding, onResidentEmailLogin, authError }) {
@@ -240,13 +240,12 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
               Now available for your building
             </div>
             <h1 className="landing-hero-title">
-              Your building,<br />
-              <span className="landing-hero-title-accent">finally connected.</span>
+              Turn neighbors into<br />
+              <span className="landing-hero-title-accent">a community.</span>
             </h1>
             <p className="landing-hero-subtitle">
-              COMMUNITY is the app that brings your apartment building to life.
-              Track packages, discover events, connect with neighbors, and stay
-              in the loop — all from one beautiful app your building manager sets up for you.
+              One place for building announcements, events, neighbor connections,
+              and everything happening in your building.
             </p>
             <div className="landing-hero-ctas">
               <button className="landing-btn-primary" onClick={() => { setActiveTab('resident'); setAuthMode('join'); scrollTo('auth-section') }}>
@@ -280,11 +279,20 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
                 </div>
                 <div className="landing-phone-body">
                   <div className="landing-phone-section-label">TODAY AT THE GEORGE</div>
+                  <div className="landing-phone-post">
+                    <div className="landing-phone-post-header">
+                      <div className="landing-phone-mini-avatar">F</div>
+                      <span className="landing-phone-post-author">Faima</span>
+                      <span className="landing-phone-post-role">· Management</span>
+                    </div>
+                    <div className="landing-phone-post-title">Welcome to COMMUNITY! 🎉</div>
+                    <div className="landing-phone-post-preview">We're excited to launch this app for The George...</div>
+                  </div>
                   <div className="landing-phone-card">
-                    <span>📦</span>
+                    <span>📅</span>
                     <div>
-                      <div className="landing-phone-card-title">2 deliveries ready</div>
-                      <div className="landing-phone-card-sub">Today</div>
+                      <div className="landing-phone-card-title">Rooftop BBQ</div>
+                      <div className="landing-phone-card-sub">This Saturday, 4 PM</div>
                     </div>
                     <span className="landing-phone-card-arrow">›</span>
                   </div>
@@ -297,21 +305,12 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
                     <span className="landing-phone-card-arrow">›</span>
                   </div>
                   <div className="landing-phone-card">
-                    <span>📅</span>
+                    <span>📦</span>
                     <div>
-                      <div className="landing-phone-card-title">Rooftop BBQ</div>
-                      <div className="landing-phone-card-sub">This Saturday, 4 PM</div>
+                      <div className="landing-phone-card-title">2 deliveries ready</div>
+                      <div className="landing-phone-card-sub">Today</div>
                     </div>
                     <span className="landing-phone-card-arrow">›</span>
-                  </div>
-                  <div className="landing-phone-post">
-                    <div className="landing-phone-post-header">
-                      <div className="landing-phone-mini-avatar">F</div>
-                      <span className="landing-phone-post-author">Faima</span>
-                      <span className="landing-phone-post-role">· Management</span>
-                    </div>
-                    <div className="landing-phone-post-title">Welcome to COMMUNITY! 🎉</div>
-                    <div className="landing-phone-post-preview">We're excited to launch this app for The George...</div>
                   </div>
                 </div>
                 <div className="landing-phone-nav">
@@ -362,7 +361,7 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
             <div className="landing-section-badge">For Residents</div>
             <h2 className="landing-section-title">Everything your building needs,<br />in your pocket.</h2>
             <p className="landing-section-subtitle">
-              No more missed packages. No more outdated bulletin boards. No more not knowing your neighbors.
+              No more outdated bulletin boards. No more not knowing your neighbors. Finally, one app that makes your building feel like home.
             </p>
           </div>
           <div className="landing-feature-grid">
@@ -387,16 +386,16 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
         <div className="landing-managers-inner landing-animate" ref={addAnimateRef}>
           <div className="landing-section-header">
             <div className="landing-section-badge">For Property Managers</div>
-            <h2 className="landing-section-title">Manage smarter.<br />Engage effortlessly.</h2>
+            <h2 className="landing-section-title">Build community.<br />Not just manage a building.</h2>
             <p className="landing-section-subtitle">
-              COMMUNITY gives you a premium dashboard to manage residents, packages, communications, and building operations — powered by AI.
+              COMMUNITY gives you a premium dashboard to engage residents, streamline communication, and create a building people actually love living in.
             </p>
           </div>
 
           <div className="landing-pain-points">
-            <div className="landing-pain-point">"Stop fielding the same questions over and over."</div>
-            <div className="landing-pain-point">"Stop chasing residents about package pickups."</div>
             <div className="landing-pain-point">"Stop pinning notices that nobody reads."</div>
+            <div className="landing-pain-point">"Stop chasing residents across email, texts, and paper."</div>
+            <div className="landing-pain-point">"Stop wondering if residents even know each other."</div>
           </div>
 
           <div className="landing-manager-grid">
@@ -422,7 +421,7 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
 
           <div className="landing-testimonial">
             <p className="landing-testimonial-text">
-              "Built for property managers who want happier residents and smoother operations."
+              "Buildings with engaged residents have lower turnover, fewer complaints, and a reputation people want to be part of."
             </p>
           </div>
 
