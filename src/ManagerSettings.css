@@ -1765,10 +1765,38 @@
     padding: 0.25rem;
     gap: 0.25rem;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
 
   .settings-nav::-webkit-scrollbar {
     display: none;
+  }
+
+  .settings-nav-legal {
+    display: flex;
+    flex-direction: row;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+    border-left: 1px solid var(--md-border, rgba(200, 185, 165, 0.2));
+    padding-left: 0.25rem;
+    gap: 0.25rem;
+  }
+
+  .settings-nav-legal-link {
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem;
+    min-width: 70px;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .settings-nav-legal-link span {
+    font-size: 0.6875rem;
+    white-space: nowrap;
   }
 
   .settings-nav-item {

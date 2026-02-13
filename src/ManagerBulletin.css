@@ -901,6 +901,17 @@
     flex-direction: column;
     text-align: center;
     gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .bulletin-stats .stat-value {
+    font-size: var(--font-size-md);
+  }
+
+  .bulletin-stats .stat-label {
+    font-size: var(--font-size-xs);
   }
 
   .listing-header {

@@ -997,6 +997,11 @@
     justify-content: space-between;
   }
 
+  .calendar-filters {
+    padding-right: var(--spacing-lg);
+    position: relative;
+  }
+
   .create-event-btn span {
     display: none;
   }

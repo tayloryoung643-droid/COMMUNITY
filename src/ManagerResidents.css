@@ -838,6 +838,30 @@
     display: inline;
   }
 
+  .residents-search-row {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .floor-filter {
+    width: 100%;
+  }
+
+  .sort-dropdown-wrapper {
+    width: 100%;
+    align-self: stretch;
+  }
+
+  .residents-filters {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .residents-filters::-webkit-scrollbar {
+    display: none;
+  }
+
   .resident-card {
     padding: var(--spacing-md);
   }

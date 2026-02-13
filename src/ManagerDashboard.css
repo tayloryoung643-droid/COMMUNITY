@@ -1939,6 +1939,10 @@
   color: var(--md-accent);
 }
 
+.quick-actions-v2 .quick-action-v2:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
 .action-label-v2 {
   font-size: var(--font-size-xs);
   font-weight: 500;
@@ -2091,6 +2095,15 @@
   .narrative-card {
     padding: var(--spacing-md);
     border-radius: 16px;
+  }
+
+  .card-header-v2 {
+    gap: var(--spacing-sm);
+    flex-wrap: nowrap;
+  }
+
+  .card-header-v2 .card-title-v2 {
+    white-space: nowrap;
   }
 }
 

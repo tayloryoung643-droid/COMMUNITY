@@ -694,6 +694,18 @@
   .welcome-message {
     flex-direction: column;
     text-align: center;
+    padding: var(--spacing-md);
+  }
+
+  .welcome-content h3 {
+    font-size: var(--font-size-md);
+  }
+
+  .welcome-content p {
+    font-size: var(--font-size-xs);
+    line-height: 1.5;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   .ai-avatar {

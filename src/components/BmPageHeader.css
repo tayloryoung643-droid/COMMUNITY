@@ -119,15 +119,21 @@
     max-height: 200px;
   }
 
+  .bm-hero-text-container {
+    bottom: 32px;
+    padding: 0 16px;
+    box-sizing: border-box;
+  }
+
   .bm-hero-title {
-    font-size: 24px;
+    font-size: 22px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   .bm-hero-subtitle {
-    font-size: 14px;
-  }
-
-  .bm-hero-text-container {
-    bottom: 32px;
+    font-size: 13px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 }
