@@ -2,11 +2,13 @@
 .manager-ai-assistant {
   display: flex;
   height: calc(100vh - 140px);
-  background: var(--md-card-bg);
+  background: #FAF8F5;
   border-radius: var(--radius-xl);
   overflow: hidden;
   border: 1px solid var(--md-card-border);
   box-shadow: 0 2px 8px rgba(120, 100, 70, 0.06), 0 4px 16px rgba(120, 100, 70, 0.03);
+  position: relative;
+  z-index: 2;
 }
 
 /* Left Sidebar */
@@ -322,6 +324,8 @@
   background: linear-gradient(135deg, rgba(130, 170, 170, 0.08), rgba(91, 154, 154, 0.06));
   border: 1px solid rgba(91, 154, 154, 0.15);
   border-radius: var(--radius-xl);
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .ai-avatar {
@@ -344,11 +348,19 @@
   margin: 0 0 var(--spacing-xs) 0;
 }
 
+.welcome-content {
+  min-width: 0;
+  flex: 1;
+}
+
 .welcome-content p {
   font-size: var(--font-size-sm);
   color: var(--md-text-secondary);
   margin: 0;
   line-height: 1.5;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Inline Suggestions */
@@ -455,6 +467,9 @@
   border-radius: var(--radius-lg);
   font-size: var(--font-size-sm);
   line-height: 1.6;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .user-message .message-text {
@@ -631,6 +646,13 @@
     border-right: none;
     border-bottom: 1px solid var(--md-card-border);
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .ai-sidebar::-webkit-scrollbar {
+    display: none;
   }
 
   .ai-sidebar-header {
@@ -644,6 +666,13 @@
     border-bottom: none;
     border-right: 1px solid var(--md-card-border);
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .ai-quick-actions::-webkit-scrollbar {
+    display: none;
   }
 
   .ai-quick-actions h3 {
@@ -658,6 +687,7 @@
 
   .suggestion-chip {
     white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .ai-history {

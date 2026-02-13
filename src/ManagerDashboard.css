@@ -315,6 +315,7 @@
   overflow-y: auto;
   position: relative;
   z-index: 2;
+  background: #F5F0EB;
 }
 
 /* Top Bar - Soft, editorial header */
