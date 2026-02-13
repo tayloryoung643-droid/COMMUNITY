@@ -2,6 +2,11 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Menu, X, Search, UserPlus, Sparkles, MapPin, Building2, Users, ArrowRight, Loader2 } from 'lucide-react'
 import { searchBuildingsByAddress } from './services/buildingService'
 import { submitFeedback } from './services/feedbackService'
+import {
+  ResidentHomeScreen, ResidentAnnouncementScreen, ResidentFeedScreen, ResidentEventsScreen,
+  ManagerCreateAnnouncementScreen, ResidentPinnedAnnouncementScreen, ResidentPostDetailScreen,
+  ManagerMessagesScreen, ManagerEventsScreen
+} from './StoryPhoneScreens'
 import './Login.css'
 
 const features = [
@@ -19,6 +24,26 @@ const managerFeatures = [
   { icon: '🤖', title: 'AI Assistant', desc: 'Handles routine questions so you don\'t have to. Less admin, more time for what matters.' },
   { icon: '📊', title: 'Dashboard & Insights', desc: 'See who\'s engaged, track building activity, and understand your community at a glance.' },
 ]
+
+const residentSteps = [
+  { num: 1, title: 'Open your building home', desc: 'Everything happening in your building, at a glance.' },
+  { num: 2, title: 'Never miss a notice', desc: 'Announcements from management, pinned right to the top.' },
+  { num: 3, title: 'Stay connected', desc: 'Ask, share, and reply with the people next door.' },
+  { num: 4, title: 'Everything else, handled', desc: 'Events, RSVPs, and a calendar that keeps everyone in sync.' },
+]
+
+const managerSteps = [
+  { num: 1, title: 'Post an announcement', desc: 'One post reaches every resident instantly. No emails, no paper.' },
+  { num: 2, title: 'Residents get it immediately', desc: 'It shows up pinned on every resident\'s home screen.' },
+  { num: 3, title: 'Resident asks a question', desc: 'Questions and discussions happen in the community feed.' },
+  { num: 4, title: 'Manager replies once', desc: 'One response, visible to everyone. No more repeating yourself.' },
+  { num: 5, title: 'Events in a timeline', desc: 'BBQs, maintenance, town halls — all in one shared calendar.' },
+]
+
+const storyScreens = {
+  resident: [ResidentHomeScreen, ResidentAnnouncementScreen, ResidentFeedScreen, ResidentEventsScreen],
+  manager: [ManagerCreateAnnouncementScreen, ResidentPinnedAnnouncementScreen, ResidentPostDetailScreen, ManagerMessagesScreen, ManagerEventsScreen],
+}
 
 function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, onResidentSignupClick, onResidentSelectBuilding, onResidentCreateBuilding, onResidentEmailLogin, authError }) {
   // Auth state
@@ -40,6 +65,11 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
   // UI state
   const [showContact, setShowContact] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // Storytelling section state
+  const [storyTab, setStoryTab] = useState('resident')
+  const [storyStep, setStoryStep] = useState(0)
+  const storyCarouselRef = useRef(null)
 
   // Contact form state
   const [contactName, setContactName] = useState('')
@@ -80,6 +110,25 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
 
   // Clear error on input change
   const clearError = () => { if (error) setError('') }
+
+  // Storytelling carousel helpers
+  const handleStoryScroll = () => {
+    const el = storyCarouselRef.current
+    if (!el) return
+    const stepWidth = el.firstElementChild?.offsetWidth || 1
+    const newStep = Math.round(el.scrollLeft / stepWidth)
+    if (newStep !== storyStep) setStoryStep(newStep)
+  }
+
+  const scrollStoryTo = (index) => {
+    const steps = storyTab === 'resident' ? residentSteps : managerSteps
+    const clamped = Math.max(0, Math.min(index, steps.length - 1))
+    setStoryStep(clamped)
+    const el = storyCarouselRef.current
+    if (el && el.children[clamped]) {
+      el.children[clamped].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+    }
+  }
 
   // === ADDRESS SEARCH (debounced) ===
   const performAddressSearch = useCallback(async (query) => {
@@ -196,12 +245,12 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
           </h1>
           <button
             className="mystery-hero-btn mystery-fade mystery-fade-3"
-            onClick={() => scrollTo('hero-content')}
+            onClick={() => scrollTo('storytelling-section')}
           >
             Get Started
           </button>
         </div>
-        <div className="mystery-scroll-hint mystery-fade mystery-fade-4" onClick={() => scrollTo('hero-content')}>
+        <div className="mystery-scroll-hint mystery-fade mystery-fade-4" onClick={() => scrollTo('storytelling-section')}>
           <div className="mystery-scroll-arrow" />
         </div>
       </section>
@@ -321,6 +370,99 @@ function Login({ onResidentLogin, onManagerLogin, onRegisterClick, onDemoLogin, 
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== SEE IT IN 90 SECONDS ===== */}
+      <section id="storytelling-section" className="story-section">
+        <div className="story-inner landing-animate" ref={addAnimateRef}>
+          <div className="story-header">
+            <h2 className="story-title">See it in 90 seconds</h2>
+            <p className="story-subtitle">
+              {storyTab === 'resident'
+                ? "Here's what it looks like when your building comes to life."
+                : "Here's how you go from scattered communication to one simple hub."}
+            </p>
+          </div>
+
+          <div className="story-tabs">
+            <button
+              className={`story-tab ${storyTab === 'resident' ? 'active' : ''}`}
+              onClick={() => { setStoryTab('resident'); setStoryStep(0) }}
+            >
+              For Residents
+            </button>
+            <button
+              className={`story-tab ${storyTab === 'manager' ? 'active' : ''}`}
+              onClick={() => { setStoryTab('manager'); setStoryStep(0) }}
+            >
+              For Managers
+            </button>
+          </div>
+
+          <div className="story-steps-wrapper">
+            <div
+              className="story-steps"
+              ref={storyCarouselRef}
+              onScroll={handleStoryScroll}
+            >
+              {(storyTab === 'resident' ? residentSteps : managerSteps).map((step, i, arr) => {
+                const ScreenComponent = storyScreens[storyTab][i]
+                return (
+                  <div className="story-step" key={`${storyTab}-${step.num}`}>
+                    <div className="story-step-top">
+                      <div className="story-step-circle">{step.num}</div>
+                      {i < arr.length - 1 && <div className="story-step-line" />}
+                    </div>
+                    <div className="story-step-title">{step.title}</div>
+                    <div className="story-step-desc">{step.desc}</div>
+                    <div className="story-phone-frame">
+                      <div className="story-phone-notch" />
+                      <div className="story-phone-screen">
+                        {ScreenComponent && <ScreenComponent />}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="story-carousel-controls">
+            <button
+              className="story-arrow story-arrow-left"
+              onClick={() => scrollStoryTo(storyStep - 1)}
+              disabled={storyStep === 0}
+            >
+              ‹
+            </button>
+            <div className="story-dots">
+              {(storyTab === 'resident' ? residentSteps : managerSteps).map((_, i) => (
+                <div
+                  key={i}
+                  className={`story-dot ${i === storyStep ? 'active' : ''}`}
+                  onClick={() => scrollStoryTo(i)}
+                />
+              ))}
+            </div>
+            <button
+              className="story-arrow story-arrow-right"
+              onClick={() => scrollStoryTo(storyStep + 1)}
+              disabled={storyStep === (storyTab === 'resident' ? residentSteps : managerSteps).length - 1}
+            >
+              ›
+            </button>
+          </div>
+
+          <div className="story-cta">
+            <p className="story-cta-text">Ready to try it?</p>
+            <button
+              className="landing-btn-primary"
+              onClick={() => { setActiveTab('resident'); setAuthMode('join'); scrollTo('auth-section') }}
+            >
+              Sign Up →
+            </button>
           </div>
         </div>
       </section>
