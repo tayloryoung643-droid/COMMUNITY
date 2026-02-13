@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { ArrowLeft, Camera, User, Home, Calendar, FileText, Eye, EyeOff, Hand, Bell, Mail, Package, PartyPopper, MessageSquare, LogOut, ChevronRight, AlertTriangle, Phone, HelpCircle, CheckCircle, Save, Loader2 } from 'lucide-react'
+import { ArrowLeft, Camera, User, Home, Calendar, FileText, Eye, EyeOff, Bell, Mail, Package, PartyPopper, MessageSquare, LogOut, ChevronRight, AlertTriangle, Phone, HelpCircle, CheckCircle, Save, Loader2 } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { updateUserProfile, uploadProfilePhoto, getBuildingManagerContact } from './services/settingsService'
 import './Settings.css'
@@ -19,8 +19,7 @@ function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
 
   // Privacy state
   const [privacy, setPrivacy] = useState({
-    showUnitOnListings: true,
-    allowWaves: true
+    showUnitOnListings: true
   })
 
   // Notifications state
@@ -57,7 +56,7 @@ function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
         bio: 'Coffee enthusiast, dog lover, and weekend hiker. Always happy to chat in the elevator!',
         showInDirectory: true
       })
-      setPrivacy({ showUnitOnListings: true, allowWaves: true })
+      setPrivacy({ showUnitOnListings: true })
       setNotifications({ announcements: true, packages: true, events: false, messages: true })
     } else {
       setProfile({
@@ -69,8 +68,7 @@ function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
         showInDirectory: userProfile.show_in_directory ?? true
       })
       setPrivacy({
-        showUnitOnListings: userProfile.show_unit_on_bulletin ?? true,
-        allowWaves: userProfile.allow_waves ?? true
+        showUnitOnListings: userProfile.show_unit_on_bulletin ?? true
       })
       setNotifications({
         announcements: userProfile.notify_announcements ?? true,
@@ -149,7 +147,6 @@ function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
           bio: profile.bio,
           show_in_directory: profile.showInDirectory,
           show_unit_on_bulletin: privacy.showUnitOnListings,
-          allow_waves: privacy.allowWaves,
           notify_announcements: notifications.announcements,
           notify_packages: notifications.packages,
           notify_events: notifications.events,
@@ -327,21 +324,6 @@ function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
               </button>
             </div>
 
-            <div className="toggle-row">
-              <div className="toggle-info">
-                <Hand size={18} />
-                <div className="toggle-text">
-                  <span className="toggle-label">Allow neighbors to wave</span>
-                  <span className="toggle-description">Receive friendly waves from neighbors</span>
-                </div>
-              </div>
-              <button
-                className={`toggle-switch ${privacy.allowWaves ? 'active' : ''}`}
-                onClick={() => handlePrivacyChange('allowWaves')}
-              >
-                <span className="toggle-knob"></span>
-              </button>
-            </div>
           </div>
         </section>
 
@@ -405,7 +387,7 @@ function Settings({ onBack, onLogout, onNavigate, isDemoMode, userProfile }) {
               <div className="toggle-info">
                 <MessageSquare size={18} />
                 <div className="toggle-text">
-                  <span className="toggle-label">Waves & messages</span>
+                  <span className="toggle-label">Messages</span>
                   <span className="toggle-description">When neighbors interact with you</span>
                 </div>
               </div>

@@ -26,7 +26,6 @@ export function usePermissions() {
   const canCreateEvent = true
   const canCreateListing = true
   const canBookAmenity = true
-  const canWaveToNeighbor = true
   const canSendMessage = true
 
   // Moderation permissions (Tier 2 only)
@@ -46,7 +45,6 @@ export function usePermissions() {
     canCreateEvent,
     canCreateListing,
     canBookAmenity,
-    canWaveToNeighbor,
     canSendMessage,
     // Moderation
     canFlagContent,

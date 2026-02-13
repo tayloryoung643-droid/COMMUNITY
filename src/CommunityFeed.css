@@ -576,33 +576,6 @@
   color: #8A8075;
 }
 
-/* Sidebar Wave Button */
-.sidebar-wave-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: transparent;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
-  color: #8A8075;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.sidebar-wave-btn:hover {
-  background: #F3EEE5;
-  color: #4A4A4A;
-}
-
-.sidebar-wave-btn.waved {
-  background: #E8F5E9;
-  border-color: #C8E6C9;
-  color: #2E7D32;
-}
-
 /* Modal Styles */
 .community-feed-container .modal-overlay {
   position: fixed;

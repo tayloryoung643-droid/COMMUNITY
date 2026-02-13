@@ -1,23 +1,23 @@
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Hand, Users, UserPlus, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
+import { ArrowLeft, Users, UserPlus, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
 import { supabase } from './lib/supabase'
 import { useAuth } from './contexts/AuthContext'
 import './Neighbors.css'
 
 // Demo neighbor data
 const DEMO_NEIGHBORS = [
-  { id: 1, name: "Sarah Chen", unit: "1201", floor: 12, color: "blue", waved: false },
-  { id: 2, name: "Michael Torres", unit: "1203", floor: 12, color: "purple", waved: false },
-  { id: 3, name: "Emily Rodriguez", unit: "1205", floor: 12, color: "cyan", waved: false },
-  { id: 4, name: "David Kim", unit: "1207", floor: 12, color: "green", waved: false },
-  { id: 5, name: "Jessica Patel", unit: "1102", floor: 11, color: "pink", waved: false },
-  { id: 6, name: "James Wilson", unit: "1104", floor: 11, color: "orange", waved: false },
-  { id: 7, name: "Maria Garcia", unit: "1106", floor: 11, color: "blue", waved: false },
-  { id: 8, name: "Robert Lee", unit: "1301", floor: 13, color: "purple", waved: false },
-  { id: 9, name: "Amanda Brown", unit: "1303", floor: 13, color: "cyan", waved: false },
-  { id: 10, name: "Chris Johnson", unit: "1305", floor: 13, color: "green", waved: false },
-  { id: 11, name: "Lisa Anderson", unit: "1307", floor: 13, color: "pink", waved: false },
-  { id: 12, name: "Daniel Martinez", unit: "1002", floor: 10, color: "orange", waved: false },
+  { id: 1, name: "Sarah Chen", unit: "1201", floor: 12, color: "blue" },
+  { id: 2, name: "Michael Torres", unit: "1203", floor: 12, color: "purple" },
+  { id: 3, name: "Emily Rodriguez", unit: "1205", floor: 12, color: "cyan" },
+  { id: 4, name: "David Kim", unit: "1207", floor: 12, color: "green" },
+  { id: 5, name: "Jessica Patel", unit: "1102", floor: 11, color: "pink" },
+  { id: 6, name: "James Wilson", unit: "1104", floor: 11, color: "orange" },
+  { id: 7, name: "Maria Garcia", unit: "1106", floor: 11, color: "blue" },
+  { id: 8, name: "Robert Lee", unit: "1301", floor: 13, color: "purple" },
+  { id: 9, name: "Amanda Brown", unit: "1303", floor: 13, color: "cyan" },
+  { id: 10, name: "Chris Johnson", unit: "1305", floor: 13, color: "green" },
+  { id: 11, name: "Lisa Anderson", unit: "1307", floor: 13, color: "pink" },
+  { id: 12, name: "Daniel Martinez", unit: "1002", floor: 10, color: "orange" },
   { id: 13, name: "Sophie Taylor", unit: "1004", floor: 10, color: "blue", waved: false }
 ]
 
@@ -95,7 +95,7 @@ function Neighbors({ onBack, isDemoMode, userProfile, onNavigate }) {
       try {
         const { data, error } = await supabase
           .from('users')
-          .select('id, full_name, unit_number, avatar_url, allow_waves')
+          .select('id, full_name, unit_number, avatar_url')
           .eq('building_id', buildingId)
           .eq('role', 'resident')
           .neq('id', userProfile.id) // Exclude current user
@@ -125,9 +125,7 @@ function Neighbors({ onBack, isDemoMode, userProfile, onNavigate }) {
                 unit: user.unit_number || 'N/A',
                 floor: user.unit_number ? parseInt(user.unit_number.toString().slice(0, -2)) || 1 : 1,
                 color: COLORS[index % COLORS.length],
-                avatarSignedUrl,
-                allowWaves: user.allow_waves !== false,
-                waved: false
+                avatarSignedUrl
               }
             })
           )
@@ -149,19 +147,6 @@ function Neighbors({ onBack, isDemoMode, userProfile, onNavigate }) {
   // Get initials from name
   const getInitials = (name) => {
     return name.split(' ').map(n => n[0]).join('')
-  }
-
-  // Handle Wave toggle
-  const handleWave = (neighborId) => {
-    setNeighbors(neighbors.map(neighbor => {
-      if (neighbor.id === neighborId) {
-        return {
-          ...neighbor,
-          waved: !neighbor.waved
-        }
-      }
-      return neighbor
-    }))
   }
 
   // Group neighbors by floor
@@ -257,13 +242,6 @@ function Neighbors({ onBack, isDemoMode, userProfile, onNavigate }) {
                     <h3 className="neighbor-name">{neighbor.name}</h3>
                     <p className="neighbor-unit">Unit {neighbor.unit}</p>
                   </div>
-                  <button
-                    className={`wave-button ${neighbor.waved ? 'waved' : ''}`}
-                    onClick={() => handleWave(neighbor.id)}
-                  >
-                    <Hand size={18} />
-                    <span>{neighbor.waved ? 'Waved!' : 'Wave'}</span>
-                  </button>
                 </article>
               ))}
             </div>

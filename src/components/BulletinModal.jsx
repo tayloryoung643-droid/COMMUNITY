@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { X, Send, Car, Box, ShoppingBag, Briefcase, Search } from 'lucide-react'
+import { X, Send, Car, Box, ShoppingBag, Briefcase, Search, Mail, Phone } from 'lucide-react'
 import { createListing } from '../services/bulletinService'
+import { useAuth } from '../contexts/AuthContext'
 import './BulletinModal.css'
 
 const CATEGORIES = [
@@ -27,10 +28,23 @@ const EMPTY_FORM = {
 }
 
 function BulletinModal({ isOpen, onClose, onSuccess, userProfile, isInDemoMode }) {
+  const { user } = useAuth()
   const [form, setForm] = useState(EMPTY_FORM)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [shareEmail, setShareEmail] = useState(false)
+  const [sharePhone, setSharePhone] = useState(false)
+  const [contactEmail, setContactEmail] = useState('')
+  const [contactPhone, setContactPhone] = useState('')
 
-  const resetForm = () => setForm(EMPTY_FORM)
+  const hasValidContact = (shareEmail && contactEmail.trim()) || (sharePhone && contactPhone.trim())
+
+  const resetForm = () => {
+    setForm(EMPTY_FORM)
+    setShareEmail(false)
+    setSharePhone(false)
+    setContactEmail('')
+    setContactPhone('')
+  }
 
   const handleClose = () => {
     resetForm()
@@ -87,7 +101,9 @@ function BulletinModal({ isOpen, onClose, onSuccess, userProfile, isInDemoMode }
           title: form.title,
           description: form.details,
           price: form.price ? parseFloat(form.price.replace(/[^0-9.]/g, '')) : null,
-          status: 'active'
+          status: 'active',
+          contact_email: shareEmail && contactEmail.trim() ? contactEmail.trim() : null,
+          contact_phone: sharePhone && contactPhone.trim() ? contactPhone.trim() : null
         })
         resetForm()
         onClose()
@@ -162,6 +178,57 @@ function BulletinModal({ isOpen, onClose, onSuccess, userProfile, isInDemoMode }
               onChange={(e) => setForm({ ...form, price: e.target.value })}
             />
           </div>
+
+          {/* Contact Section */}
+          <div className="bulletin-contact-section">
+            <label>How should people reach you?</label>
+            <div className="bulletin-contact-option">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={shareEmail}
+                  onChange={e => {
+                    setShareEmail(e.target.checked)
+                    if (e.target.checked && !contactEmail) {
+                      setContactEmail(user?.email || '')
+                    }
+                  }}
+                />
+                <Mail size={16} />
+                <span>Email</span>
+              </label>
+              {shareEmail && (
+                <input
+                  type="email"
+                  placeholder="your@email.com"
+                  value={contactEmail}
+                  onChange={e => setContactEmail(e.target.value)}
+                />
+              )}
+            </div>
+            <div className="bulletin-contact-option">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={sharePhone}
+                  onChange={e => setSharePhone(e.target.checked)}
+                />
+                <Phone size={16} />
+                <span>Phone</span>
+              </label>
+              {sharePhone && (
+                <input
+                  type="tel"
+                  placeholder="(555) 123-4567"
+                  value={contactPhone}
+                  onChange={e => setContactPhone(e.target.value)}
+                />
+              )}
+            </div>
+            <p className="bulletin-contact-helper">
+              This will be visible on your listing so interested neighbors can reach you.
+            </p>
+          </div>
         </div>
 
         <div className="modal-footer">
@@ -171,7 +238,7 @@ function BulletinModal({ isOpen, onClose, onSuccess, userProfile, isInDemoMode }
           <button
             className="btn-primary"
             onClick={handleSubmit}
-            disabled={!form.title.trim() || isSubmitting}
+            disabled={!form.title.trim() || !hasValidContact || isSubmitting}
           >
             <Send size={16} />
             {isSubmitting ? 'Posting...' : 'Post Listing'}

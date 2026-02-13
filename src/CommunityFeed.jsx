@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { MessageSquare, HelpCircle, Flag, Heart, MessageCircle, Share2, MoreHorizontal, Send, X, Sparkles, Users, Hand, ChevronDown, ChevronUp, Search, Sun, Cloud, CloudRain, Snowflake, Moon, Edit3, Trash2, Save, Check } from 'lucide-react'
+import { MessageSquare, HelpCircle, Flag, Heart, MessageCircle, Share2, MoreHorizontal, Send, X, Sparkles, Users, ChevronDown, ChevronUp, Search, Sun, Cloud, CloudRain, Snowflake, Moon, Edit3, Trash2, Save, Check } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { supabase } from './lib/supabase'
 import { getPosts, createPost, deletePost, updatePost, likePost, unlikePost, getUserLikes } from './services/communityPostService'
@@ -89,18 +89,18 @@ const DEMO_POSTS = [
 
 // Demo neighbors data
 const DEMO_NEIGHBORS = [
-  { id: 1, name: "Sarah Chen", unit: "1201", floor: 12, color: "blue", waved: false },
-  { id: 2, name: "Michael Torres", unit: "1203", floor: 12, color: "purple", waved: false },
-  { id: 3, name: "Emily Rodriguez", unit: "1205", floor: 12, color: "cyan", waved: false },
-  { id: 4, name: "David Kim", unit: "1207", floor: 12, color: "green", waved: false },
-  { id: 5, name: "Jessica Patel", unit: "1102", floor: 11, color: "pink", waved: false },
-  { id: 6, name: "James Wilson", unit: "1104", floor: 11, color: "orange", waved: false },
-  { id: 7, name: "Maria Garcia", unit: "1106", floor: 11, color: "blue", waved: false },
-  { id: 8, name: "Robert Lee", unit: "1301", floor: 13, color: "purple", waved: false },
-  { id: 9, name: "Amanda Brown", unit: "1303", floor: 13, color: "cyan", waved: false },
-  { id: 10, name: "Chris Johnson", unit: "1305", floor: 13, color: "green", waved: false },
-  { id: 11, name: "Lisa Anderson", unit: "1307", floor: 13, color: "pink", waved: false },
-  { id: 12, name: "Daniel Martinez", unit: "1002", floor: 10, color: "orange", waved: false },
+  { id: 1, name: "Sarah Chen", unit: "1201", floor: 12, color: "blue" },
+  { id: 2, name: "Michael Torres", unit: "1203", floor: 12, color: "purple" },
+  { id: 3, name: "Emily Rodriguez", unit: "1205", floor: 12, color: "cyan" },
+  { id: 4, name: "David Kim", unit: "1207", floor: 12, color: "green" },
+  { id: 5, name: "Jessica Patel", unit: "1102", floor: 11, color: "pink" },
+  { id: 6, name: "James Wilson", unit: "1104", floor: 11, color: "orange" },
+  { id: 7, name: "Maria Garcia", unit: "1106", floor: 11, color: "blue" },
+  { id: 8, name: "Robert Lee", unit: "1301", floor: 13, color: "purple" },
+  { id: 9, name: "Amanda Brown", unit: "1303", floor: 13, color: "cyan" },
+  { id: 10, name: "Chris Johnson", unit: "1305", floor: 13, color: "green" },
+  { id: 11, name: "Lisa Anderson", unit: "1307", floor: 13, color: "pink" },
+  { id: 12, name: "Daniel Martinez", unit: "1002", floor: 10, color: "orange" },
   { id: 13, name: "Sophie Taylor", unit: "1004", floor: 10, color: "blue", waved: false }
 ]
 
@@ -187,7 +187,7 @@ function CommunityFeed({ onNavigate }) {
         try {
           const { data, error } = await supabase
             .from('users')
-            .select('id, full_name, unit_number, avatar_url, allow_waves')
+            .select('id, full_name, unit_number, avatar_url')
             .eq('building_id', buildingId)
             .eq('role', 'resident')
             .neq('id', userProfile.id)
@@ -213,8 +213,7 @@ function CommunityFeed({ onNavigate }) {
               unit: user.unit_number || 'N/A',
               floor: user.unit_number ? parseInt(user.unit_number.toString().slice(0, -2)) || 1 : 1,
               color: COLORS[index % COLORS.length],
-              avatarUrl: avatarUrlMap[user.id] || null,
-              waved: false
+              avatarUrl: avatarUrlMap[user.id] || null
             }))
             setNeighbors(transformed)
             console.log('[CommunityFeed] Neighbors fetched:', transformed.length)
@@ -306,16 +305,6 @@ function CommunityFeed({ onNavigate }) {
         ? prev.filter(f => f !== floor)
         : [...prev, floor]
     )
-  }
-
-  // Handle Wave toggle
-  const handleWave = (neighborId) => {
-    setNeighbors(neighbors.map(neighbor => {
-      if (neighbor.id === neighborId) {
-        return { ...neighbor, waved: !neighbor.waved }
-      }
-      return neighbor
-    }))
   }
 
   // Get initials from name
@@ -727,12 +716,6 @@ function CommunityFeed({ onNavigate }) {
                               <span className="sidebar-resident-name">{neighbor.name}</span>
                               <span className="sidebar-resident-unit">{neighbor.unit}</span>
                             </div>
-                            <button
-                              className={`sidebar-wave-btn ${neighbor.waved ? 'waved' : ''}`}
-                              onClick={() => handleWave(neighbor.id)}
-                            >
-                              <Hand size={14} />
-                            </button>
                           </div>
                         ))}
                       </div>
@@ -804,12 +787,6 @@ function CommunityFeed({ onNavigate }) {
                                   <span className="sidebar-resident-name">{neighbor.name}</span>
                                   <span className="sidebar-resident-unit">{neighbor.unit}</span>
                                 </div>
-                                <button
-                                  className={`sidebar-wave-btn ${neighbor.waved ? 'waved' : ''}`}
-                                  onClick={() => handleWave(neighbor.id)}
-                                >
-                                  <Hand size={14} />
-                                </button>
                               </div>
                             ))}
                           </div>

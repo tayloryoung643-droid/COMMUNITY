@@ -174,3 +174,72 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Contact Section */
+.bulletin-contact-section {
+  margin-bottom: 16px;
+  padding: 14px;
+  background: #F5F0E8;
+  border-radius: 12px;
+}
+
+.bulletin-contact-section > label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2C2520;
+  margin-bottom: 10px;
+}
+
+.bulletin-contact-option {
+  margin-bottom: 10px;
+}
+
+.bulletin-contact-option:last-of-type {
+  margin-bottom: 8px;
+}
+
+.bulletin-contact-option .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4A4A4A;
+  margin-bottom: 6px;
+}
+
+.bulletin-contact-option .checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #5B9A9A;
+  cursor: pointer;
+}
+
+.bulletin-contact-option input[type="email"],
+.bulletin-contact-option input[type="tel"] {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #2C2520;
+  background: #FFFCF7;
+  border: 1px solid rgba(200, 185, 165, 0.3);
+  border-radius: 10px;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.bulletin-contact-option input[type="email"]:focus,
+.bulletin-contact-option input[type="tel"]:focus {
+  border-color: #5B9A9A;
+}
+
+.bulletin-contact-helper {
+  font-size: 12px;
+  color: #8B7E74;
+  margin: 0;
+  line-height: 1.4;
+}

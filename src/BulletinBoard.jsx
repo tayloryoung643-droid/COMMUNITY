@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Pin, Car, Box, ShoppingBag, Briefcase, Search, Plus, X, Send, MessageCircle, Clock, ChevronRight, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
+import { ArrowLeft, Pin, Car, Box, ShoppingBag, Briefcase, Search, Plus, X, Send, MessageCircle, Clock, ChevronRight, Sun, Cloud, CloudRain, Snowflake, Moon, Mail, Phone } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getListings, createListing } from './services/bulletinService'
 import EmptyState from './components/EmptyState'
@@ -166,7 +166,7 @@ const dbToCategory = {
 }
 
 function BulletinBoard({ onBack }) {
-  const { userProfile, isDemoMode, buildingBackgroundUrl } = useAuth()
+  const { user, userProfile, isDemoMode, buildingBackgroundUrl } = useAuth()
   const isInDemoMode = isDemoMode || userProfile?.is_demo === true
 
   const [listings, setListings] = useState([])
@@ -183,6 +183,10 @@ function BulletinBoard({ onBack }) {
     price: '',
     details: ''
   })
+  const [postShareEmail, setPostShareEmail] = useState(false)
+  const [postSharePhone, setPostSharePhone] = useState(false)
+  const [postContactEmail, setPostContactEmail] = useState('')
+  const [postContactPhone, setPostContactPhone] = useState('')
 
   // Weather and time state - matches Home exactly
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -265,7 +269,9 @@ function BulletinBoard({ onBack }) {
             price: listing.price == null || listing.price === 0 || listing.price === '0' ? 'Free' : (typeof listing.price === 'number' ? `$${listing.price}` : (String(listing.price).startsWith('$') ? listing.price : `$${listing.price}`)),
             unit: listing.author?.role?.includes('manager') ? 'Management' : (listing.author?.unit_number ? `Unit ${listing.author.unit_number}` : 'Unit Unknown'),
             timestamp: new Date(listing.created_at).getTime(),
-            color: categoryColors[listing.category] || '#6b7280'
+            color: categoryColors[listing.category] || '#6b7280',
+            contact_email: listing.contact_email || null,
+            contact_phone: listing.contact_phone || null
           }
         })
         setListings(transformedData)
@@ -335,7 +341,9 @@ function BulletinBoard({ onBack }) {
           title: postForm.title,
           description: postForm.details,
           price: postForm.price ? parseFloat(postForm.price.replace(/[^0-9.]/g, '')) : null,
-          status: 'active'
+          status: 'active',
+          contact_email: postShareEmail && postContactEmail.trim() ? postContactEmail.trim() : null,
+          contact_phone: postSharePhone && postContactPhone.trim() ? postContactPhone.trim() : null
         })
         // Reload listings
         const data = await getListings(userProfile.building_id)
@@ -350,7 +358,9 @@ function BulletinBoard({ onBack }) {
             price: listing.price == null || listing.price === 0 || listing.price === '0' ? 'Free' : (typeof listing.price === 'number' ? `$${listing.price}` : (String(listing.price).startsWith('$') ? listing.price : `$${listing.price}`)),
             unit: listing.author?.role?.includes('manager') ? 'Management' : (listing.author?.unit_number ? `Unit ${listing.author.unit_number}` : 'Unit Unknown'),
             timestamp: new Date(listing.created_at).getTime(),
-            color: categoryColors[listing.category] || '#6b7280'
+            color: categoryColors[listing.category] || '#6b7280',
+            contact_email: listing.contact_email || null,
+            contact_phone: listing.contact_phone || null
           }
         })
         setListings(transformedData)
@@ -367,6 +377,10 @@ function BulletinBoard({ onBack }) {
       price: '',
       details: ''
     })
+    setPostShareEmail(false)
+    setPostSharePhone(false)
+    setPostContactEmail('')
+    setPostContactPhone('')
   }
 
   const bgStyle = buildingBackgroundUrl ? { '--building-bg-image': `url(${buildingBackgroundUrl})` } : {}
@@ -503,13 +517,30 @@ function BulletinBoard({ onBack }) {
                     <span className="listing-price">{listing.price}</span>
                     <span className="listing-unit">{listing.unit}</span>
                   </div>
-                  <button
-                    className="contact-btn"
-                    onClick={() => handleContact(listing)}
-                  >
-                    <MessageCircle size={16} />
-                    <span>Contact</span>
-                  </button>
+                  {listing.contact_email || listing.contact_phone ? (
+                    <div className="listing-contact-links">
+                      {listing.contact_email && (
+                        <a href={`mailto:${listing.contact_email}`} className="contact-link" onClick={e => e.stopPropagation()}>
+                          <Mail size={14} />
+                          <span>Email</span>
+                        </a>
+                      )}
+                      {listing.contact_phone && (
+                        <a href={`tel:${listing.contact_phone}`} className="contact-link" onClick={e => e.stopPropagation()}>
+                          <Phone size={14} />
+                          <span>Call</span>
+                        </a>
+                      )}
+                    </div>
+                  ) : (
+                    <button
+                      className="contact-btn"
+                      onClick={() => handleContact(listing)}
+                    >
+                      <MessageCircle size={16} />
+                      <span>Contact</span>
+                    </button>
+                  )}
                 </div>
               </article>
             ))
@@ -596,10 +627,56 @@ function BulletinBoard({ onBack }) {
                 />
               </div>
 
-              <p className="post-note">
-                <Pin size={14} />
-                Your listing will show "Posted by Unit 1201"
-              </p>
+              {/* Contact Section */}
+              <div className="bulletin-contact-section">
+                <label>How should people reach you?</label>
+                <div className="bulletin-contact-option">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={postShareEmail}
+                      onChange={e => {
+                        setPostShareEmail(e.target.checked)
+                        if (e.target.checked && !postContactEmail) {
+                          setPostContactEmail(user?.email || '')
+                        }
+                      }}
+                    />
+                    <Mail size={16} />
+                    <span>Email</span>
+                  </label>
+                  {postShareEmail && (
+                    <input
+                      type="email"
+                      placeholder="your@email.com"
+                      value={postContactEmail}
+                      onChange={e => setPostContactEmail(e.target.value)}
+                    />
+                  )}
+                </div>
+                <div className="bulletin-contact-option">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={postSharePhone}
+                      onChange={e => setPostSharePhone(e.target.checked)}
+                    />
+                    <Phone size={16} />
+                    <span>Phone</span>
+                  </label>
+                  {postSharePhone && (
+                    <input
+                      type="tel"
+                      placeholder="(555) 123-4567"
+                      value={postContactPhone}
+                      onChange={e => setPostContactPhone(e.target.value)}
+                    />
+                  )}
+                </div>
+                <p className="bulletin-contact-helper">
+                  This will be visible on your listing so interested neighbors can reach you.
+                </p>
+              </div>
             </div>
 
             <div className="modal-footer">
@@ -609,7 +686,7 @@ function BulletinBoard({ onBack }) {
               <button
                 className="modal-submit"
                 onClick={handlePostSubmit}
-                disabled={!postForm.title.trim()}
+                disabled={!postForm.title.trim() || !((postShareEmail && postContactEmail.trim()) || (postSharePhone && postContactPhone.trim()))}
               >
                 <Send size={16} />
                 <span>Post Listing</span>
