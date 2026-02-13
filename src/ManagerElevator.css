@@ -1,6 +1,9 @@
 /* Manager Elevator Booking */
 .manager-elevator {
   padding: var(--spacing-lg);
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* Header */
@@ -72,6 +75,9 @@
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-lg);
   font-size: var(--font-size-sm);
+  white-space: nowrap;
+  max-width: 100%;
+  box-sizing: border-box;
   font-weight: 600;
   color: white;
   background: var(--md-accent);
@@ -89,9 +95,11 @@
 /* Stats Row */
 .elevator-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-md);
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
   margin-bottom: var(--spacing-lg);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .elevator-stats .stat-card {
@@ -186,6 +194,7 @@
   cursor: pointer;
   transition: all var(--transition-base);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .filter-chip:hover {
@@ -1035,11 +1044,13 @@
 }
 
 /* Responsive Design */
-@media (max-width: 1024px) {
+@media (min-width: 1025px) {
   .elevator-stats {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
+}
 
+@media (max-width: 1024px) {
   .calendar-grid {
     grid-template-columns: repeat(4, 1fr);
   }
@@ -1071,11 +1082,6 @@
     padding: var(--spacing-sm);
     width: 44px;
     height: 44px;
-  }
-
-  .elevator-stats {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-sm);
   }
 
   .elevator-stats .stat-card {

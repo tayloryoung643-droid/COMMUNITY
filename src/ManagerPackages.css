@@ -1,6 +1,9 @@
 /* Manager Packages */
 .manager-packages {
   padding: var(--spacing-lg);
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* Header */
@@ -39,6 +42,9 @@
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all var(--transition-base);
+  white-space: nowrap;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .log-package-btn:hover {
@@ -49,9 +55,11 @@
 /* Stats Row */
 .packages-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-md);
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
   margin-bottom: var(--spacing-lg);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .packages-stats .stat-card {
@@ -963,9 +971,9 @@
 }
 
 /* Responsive Design */
-@media (max-width: 1024px) {
+@media (min-width: 1025px) {
   .packages-stats {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
@@ -983,11 +991,6 @@
     justify-content: center;
   }
 
-  .packages-stats {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-sm);
-  }
-
   .packages-stats .stat-card {
     padding: var(--spacing-sm) var(--spacing-md);
   }
@@ -999,6 +1002,11 @@
 
   .packages-stats .stat-value {
     font-size: var(--font-size-lg);
+  }
+
+  .log-package-btn {
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .packages-toolbar {

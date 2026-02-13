@@ -1,6 +1,9 @@
 /* Manager Calendar */
 .manager-calendar {
   padding: var(--spacing-lg);
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* Header */
@@ -112,6 +115,7 @@
   cursor: pointer;
   transition: all var(--transition-base);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .filter-chip:hover {

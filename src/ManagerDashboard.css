@@ -313,9 +313,12 @@
   flex: 1;
   padding: var(--spacing-xl);
   overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
   z-index: 2;
   background: #F5F0EB;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* Top Bar - Soft, editorial header */

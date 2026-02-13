@@ -3,6 +3,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* Header Section */
@@ -254,7 +257,15 @@
 .residents-filters {
   display: flex;
   gap: var(--spacing-xs);
-  flex-wrap: wrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 4px;
+}
+
+.residents-filters::-webkit-scrollbar {
+  display: none;
 }
 
 .residents-filters .filter-btn {
@@ -263,6 +274,8 @@
   gap: var(--spacing-xs);
   padding: var(--spacing-xs) var(--spacing-md);
   font-size: var(--font-size-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
   font-weight: 500;
   color: var(--md-text-muted);
   background: transparent;

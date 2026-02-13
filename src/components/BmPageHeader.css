@@ -68,12 +68,10 @@
 .bm-hero-text-container {
   position: absolute;
   bottom: 48px;
-  left: 0;
-  right: 0;
+  left: 20px;
+  right: 20px;
   text-align: center;
-  padding: 0 20px;
   box-sizing: border-box;
-  width: 100%;
 }
 
 /* Page title - similar to Home.css .hero-building-name */
@@ -128,8 +126,6 @@
 
   .bm-hero-text-container {
     bottom: 32px;
-    padding: 0 16px;
-    box-sizing: border-box;
   }
 
   .bm-hero-title {

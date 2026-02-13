@@ -1,6 +1,9 @@
 /* Manager Bulletin Board */
 .manager-bulletin {
   padding: var(--spacing-lg);
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* Header */
@@ -39,6 +42,9 @@
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all var(--transition-base);
+  white-space: nowrap;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .create-listing-btn:hover {
@@ -49,9 +55,11 @@
 /* Stats Row */
 .bulletin-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-md);
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
   margin-bottom: var(--spacing-lg);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .bulletin-stats .stat-card {
@@ -831,11 +839,13 @@
 }
 
 /* Responsive Design */
-@media (max-width: 1024px) {
+@media (min-width: 1025px) {
   .bulletin-stats {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
+}
 
+@media (max-width: 1024px) {
   .listings-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -853,11 +863,8 @@
 
   .create-listing-btn {
     justify-content: center;
-  }
-
-  .bulletin-stats {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-sm);
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .bulletin-stats .stat-card {
