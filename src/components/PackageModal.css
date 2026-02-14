@@ -1,17 +1,17 @@
-/* PackageModal - Shared package modal component styles */
+/* PackageModal - Warm cream theme matching EventModal */
 
 .package-modal {
-  background: rgba(45, 60, 75, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--md-border);
-  border-radius: var(--radius-xl);
+  background: #FFFCF7 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(200, 185, 165, 0.2);
+  border-radius: 20px;
   width: 100%;
   max-width: 520px;
   max-height: 90vh;
   overflow-y: auto;
   animation: packageModalSlideUp 0.3s ease;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 24px 80px rgba(44, 37, 32, 0.15), 0 8px 24px rgba(44, 37, 32, 0.08);
 }
 
 @keyframes packageModalSlideUp {
@@ -29,14 +29,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-lg);
-  border-bottom: 1px solid var(--md-border-subtle);
+  padding: 20px;
+  border-bottom: 1px solid rgba(200, 185, 165, 0.15);
 }
 
 .package-modal .modal-header h3 {
-  font-size: var(--font-size-lg);
+  font-size: 20px;
   font-weight: 600;
-  color: var(--md-text-heading);
+  color: #2C2520;
   margin: 0;
 }
 
@@ -46,59 +46,61 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  background: transparent;
+  background: #F3EEE5;
   border: none;
-  border-radius: var(--radius-md);
-  color: var(--md-text-muted);
+  border-radius: 10px;
+  color: #4A4A4A;
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition: all 0.2s ease;
 }
 
 .package-modal .modal-close:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--md-text-primary);
+  background: #E8E3DA;
+  color: #2C2520;
 }
 
 .package-modal .modal-body {
-  padding: var(--spacing-lg);
+  padding: 20px;
 }
 
 .package-modal .form-group {
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: 16px;
 }
 
 .package-modal .form-group label {
   display: block;
-  font-size: var(--font-size-sm);
+  font-size: 13px;
   font-weight: 500;
-  color: var(--md-text-secondary);
-  margin-bottom: var(--spacing-sm);
+  color: #6B5E52;
+  margin-bottom: 6px;
 }
 
 .package-modal .form-group input,
 .package-modal .form-group textarea,
 .package-modal .form-group select {
   width: 100%;
-  padding: var(--spacing-md);
-  font-size: var(--font-size-base);
-  color: var(--md-text-primary);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--md-border);
-  border-radius: var(--radius-md);
-  transition: all var(--transition-base);
+  padding: 12px 14px;
+  font-size: 15px;
+  color: #2C2520;
+  background: #F5F0E8;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  outline: none;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  box-sizing: border-box;
 }
 
 .package-modal .form-group input:focus,
 .package-modal .form-group textarea:focus,
 .package-modal .form-group select:focus {
-  outline: none;
-  border-color: var(--md-accent);
-  background: rgba(255, 255, 255, 0.08);
+  background: #FFFCF7;
+  border-color: #5B9A9A;
 }
 
 .package-modal .form-group input::placeholder,
 .package-modal .form-group textarea::placeholder {
-  color: var(--md-text-muted);
+  color: #8B7E74;
 }
 
 .package-modal .form-group input:disabled,
@@ -110,7 +112,7 @@
 .package-modal .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-md);
+  gap: 12px;
 }
 
 .package-modal .checkbox-group {
@@ -121,61 +123,61 @@
 .package-modal .checkbox-label {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: 8px;
   cursor: pointer;
-  font-size: var(--font-size-sm);
-  color: var(--md-text-secondary);
+  font-size: 13px;
+  color: #6B5E52;
 }
 
 .package-modal .checkbox-label input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  accent-color: var(--md-accent);
+  accent-color: #5B9A9A;
   cursor: pointer;
 }
 
 .package-modal .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-lg);
-  border-top: 1px solid var(--md-border-subtle);
+  gap: 8px;
+  padding: 16px 20px;
+  border-top: 1px solid rgba(200, 185, 165, 0.15);
 }
 
 .package-modal .btn-secondary {
-  padding: var(--spacing-sm) var(--spacing-lg);
-  font-size: var(--font-size-sm);
+  padding: 10px 20px;
+  font-size: 14px;
   font-weight: 500;
-  color: var(--md-text-secondary);
+  color: #6B5E52;
   background: transparent;
-  border: 1px solid var(--md-border);
-  border-radius: var(--radius-md);
+  border: 1px solid rgba(200, 185, 165, 0.3);
+  border-radius: 10px;
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition: all 0.2s ease;
 }
 
 .package-modal .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: var(--md-border-hover);
+  background: #F3EEE5;
+  border-color: rgba(200, 185, 165, 0.4);
 }
 
 .package-modal .btn-primary {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-lg);
-  font-size: var(--font-size-sm);
+  gap: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
   font-weight: 500;
-  color: var(--md-bg-primary);
-  background: var(--md-accent);
+  color: #FFFFFF;
+  background: #5B9A9A;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition: all 0.2s ease;
 }
 
 .package-modal .btn-primary:hover:not(:disabled) {
-  background: var(--md-accent-hover);
+  background: #4A8585;
   transform: translateY(-1px);
 }
 
@@ -188,8 +190,8 @@
 @media (max-width: 600px) {
   .package-modal {
     max-width: 100%;
-    margin: var(--spacing-md);
-    max-height: calc(100vh - var(--spacing-lg) * 2);
+    margin: 12px;
+    max-height: calc(100vh - 24px);
   }
 
   .package-modal .form-row {
