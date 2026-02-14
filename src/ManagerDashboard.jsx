@@ -63,6 +63,7 @@ import PackageModal from './components/PackageModal'
 import FeedbackModal from './components/FeedbackModal'
 import BmPageHeader from './components/BmPageHeader'
 import LoadingSplash from './components/LoadingSplash'
+import DemoTour from './components/DemoTour'
 
 function ManagerDashboard({ onLogout, buildingData }) {
   // Auth context for demo detection and user info
@@ -621,7 +622,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
             {/* LEFT COLUMN - Primary Narrative */}
             <div className="dashboard-column-left">
               {/* Today at Building Card */}
-              <div className="narrative-card today-card-v2">
+              <div className="narrative-card today-card-v2" data-tour="dashboard-overview">
                 <h2 className="card-title-v2">Today at {building.name}</h2>
                 <p className="narrative-summary">{getNarrativeSummary()}</p>
                 <div className="status-pills">
@@ -711,7 +712,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
               {/* Quick Actions Card */}
               <div className="narrative-card actions-card-v2">
                 <h3 className="card-title-v2">Quick Actions</h3>
-                <div className="quick-actions-v2">
+                <div className="quick-actions-v2" data-tour="quick-actions">
                   {quickActions.map(action => (
                     <button
                       key={action.id}
@@ -873,6 +874,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
                 key={item.id}
                 className={`nav-item ${activeNav === item.id ? 'active' : ''}`}
                 onClick={() => handleNavClick(item.id)}
+                data-tour={`nav-${item.id}`}
               >
                 <item.icon size={20} />
                 <span>{item.label}</span>
@@ -1150,6 +1152,9 @@ function ManagerDashboard({ onLogout, buildingData }) {
         isDemoMode={isDemoMode}
         pageContext={`manager_${activeNav}`}
       />
+
+      {/* Demo Tour */}
+      {isDemoMode && <DemoTour role="manager" />}
     </div>
   )
 }

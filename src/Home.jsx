@@ -13,6 +13,7 @@ import LoadingSplash from './components/LoadingSplash'
 import EventModal from './components/EventModal'
 import PostModal from './components/PostModal'
 import BulletinModal from './components/BulletinModal'
+import DemoTour from './components/DemoTour'
 import './Home.css'
 
 function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
@@ -622,17 +623,19 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
         <main className="main-content">
         {/* Today at Building */}
         <section className="today-section">
-          <h2 className="section-title">Today at {isDemoMode ? 'The Paramount' : buildingName}</h2>
+          <div data-tour="today-section">
+            <h2 className="section-title">Today at {isDemoMode ? 'The Paramount' : buildingName}</h2>
 
-          {/* Home Intelligence Context Lines - subtle helper text */}
-          {contextLine1 && (
-            <div className="home-context-lines">
-              <p className="context-line context-line-1">{contextLine1}</p>
-              {contextLine2 && (
-                <p className="context-line context-line-2">{contextLine2}</p>
-              )}
-            </div>
-          )}
+            {/* Home Intelligence Context Lines - subtle helper text */}
+            {contextLine1 && (
+              <div className="home-context-lines">
+                <p className="context-line context-line-1">{contextLine1}</p>
+                {contextLine2 && (
+                  <p className="context-line context-line-2">{contextLine2}</p>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Quick Create Bar */}
           <div className="quick-create-bar">
@@ -666,7 +669,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
           {/* Packages Card - Demo or Real (hidden for resident-led buildings) */}
           {!isResidentLed && (isDemoMode ? (
             <>
-              <button className="today-card" onClick={() => handleFeatureClick('Packages')}>
+              <button className="today-card" data-tour="announcement-card" onClick={() => handleFeatureClick('Packages')}>
                 <div className="today-card-icon package-icon"><Package size={20} /></div>
                 <div className="today-card-content">
                   <span className="today-card-title">Amazon package ready for pickup</span>
@@ -802,7 +805,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
           {(() => {
             const listings = isDemoMode ? demoBulletinListings : bulletinListings
             return listings.length > 0 ? (
-            <div className="bulletin-preview-section">
+            <div className="bulletin-preview-section" data-tour="bulletin-preview">
               <div className="home-section-header" style={{ marginTop: '20px' }}>
                 <h3 className="home-section-header-title">
                   <span className="section-emoji">📋</span> Bulletin Board
@@ -1086,6 +1089,9 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
         userProfile={userProfile}
         isInDemoMode={isDemoMode}
       />
+
+      {/* Demo Tour */}
+      {isDemoMode && <DemoTour role="resident" />}
     </div>
   )
 }

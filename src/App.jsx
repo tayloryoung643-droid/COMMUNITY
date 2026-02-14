@@ -551,6 +551,10 @@ function App() {
   }
 
   const handleDemoLogin = async (role = 'manager') => {
+    // Clear tour flags so the tour replays on every demo entry
+    sessionStorage.removeItem('demo-tour-resident')
+    sessionStorage.removeItem('demo-tour-manager')
+
     const { data, error } = await loginAsDemo(role)
     if (!error) {
       // Set demo building data for testing

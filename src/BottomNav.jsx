@@ -22,6 +22,7 @@ function BottomNav({ currentScreen, onNavigate }) {
       <button
         className={`nav-tab ${isActive('calendar') ? 'active' : ''}`}
         onClick={() => onNavigate('Calendar')}
+        data-tour="nav-events"
       >
         <Calendar size={22} />
         <span>Events</span>
@@ -29,6 +30,7 @@ function BottomNav({ currentScreen, onNavigate }) {
       <button
         className={`nav-tab ${isActive('community') ? 'active' : ''}`}
         onClick={() => onNavigate('Community')}
+        data-tour="nav-community"
       >
         <MessageSquare size={22} />
         <span>Community</span>
