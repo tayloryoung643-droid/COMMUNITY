@@ -34,7 +34,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { buildingId } = req.query;
+  // Strip .ics extension — URL is /api/calendar/UUID.ics but param comes as "UUID.ics"
+  const buildingId = req.query.buildingId?.replace(/\.ics$/i, '');
 
   console.log('[calendar] Request for building:', buildingId);
   console.log('[calendar] Supabase URL:', supabaseUrl ? supabaseUrl.substring(0, 30) + '...' : 'MISSING');
