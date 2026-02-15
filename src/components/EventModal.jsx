@@ -119,8 +119,10 @@ function EventModal({ isOpen, onClose, onSuccess, userProfile, isInDemoMode, edi
           event_time: form.time || null,
           category: form.category,
           location: form.location,
-          recurrence_rule: isRecurring ? buildRecurrenceRule(recurrenceFreq, form.date) : null,
-          recurrence_end: isRecurring && recurrenceEnd ? recurrenceEnd : null
+          ...(isRecurring ? {
+            recurrence_rule: buildRecurrenceRule(recurrenceFreq, form.date),
+            ...(recurrenceEnd ? { recurrence_end: recurrenceEnd } : {})
+          } : {})
         }
 
         if (isEditing) {

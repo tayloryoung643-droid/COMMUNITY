@@ -1,9 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+// Try both env var names — VITE_ prefix is for Vite client, plain is for Vercel serverless
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 function escapeIcsText(text) {
   if (!text) return '';
@@ -37,9 +36,20 @@ export default async function handler(req, res) {
 
   const { buildingId } = req.query;
 
+  console.log('[calendar] Request for building:', buildingId);
+  console.log('[calendar] Supabase URL:', supabaseUrl ? supabaseUrl.substring(0, 30) + '...' : 'MISSING');
+  console.log('[calendar] Has service role key:', !!supabaseKey);
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('[calendar] Missing env vars — SUPABASE_URL:', !!supabaseUrl, 'SUPABASE_SERVICE_ROLE_KEY:', !!supabaseKey);
+    return res.status(500).json({ error: 'Server configuration error' });
+  }
+
   if (!buildingId) {
     return res.status(400).json({ error: 'Building ID is required' });
   }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
     // Fetch building name
@@ -48,6 +58,8 @@ export default async function handler(req, res) {
       .select('name')
       .eq('id', buildingId)
       .single();
+
+    console.log('[calendar] Building lookup:', building?.name || 'not found', buildingError?.message || 'ok');
 
     if (buildingError || !building) {
       return res.status(404).json({ error: 'Building not found' });
@@ -59,6 +71,8 @@ export default async function handler(req, res) {
       .select('*')
       .eq('building_id', buildingId)
       .order('start_time', { ascending: true });
+
+    console.log('[calendar] Events found:', events?.length || 0, eventsError?.message || 'ok');
 
     if (eventsError) {
       console.error('[calendar] Error fetching events:', eventsError);

@@ -114,6 +114,16 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+.organizer-avatar-fallback {
+  align-items: center;
+  justify-content: center;
+  background: #E8E3DA;
+  color: #4A4A4A;
+  font-size: 18px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
 .organizer-details {
   display: flex;
   flex-direction: column;

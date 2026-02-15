@@ -143,11 +143,20 @@ function EventDetail({ event, onBack, onNavigate }) {
         <div className="event-detail-card organizer-card">
           <span className="organizer-label">Organized by</span>
           <div className="organizer-info">
-            <img
-              src={event.organizer?.avatar || '/images/profile-staff.jpg'}
-              alt={event.organizer?.name || 'Building Staff'}
-              className="organizer-avatar"
-            />
+            {event.organizer?.avatar ? (
+              <img
+                src={event.organizer.avatar}
+                alt={event.organizer.name || 'Organizer'}
+                className="organizer-avatar"
+                onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
+              />
+            ) : null}
+            <div
+              className="organizer-avatar organizer-avatar-fallback"
+              style={{ display: event.organizer?.avatar ? 'none' : 'flex' }}
+            >
+              {(event.organizer?.name || 'Building Staff').split(' ').map(n => n[0]).join('').slice(0, 2)}
+            </div>
             <div className="organizer-details">
               <span className="organizer-name">{event.organizer?.name || 'Building Staff'}</span>
               <span className="organizer-role">{event.organizer?.role || 'Property Management'}</span>
