@@ -291,14 +291,16 @@
   flex-shrink: 0;
 }
 
-/* Post Actions - Compact inline */
-.post-actions {
+/* Post Actions - Scoped to .posts-feed to prevent Manager CSS conflicts */
+.posts-feed .post-actions {
   display: flex;
   align-items: center;
   gap: 2px;
+  padding-top: 0;
+  border-top: none;
 }
 
-.action-btn {
+.posts-feed .action-btn {
   display: flex;
   align-items: center;
   gap: 3px;
@@ -313,16 +315,22 @@
   transition: all 0.2s ease;
 }
 
-.action-btn:hover {
+.posts-feed .action-btn svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.posts-feed .action-btn:hover {
   background: #F3EEE5;
   color: #4A4A4A;
 }
 
-.action-btn.liked {
-  color: #E57373;
+.posts-feed .action-btn.liked {
+  color: #ef4444;
 }
 
-.action-btn.liked:hover {
+.posts-feed .action-btn.liked:hover {
   background: #FFEBEE;
 }
 
