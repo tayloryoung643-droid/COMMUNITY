@@ -128,6 +128,10 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
               category: event.category || 'social',
               description: event.description || '',
               isRecurring: !!event.recurrence_rule,
+              created_by: event.created_by,
+              start_time: event.start_time,
+              end_time: event.end_time,
+              event_time: event.event_time,
               subtitle: [dateStr, timeStr, location].filter(Boolean).join(' · ')
             }
           })

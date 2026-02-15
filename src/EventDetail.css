@@ -389,6 +389,16 @@
   flex-shrink: 0;
 }
 
+.comment-avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #E8E3DA;
+  color: #4A4A4A;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .comment-content {
   flex: 1;
   min-width: 0;

@@ -9,30 +9,69 @@ function EventDetail({ event, onBack, onNavigate }) {
   const isInDemoMode = isDemoMode || userProfile?.is_demo === true
 
   const [rsvpStatus, setRsvpStatus] = useState(event?.rsvpStatus || null)
-  const [comments, setComments] = useState(event?.comments || [])
+  const [comments, setComments] = useState([])
   const [newComment, setNewComment] = useState('')
   const [acknowledged, setAcknowledged] = useState(false)
   const [organizer, setOrganizer] = useState(null)
+  const [orgAvatarUrl, setOrgAvatarUrl] = useState(null)
+  const [isPostingComment, setIsPostingComment] = useState(false)
 
-  // Fetch event creator profile
+  // Resolve the real event ID (strip occurrence suffix like "uuid-2026-01-15T...")
+  const realEventId = typeof event?.id === 'string' && event.id.includes('-') && event.id.length > 36
+    ? event.id.split('-').slice(0, 5).join('-')
+    : event?.id
+
+  // Fetch event creator profile — works even if created_by wasn't passed from parent
   useEffect(() => {
     async function fetchCreator() {
-      if (isInDemoMode || !event?.created_by) return
+      if (isInDemoMode) return
+
+      let createdBy = event?.created_by
+
+      // If created_by is missing, fetch the event record to get it
+      if (!createdBy && realEventId) {
+        try {
+          const { data: eventRecord } = await supabase
+            .from('events')
+            .select('created_by')
+            .eq('id', realEventId)
+            .single()
+          createdBy = eventRecord?.created_by
+        } catch {
+          // Event might not exist with this ID (e.g. occurrence ID)
+        }
+      }
+
+      if (!createdBy) return
 
       try {
         const { data, error } = await supabase
           .from('users')
           .select('id, full_name, role, unit_number, avatar_url')
-          .eq('id', event.created_by)
+          .eq('id', createdBy)
           .single()
 
         if (!error && data) {
           const isManager = data.role === 'manager' || data.role === 'building_manager'
           setOrganizer({
-            name: data.full_name || 'Building Staff',
+            name: data.full_name || 'Event Organizer',
             role: isManager ? 'Property Manager' : (data.unit_number ? `Unit ${data.unit_number}` : 'Resident'),
-            avatar_url: data.avatar_url || null
+            avatarPath: data.avatar_url || null
           })
+
+          // Generate signed URL for avatar
+          if (data.avatar_url) {
+            try {
+              const { data: urlData } = await supabase.storage
+                .from('profile-images')
+                .createSignedUrl(data.avatar_url, 3600)
+              if (urlData?.signedUrl) {
+                setOrgAvatarUrl(urlData.signedUrl)
+              }
+            } catch {
+              // Ignore avatar URL errors
+            }
+          }
         }
       } catch (err) {
         console.warn('[EventDetail] Error fetching creator:', err)
@@ -40,15 +79,69 @@ function EventDetail({ event, onBack, onNavigate }) {
     }
 
     fetchCreator()
-  }, [event?.created_by, isInDemoMode])
+  }, [event?.created_by, realEventId, isInDemoMode])
 
-  // Weather and time state - matches Calendar/Home exactly
-  const [currentTime, setCurrentTime] = useState(new Date())
-  const weatherData = {
-    temp: 58,
-    condition: 'clear',
-    conditionText: 'Mostly Clear'
+  // Fetch comments from Supabase
+  useEffect(() => {
+    async function fetchComments() {
+      if (isInDemoMode || !realEventId) return
+
+      try {
+        const { data, error } = await supabase
+          .from('event_comments')
+          .select('id, content, created_at, user_id, users:user_id(full_name, avatar_url)')
+          .eq('event_id', realEventId)
+          .order('created_at', { ascending: true })
+
+        if (!error && data) {
+          // Generate signed avatar URLs for commenters
+          const commentsWithAvatars = await Promise.all(data.map(async (c) => {
+            let avatarUrl = null
+            if (c.users?.avatar_url) {
+              try {
+                const { data: urlData } = await supabase.storage
+                  .from('profile-images')
+                  .createSignedUrl(c.users.avatar_url, 3600)
+                avatarUrl = urlData?.signedUrl || null
+              } catch { /* ignore */ }
+            }
+            return {
+              id: c.id,
+              author: c.users?.full_name || 'Resident',
+              avatar: avatarUrl,
+              text: c.content,
+              timestamp: formatRelativeTime(c.created_at),
+              userId: c.user_id
+            }
+          }))
+          setComments(commentsWithAvatars)
+        }
+      } catch {
+        // Table may not exist yet — comments stay empty
+      }
+    }
+
+    fetchComments()
+  }, [realEventId, isInDemoMode])
+
+  // Format relative time
+  function formatRelativeTime(dateString) {
+    const now = new Date()
+    const date = new Date(dateString)
+    const diffMs = now - date
+    const diffMins = Math.floor(diffMs / 60000)
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    const diffHours = Math.floor(diffMins / 60)
+    if (diffHours < 24) return `${diffHours}h ago`
+    const diffDays = Math.floor(diffHours / 24)
+    if (diffDays < 7) return `${diffDays}d ago`
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   }
+
+  // Weather and time state
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const weatherData = { temp: 58, condition: 'clear', conditionText: 'Mostly Clear' }
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000)
@@ -79,20 +172,16 @@ function EventDetail({ event, onBack, onNavigate }) {
 
   const WeatherIcon = getWeatherIcon(weatherData.condition)
 
-  if (!event) {
-    return null
-  }
+  if (!event) return null
 
   const isSocial = event.category === 'social'
   const isMaintenance = event.category === 'maintenance'
   const isMeeting = event.category === 'meeting'
 
-  // Format 24h time string (like "16:00") to 12h format
+  // Format 24h time string to 12h format
   const formatEventTime = (timeString) => {
     if (!timeString) return 'TBD'
-    // Already in 12h format (contains AM/PM)
     if (/[AaPp][Mm]/.test(timeString)) return timeString
-    // Try parsing as HH:MM
     const match = timeString.match(/^(\d{1,2}):(\d{2})/)
     if (match) {
       const h = parseInt(match[1], 10)
@@ -104,7 +193,6 @@ function EventDetail({ event, onBack, onNavigate }) {
     return timeString
   }
 
-  // Format date for display
   const formatEventDate = (dateString, timeString) => {
     const date = new Date(dateString)
     const options = { weekday: 'long', month: 'long', day: 'numeric' }
@@ -112,28 +200,61 @@ function EventDetail({ event, onBack, onNavigate }) {
     return `${formattedDate} • ${formatEventTime(timeString)}`
   }
 
-  const handleRsvp = (status) => {
-    setRsvpStatus(status)
-  }
+  const handleRsvp = (status) => setRsvpStatus(status)
+  const handleAcknowledge = () => setAcknowledged(true)
 
-  const handleAcknowledge = () => {
-    setAcknowledged(true)
-  }
+  // Post comment to Supabase
+  const handlePostComment = async () => {
+    if (!newComment.trim()) return
 
-  // User avatar for comments
-  const userAvatar = '/images/profile-taylor.jpg'
-
-  const handlePostComment = () => {
-    if (newComment.trim()) {
-      const comment = {
+    if (isInDemoMode) {
+      setComments(prev => [...prev, {
         id: Date.now(),
         author: 'You',
-        avatar: userAvatar,
+        avatar: null,
         text: newComment.trim(),
         timestamp: 'Just now'
-      }
-      setComments([...comments, comment])
+      }])
       setNewComment('')
+      return
+    }
+
+    setIsPostingComment(true)
+    try {
+      const { data, error } = await supabase
+        .from('event_comments')
+        .insert({
+          event_id: realEventId,
+          user_id: userProfile.id,
+          content: newComment.trim()
+        })
+        .select('id, content, created_at')
+        .single()
+
+      if (error) throw error
+
+      setComments(prev => [...prev, {
+        id: data.id,
+        author: userProfile.full_name || 'You',
+        avatar: null, // Current user's avatar already shown in input
+        text: data.content,
+        timestamp: 'Just now',
+        userId: userProfile.id
+      }])
+      setNewComment('')
+    } catch (err) {
+      console.error('[EventDetail] Error posting comment:', err)
+      // Fallback: add locally anyway
+      setComments(prev => [...prev, {
+        id: Date.now(),
+        author: userProfile?.full_name || 'You',
+        avatar: null,
+        text: newComment.trim(),
+        timestamp: 'Just now'
+      }])
+      setNewComment('')
+    } finally {
+      setIsPostingComment(false)
     }
   }
 
@@ -144,12 +265,11 @@ function EventDetail({ event, onBack, onNavigate }) {
     }
   }
 
-  // Add to Calendar (single event .ics download)
+  // Add to Calendar (.ics download)
   const handleAddToCalendar = () => {
     const startDate = event.start_time
       ? new Date(event.start_time)
       : new Date(`${event.date}T${event.event_time || event.time || '00:00'}`)
-
     if (isNaN(startDate.getTime())) return
 
     const endDate = event.end_time
@@ -159,27 +279,19 @@ function EventDetail({ event, onBack, onNavigate }) {
     const pad = (n) => String(n).padStart(2, '0')
     const fmtDate = (d) =>
       d.getUTCFullYear().toString() +
-      pad(d.getUTCMonth() + 1) +
-      pad(d.getUTCDate()) + 'T' +
-      pad(d.getUTCHours()) +
-      pad(d.getUTCMinutes()) +
-      pad(d.getUTCSeconds()) + 'Z'
-
+      pad(d.getUTCMonth() + 1) + pad(d.getUTCDate()) + 'T' +
+      pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + pad(d.getUTCSeconds()) + 'Z'
     const esc = (t) => (t || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n')
 
     const ics = [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'PRODID:-//CommunityHQ//Events//EN',
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//CommunityHQ//Events//EN',
       'BEGIN:VEVENT',
       `UID:event-${event.id}@communityhq.space`,
-      `DTSTART:${fmtDate(startDate)}`,
-      `DTEND:${fmtDate(endDate)}`,
+      `DTSTART:${fmtDate(startDate)}`, `DTEND:${fmtDate(endDate)}`,
       `SUMMARY:${esc(event.title)}`,
       event.description ? `DESCRIPTION:${esc(event.description)}` : null,
       event.location ? `LOCATION:${esc(event.location)}` : null,
-      'END:VEVENT',
-      'END:VCALENDAR'
+      'END:VEVENT', 'END:VCALENDAR'
     ].filter(Boolean).join('\r\n')
 
     const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
@@ -192,44 +304,33 @@ function EventDetail({ event, onBack, onNavigate }) {
   }
 
   // Organizer display values
-  const orgName = organizer?.name || event.organizer?.name || 'Building Staff'
-  const orgRole = organizer?.role || event.organizer?.role || 'Property Management'
-  const orgAvatar = organizer?.avatar_url || event.organizer?.avatar || null
+  const orgName = organizer?.name || 'Event Organizer'
+  const orgRole = organizer?.role || 'Property Management'
+  const orgAvatar = orgAvatarUrl
   const orgInitials = orgName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
 
-  // CSS variable for building background image
   const bgStyle = buildingBackgroundUrl ? { '--building-bg-image': `url(${buildingBackgroundUrl})` } : {}
 
   return (
     <div className="event-detail-container resident-inner-page" style={bgStyle}>
-      {/* Hero Section - matches Calendar exactly */}
       <div className="inner-page-hero">
-        {/* Back Button */}
         <button className="inner-page-back-btn" onClick={onBack}>
           <ChevronLeft size={24} />
         </button>
-
-        {/* Weather Widget - matches Calendar/Home exactly */}
         <div className="inner-page-weather">
-          <div className="weather-datetime">
-            {formatDay(currentTime)} | {formatTime(currentTime)}
-          </div>
+          <div className="weather-datetime">{formatDay(currentTime)} | {formatTime(currentTime)}</div>
           <div className="weather-temp-row">
             <WeatherIcon size={20} className="weather-icon" />
             <span className="weather-temp">{weatherData.temp}°</span>
           </div>
           <div className="weather-condition">{weatherData.conditionText}</div>
         </div>
-
-        {/* Event Title - centered like Calendar */}
         <div className="inner-page-title-container">
           <h1 className="inner-page-title">{event.title}</h1>
         </div>
       </div>
 
-      {/* Content Section */}
       <div className="event-detail-content">
-        {/* Event Meta - Category and Date/Time */}
         <div className="event-detail-meta-bar">
           <span className={`event-detail-category ${event.category}`}>
             {event.categoryLabel?.toUpperCase() || event.category?.toUpperCase()}
@@ -264,19 +365,13 @@ function EventDetail({ event, onBack, onNavigate }) {
           </div>
         </div>
 
-        {/* Attendance Section (for social events) */}
+        {/* Attendance */}
         {isSocial && event.attendees && (
           <div className="event-detail-attendance">
             <span className="attendance-count">{event.attendees.count} neighbors going</span>
             <div className="attendance-avatars">
               {event.attendees.avatars?.slice(0, 5).map((avatar, index) => (
-                <img
-                  key={index}
-                  src={avatar}
-                  alt="Attendee"
-                  className="attendance-avatar"
-                  style={{ zIndex: 5 - index }}
-                />
+                <img key={index} src={avatar} alt="Attendee" className="attendance-avatar" style={{ zIndex: 5 - index }} />
               ))}
               {event.attendees.count > 5 && (
                 <div className="attendance-more">+{event.attendees.count - 5}</div>
@@ -285,97 +380,66 @@ function EventDetail({ event, onBack, onNavigate }) {
           </div>
         )}
 
-        {/* RSVP Buttons (for social events) */}
+        {/* RSVP Buttons */}
         {isSocial && (
           <div className="event-detail-rsvp">
-            <button
-              className={`rsvp-btn rsvp-going ${rsvpStatus === 'going' ? 'active' : ''}`}
-              onClick={() => handleRsvp('going')}
-            >
-              <Check size={18} />
-              <span>Going</span>
+            <button className={`rsvp-btn rsvp-going ${rsvpStatus === 'going' ? 'active' : ''}`} onClick={() => handleRsvp('going')}>
+              <Check size={18} /><span>Going</span>
             </button>
-            <button
-              className={`rsvp-btn rsvp-maybe ${rsvpStatus === 'maybe' ? 'active' : ''}`}
-              onClick={() => handleRsvp('maybe')}
-            >
-              <HelpCircle size={18} />
-              <span>Maybe</span>
+            <button className={`rsvp-btn rsvp-maybe ${rsvpStatus === 'maybe' ? 'active' : ''}`} onClick={() => handleRsvp('maybe')}>
+              <HelpCircle size={18} /><span>Maybe</span>
             </button>
-            <button
-              className={`rsvp-btn rsvp-not-going ${rsvpStatus === 'not-going' ? 'active' : ''}`}
-              onClick={() => handleRsvp('not-going')}
-            >
-              <X size={18} />
-              <span>Not Going</span>
+            <button className={`rsvp-btn rsvp-not-going ${rsvpStatus === 'not-going' ? 'active' : ''}`} onClick={() => handleRsvp('not-going')}>
+              <X size={18} /><span>Not Going</span>
             </button>
           </div>
         )}
 
-        {/* Acknowledge Button (for maintenance events) */}
         {isMaintenance && (
           <div className="event-detail-acknowledge">
-            <button
-              className={`acknowledge-btn ${acknowledged ? 'acknowledged' : ''}`}
-              onClick={handleAcknowledge}
-              disabled={acknowledged}
-            >
-              <Check size={18} />
-              <span>{acknowledged ? 'Acknowledged' : 'Got it'}</span>
+            <button className={`acknowledge-btn ${acknowledged ? 'acknowledged' : ''}`} onClick={handleAcknowledge} disabled={acknowledged}>
+              <Check size={18} /><span>{acknowledged ? 'Acknowledged' : 'Got it'}</span>
             </button>
           </div>
         )}
 
-        {/* Meeting RSVP (optional) */}
         {isMeeting && (
           <div className="event-detail-rsvp">
-            <button
-              className={`rsvp-btn rsvp-going ${rsvpStatus === 'going' ? 'active' : ''}`}
-              onClick={() => handleRsvp('going')}
-            >
-              <Check size={18} />
-              <span>Attending</span>
+            <button className={`rsvp-btn rsvp-going ${rsvpStatus === 'going' ? 'active' : ''}`} onClick={() => handleRsvp('going')}>
+              <Check size={18} /><span>Attending</span>
             </button>
-            <button
-              className={`rsvp-btn rsvp-maybe ${rsvpStatus === 'maybe' ? 'active' : ''}`}
-              onClick={() => handleRsvp('maybe')}
-            >
-              <HelpCircle size={18} />
-              <span>Maybe</span>
+            <button className={`rsvp-btn rsvp-maybe ${rsvpStatus === 'maybe' ? 'active' : ''}`} onClick={() => handleRsvp('maybe')}>
+              <HelpCircle size={18} /><span>Maybe</span>
             </button>
           </div>
         )}
 
-        {/* Add to Calendar */}
         <button className="add-to-calendar-btn" onClick={handleAddToCalendar}>
-          <CalendarPlus size={18} />
-          <span>Add to Calendar</span>
+          <CalendarPlus size={18} /><span>Add to Calendar</span>
         </button>
 
-        {/* About This Event */}
         <div className="event-detail-card about-card">
           <h3 className="about-title">About this Event</h3>
           <p className="about-description">{event.description}</p>
           {event.affectedUnits && (
-            <p className="about-affected">
-              <strong>Affected:</strong> {event.affectedUnits}
-            </p>
+            <p className="about-affected"><strong>Affected:</strong> {event.affectedUnits}</p>
           )}
         </div>
 
-        {/* Comments Section (for social and optionally meetings) */}
+        {/* Comments Section */}
         {(isSocial || isMeeting) && (
           <div className="event-detail-comments">
-            {/* Comments List */}
             {comments.length > 0 && (
               <div className="comments-list">
                 {comments.map(comment => (
                   <div key={comment.id} className="comment-item">
-                    <img
-                      src={comment.avatar}
-                      alt={comment.author}
-                      className="comment-avatar"
-                    />
+                    {comment.avatar ? (
+                      <img src={comment.avatar} alt={comment.author} className="comment-avatar" />
+                    ) : (
+                      <div className="comment-avatar comment-avatar-fallback">
+                        {(comment.author || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
                     <div className="comment-content">
                       <div className="comment-header">
                         <span className="comment-author">{comment.author}</span>
@@ -388,13 +452,10 @@ function EventDetail({ event, onBack, onNavigate }) {
               </div>
             )}
 
-            {/* Comment Input */}
             <div className="comment-input-container">
-              <img
-                src={userAvatar}
-                alt="You"
-                className="comment-input-avatar"
-              />
+              <div className="comment-avatar comment-avatar-fallback comment-input-avatar">
+                {(userProfile?.full_name || 'Y').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+              </div>
               <div className="comment-input-wrapper">
                 <input
                   type="text"
@@ -403,13 +464,14 @@ function EventDetail({ event, onBack, onNavigate }) {
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   onKeyPress={handleKeyPress}
+                  disabled={isPostingComment}
                 />
                 <button
                   className="comment-post-btn"
                   onClick={handlePostComment}
-                  disabled={!newComment.trim()}
+                  disabled={!newComment.trim() || isPostingComment}
                 >
-                  Post
+                  {isPostingComment ? '...' : 'Post'}
                 </button>
               </div>
             </div>
