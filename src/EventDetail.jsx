@@ -81,46 +81,69 @@ function EventDetail({ event, onBack, onNavigate }) {
     fetchCreator()
   }, [event?.created_by, realEventId, isInDemoMode])
 
-  // Fetch comments from Supabase
-  useEffect(() => {
-    async function fetchComments() {
-      if (isInDemoMode || !realEventId) return
+  // Fetch comments from Supabase (two queries — avoids FK join issues)
+  const fetchComments = async () => {
+    if (isInDemoMode || !realEventId) return
 
-      try {
-        const { data, error } = await supabase
-          .from('event_comments')
-          .select('id, content, created_at, user_id, users:user_id(full_name, avatar_url)')
-          .eq('event_id', realEventId)
-          .order('created_at', { ascending: true })
+    console.log('[Comments] Fetching comments for event:', realEventId)
 
-        if (!error && data) {
-          // Generate signed avatar URLs for commenters
-          const commentsWithAvatars = await Promise.all(data.map(async (c) => {
-            let avatarUrl = null
-            if (c.users?.avatar_url) {
-              try {
-                const { data: urlData } = await supabase.storage
-                  .from('profile-images')
-                  .createSignedUrl(c.users.avatar_url, 3600)
-                avatarUrl = urlData?.signedUrl || null
-              } catch { /* ignore */ }
-            }
-            return {
-              id: c.id,
-              author: c.users?.full_name || 'Resident',
-              avatar: avatarUrl,
-              text: c.content,
-              timestamp: formatRelativeTime(c.created_at),
-              userId: c.user_id
-            }
-          }))
-          setComments(commentsWithAvatars)
-        }
-      } catch {
-        // Table may not exist yet — comments stay empty
+    try {
+      // Step 1: Fetch comments (no join)
+      const { data: commentsData, error } = await supabase
+        .from('event_comments')
+        .select('id, content, created_at, user_id')
+        .eq('event_id', realEventId)
+        .order('created_at', { ascending: true })
+
+      if (error) {
+        console.error('[Comments] Fetch error:', error)
+        return
       }
-    }
 
+      console.log('[Comments] Fetched', commentsData?.length || 0, 'comments:', commentsData)
+
+      if (!commentsData || commentsData.length === 0) {
+        setComments([])
+        return
+      }
+
+      // Step 2: Fetch user profiles for all commenters
+      const userIds = [...new Set(commentsData.map(c => c.user_id))]
+      const { data: profiles } = await supabase
+        .from('users')
+        .select('id, full_name, avatar_url')
+        .in('id', userIds)
+
+      console.log('[Comments] Fetched profiles for commenters:', profiles)
+
+      // Step 3: Merge profiles + generate signed avatar URLs
+      const commentsWithAvatars = await Promise.all(commentsData.map(async (c) => {
+        const profile = profiles?.find(p => p.id === c.user_id)
+        let avatarUrl = null
+        if (profile?.avatar_url) {
+          try {
+            const { data: urlData } = await supabase.storage
+              .from('profile-images')
+              .createSignedUrl(profile.avatar_url, 3600)
+            avatarUrl = urlData?.signedUrl || null
+          } catch { /* ignore */ }
+        }
+        return {
+          id: c.id,
+          author: profile?.full_name || 'Resident',
+          avatar: avatarUrl,
+          text: c.content,
+          timestamp: formatRelativeTime(c.created_at),
+          userId: c.user_id
+        }
+      }))
+      setComments(commentsWithAvatars)
+    } catch (err) {
+      console.error('[Comments] Fetch exception:', err)
+    }
+  }
+
+  useEffect(() => {
     fetchComments()
   }, [realEventId, isInDemoMode])
 
@@ -205,6 +228,8 @@ function EventDetail({ event, onBack, onNavigate }) {
 
   // Post comment to Supabase
   const handlePostComment = async () => {
+    console.log('[Comments] Post clicked, text:', newComment, 'eventId:', realEventId, 'userId:', userProfile?.id)
+
     if (!newComment.trim()) return
 
     if (isInDemoMode) {
@@ -221,38 +246,37 @@ function EventDetail({ event, onBack, onNavigate }) {
 
     setIsPostingComment(true)
     try {
+      const insertPayload = {
+        event_id: realEventId,
+        user_id: userProfile.id,
+        content: newComment.trim()
+      }
+      console.log('[Comments] Inserting:', insertPayload)
+
       const { data, error } = await supabase
         .from('event_comments')
-        .insert({
-          event_id: realEventId,
-          user_id: userProfile.id,
-          content: newComment.trim()
-        })
+        .insert(insertPayload)
         .select('id, content, created_at')
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('[Comments] Insert error:', error)
+        throw error
+      }
+
+      console.log('[Comments] Insert success:', data)
 
       setComments(prev => [...prev, {
         id: data.id,
         author: userProfile.full_name || 'You',
-        avatar: null, // Current user's avatar already shown in input
+        avatar: null,
         text: data.content,
         timestamp: 'Just now',
         userId: userProfile.id
       }])
       setNewComment('')
     } catch (err) {
-      console.error('[EventDetail] Error posting comment:', err)
-      // Fallback: add locally anyway
-      setComments(prev => [...prev, {
-        id: Date.now(),
-        author: userProfile?.full_name || 'You',
-        avatar: null,
-        text: newComment.trim(),
-        timestamp: 'Just now'
-      }])
-      setNewComment('')
+      console.error('[Comments] Post failed:', err)
     } finally {
       setIsPostingComment(false)
     }
