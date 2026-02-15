@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Calendar, Clock, MapPin, Users, Check, Sun, Cloud, CloudRain, Snowflake, Moon, Plus, X } from 'lucide-react'
+import { ArrowLeft, Calendar, Clock, MapPin, Users, Check, Sun, Cloud, CloudRain, Snowflake, Moon, Plus, X, CalendarSync } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getEvents, addRSVP, removeRSVP, createEvent, getUserRSVPs } from './services/eventService'
 import EmptyState from './components/EmptyState'
+import CalendarSyncModal from './components/CalendarSyncModal'
 import './Events.css'
 
 // Demo event data - used when in demo mode
@@ -83,7 +84,8 @@ function Events({ onBack }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Create event modal state
+  // Modal state
+  const [showSyncModal, setShowSyncModal] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [newEvent, setNewEvent] = useState({
@@ -383,8 +385,17 @@ function Events({ onBack }) {
         </div>
       </div>
 
-      {/* Create Event Button */}
+      {/* Event Action Buttons */}
       <div className="create-event-button-container">
+        {!isInDemoMode && (
+          <button
+            className="sync-calendar-button"
+            onClick={() => setShowSyncModal(true)}
+          >
+            <CalendarSync size={20} />
+            <span>Sync</span>
+          </button>
+        )}
         <button
           className="create-event-button"
           onClick={() => setShowCreateModal(true)}
@@ -496,6 +507,14 @@ function Events({ onBack }) {
           </div>
         </section>
       </main>
+
+      {/* Calendar Sync Modal */}
+      <CalendarSyncModal
+        isOpen={showSyncModal}
+        onClose={() => setShowSyncModal(false)}
+        buildingId={userProfile?.building_id}
+        buildingName={userProfile?.building_name}
+      />
 
       {/* Create Event Modal */}
       {showCreateModal && (

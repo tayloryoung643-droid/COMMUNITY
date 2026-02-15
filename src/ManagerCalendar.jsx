@@ -20,12 +20,14 @@ import {
   ChevronRight,
   CheckCircle,
   UserCheck,
-  Send
+  Send,
+  CalendarSync
 } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { getEvents, createEvent, updateEvent, deleteEvent as deleteEventFromDb } from './services/eventService'
 import { expandAllEvents } from './utils/recurrenceUtils'
 import EventModal from './components/EventModal'
+import CalendarSyncModal from './components/CalendarSyncModal'
 import './ManagerCalendar.css'
 
 // Demo events data
@@ -218,6 +220,7 @@ function ManagerCalendar() {
   const { userProfile, isDemoMode } = useAuth()
   const isInDemoMode = isDemoMode || userProfile?.is_demo === true
 
+  const [showSyncModal, setShowSyncModal] = useState(false)
   const [viewMode, setViewMode] = useState('list') // 'list' or 'month'
   const [activeFilter, setActiveFilter] = useState('all')
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -716,6 +719,12 @@ function ManagerCalendar() {
               <Grid size={18} />
             </button>
           </div>
+          {!isInDemoMode && (
+            <button className="sync-calendar-btn" onClick={() => setShowSyncModal(true)}>
+              <CalendarSync size={18} />
+              <span>Sync</span>
+            </button>
+          )}
           <button className="create-event-btn" onClick={() => setShowCreateModal(true)}>
             <Plus size={18} />
             <span>Create Event</span>
@@ -900,6 +909,14 @@ function ManagerCalendar() {
           </div>
         </div>
       )}
+
+      {/* Calendar Sync Modal */}
+      <CalendarSyncModal
+        isOpen={showSyncModal}
+        onClose={() => setShowSyncModal(false)}
+        buildingId={userProfile?.building_id}
+        buildingName={userProfile?.building_name}
+      />
 
       {/* Create Event Modal */}
       <EventModal

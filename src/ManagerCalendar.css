@@ -69,6 +69,26 @@
 }
 
 /* Create Event Button */
+.sync-calendar-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--md-text-primary);
+  background: var(--md-bg-secondary);
+  border: 1px solid var(--md-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.sync-calendar-btn:hover {
+  background: var(--md-bg-hover);
+  transform: translateY(-2px);
+}
+
 .create-event-btn {
   display: flex;
   align-items: center;
@@ -1006,10 +1026,12 @@
     position: relative;
   }
 
+  .sync-calendar-btn span,
   .create-event-btn span {
     display: none;
   }
 
+  .sync-calendar-btn,
   .create-event-btn {
     padding: var(--spacing-sm);
     width: 44px;

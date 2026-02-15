@@ -212,9 +212,32 @@
   background: #C8E6C9;
 }
 
-/* Create Event Button */
+/* Event Action Buttons */
 .create-event-button-container {
+  display: flex;
+  gap: 10px;
   padding: 0 16px 16px;
+}
+
+.sync-calendar-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1A1A1A;
+  background: #F3EEE5;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sync-calendar-button:hover {
+  background: #E8E3DA;
+  transform: translateY(-1px);
 }
 
 .create-event-button {
@@ -222,7 +245,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: 100%;
+  flex: 1;
   padding: 14px 20px;
   font-size: 15px;
   font-weight: 500;
