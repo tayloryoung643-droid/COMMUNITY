@@ -209,12 +209,78 @@
   color: #E65100;
 }
 
+.listing-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .listing-time {
   display: flex;
   align-items: center;
   gap: 4px;
   font-size: 12px;
   color: #8A8075;
+}
+
+/* Listing Edit/Delete Menu */
+.listing-menu-wrapper {
+  position: relative;
+}
+
+.listing-menu-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #9CA3AF;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.listing-menu-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #6B7280;
+}
+
+.listing-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #FFFCF7;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  padding: 4px;
+  min-width: 110px;
+  z-index: 50;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.listing-menu button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 10px;
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #4A4A4A;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.listing-menu button:hover {
+  background: #F3EEE5;
+}
+
+.listing-menu button.danger {
+  color: #ef4444;
+}
+
+.listing-menu button.danger:hover {
+  background: rgba(239, 68, 68, 0.08);
 }
 
 .listing-title {

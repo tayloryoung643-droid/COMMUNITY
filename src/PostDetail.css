@@ -298,6 +298,125 @@
   padding: 10px 12px;
 }
 
+/* Comment Edit/Delete Menu */
+.post-detail-comments .comment-menu-wrapper {
+  position: relative;
+  margin-left: auto;
+}
+
+.post-detail-comments .comment-menu-btn {
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  cursor: pointer;
+  color: #9CA3AF;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.post-detail-comments .comment-menu-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #6B7280;
+}
+
+.post-detail-comments .comment-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #FFFCF7;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  padding: 4px;
+  min-width: 110px;
+  z-index: 50;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.post-detail-comments .comment-menu button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 10px;
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #4A4A4A;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.post-detail-comments .comment-menu button:hover {
+  background: #F3EEE5;
+}
+
+.post-detail-comments .comment-menu button.danger {
+  color: #ef4444;
+}
+
+.post-detail-comments .comment-menu button.danger:hover {
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.post-detail-comments .comment-edit-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.post-detail-comments .comment-edit-inline input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  color: #1A1A1A;
+  background: #F5F0E8;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  outline: none;
+  font-family: inherit;
+}
+
+.post-detail-comments .comment-edit-inline input:focus {
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.post-detail-comments .comment-edit-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.post-detail-comments .comment-edit-actions button {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #F3EEE5;
+  color: #6B6560;
+}
+
+.post-detail-comments .comment-edit-actions button:hover {
+  background: #E8E3D9;
+}
+
+.post-detail-comments .comment-edit-actions button.save {
+  background: #1A1A1A;
+  color: white;
+}
+
+.post-detail-comments .comment-edit-actions button.save:hover {
+  background: #2A2A2A;
+}
+
+.post-detail-comments .comment-edit-actions button.save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* No Comments State */
 .no-comments {
   display: flex;

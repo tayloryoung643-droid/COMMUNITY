@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { ChevronLeft, Heart, MessageCircle, Share2, Send, Sun, Cloud, CloudRain, Snowflake, Moon, MessageSquare, HelpCircle, Flag, Check } from 'lucide-react'
-import { addComment, getComments, likePost, unlikePost, hasUserLikedPost } from './services/communityPostService'
+import { ChevronLeft, Heart, MessageCircle, Share2, Send, Sun, Cloud, CloudRain, Snowflake, Moon, MessageSquare, HelpCircle, Flag, Check, MoreHorizontal, Edit3, Trash2 } from 'lucide-react'
+import { addComment, getComments, updateComment, deleteComment, likePost, unlikePost, hasUserLikedPost } from './services/communityPostService'
 import { useAuth } from './contexts/AuthContext'
 import './PostDetail.css'
 
@@ -18,6 +18,9 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
   const commentInputRef = useRef(null)
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
+  const [openCommentMenu, setOpenCommentMenu] = useState(null)
+  const [editingCommentId, setEditingCommentId] = useState(null)
+  const [editCommentText, setEditCommentText] = useState('')
 
   const showToastMsg = (msg) => {
     setToastMessage(msg)
@@ -61,6 +64,7 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
             unit: c.author?.unit_number ? `Unit ${c.author.unit_number}` : '',
             text: c.content,
             timestamp: new Date(c.created_at).getTime(),
+            userId: c.user_id,
             replies: []
           }))
           setComments(transformedComments)
@@ -256,6 +260,7 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
           unit: userProfile.unit_number ? `Unit ${userProfile.unit_number}` : '',
           text: commentText,
           timestamp: Date.now(),
+          userId: userProfile.id,
           replies: []
         }
 
@@ -275,6 +280,40 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handlePostComment()
+    }
+  }
+
+  // Edit comment
+  const handleEditComment = async (commentId) => {
+    const trimmed = editCommentText.trim()
+    if (!trimmed) return
+
+    setComments(prev => prev.map(c => c.id === commentId ? { ...c, text: trimmed } : c))
+    setEditingCommentId(null)
+    setEditCommentText('')
+
+    if (!isDemoMode) {
+      try {
+        await updateComment(commentId, trimmed)
+      } catch (err) {
+        console.error('[PostDetail] Edit comment error:', err)
+      }
+    }
+  }
+
+  // Delete comment
+  const handleDeleteComment = async (commentId) => {
+    if (!window.confirm('Delete this comment? This can\'t be undone.')) return
+
+    setComments(prev => prev.filter(c => c.id !== commentId))
+    setOpenCommentMenu(null)
+
+    if (!isDemoMode) {
+      try {
+        await deleteComment(commentId)
+      } catch (err) {
+        console.error('[PostDetail] Delete comment error:', err)
+      }
     }
   }
 
@@ -397,62 +436,104 @@ function PostDetail({ post, onBack, onNavigate, userProfile, isDemoMode }) {
           {/* Comments List */}
           {comments.length > 0 ? (
             <div className="comments-list">
-              {comments.map(comment => (
-                <div key={comment.id} className="comment-item">
-                  <div
-                    className="comment-avatar"
-                    style={{ background: comment.avatar ? 'transparent' : 'linear-gradient(135deg, #8A8075, #6B6560)' }}
-                  >
-                    {comment.avatar ? (
-                      <img src={comment.avatar} alt={comment.author} />
-                    ) : (
-                      comment.author.charAt(0)
-                    )}
-                  </div>
-                  <div className="comment-content">
-                    <div className="comment-header">
-                      <span className="comment-author">{comment.firstName || comment.author}</span>
-                      <span className="comment-unit">{comment.unit}</span>
-                      <span className="comment-time">{formatTimeAgo(comment.timestamp)}</span>
-                    </div>
-                    <p className="comment-text">{comment.text}</p>
-                    <button
-                      className="comment-reply-btn"
-                      onClick={() => handleReply(comment.id, comment.firstName || comment.author)}
+              {comments.map(comment => {
+                const isOwn = comment.userId === userProfile?.id || (isDemoMode && comment.author === 'You')
+                const isEditing = editingCommentId === comment.id
+                return (
+                  <div key={comment.id} className="comment-item">
+                    <div
+                      className="comment-avatar"
+                      style={{ background: comment.avatar ? 'transparent' : 'linear-gradient(135deg, #8A8075, #6B6560)' }}
                     >
-                      Reply
-                    </button>
-
-                    {/* Replies (one level max) */}
-                    {comment.replies && comment.replies.length > 0 && (
-                      <div className="comment-replies">
-                        {comment.replies.map(reply => (
-                          <div key={reply.id} className="comment-item reply">
-                            <div
-                              className="comment-avatar"
-                              style={{ background: reply.avatar ? 'transparent' : 'linear-gradient(135deg, #8A8075, #6B6560)' }}
+                      {comment.avatar ? (
+                        <img src={comment.avatar} alt={comment.author} />
+                      ) : (
+                        comment.author.charAt(0)
+                      )}
+                    </div>
+                    <div className="comment-content">
+                      <div className="comment-header">
+                        <span className="comment-author">{comment.firstName || comment.author}</span>
+                        <span className="comment-unit">{comment.unit}</span>
+                        <span className="comment-time">{formatTimeAgo(comment.timestamp)}</span>
+                        {isOwn && !isEditing && (
+                          <div className="comment-menu-wrapper">
+                            <button
+                              className="comment-menu-btn"
+                              onClick={() => setOpenCommentMenu(openCommentMenu === comment.id ? null : comment.id)}
                             >
-                              {reply.avatar ? (
-                                <img src={reply.avatar} alt={reply.author} />
-                              ) : (
-                                reply.author.charAt(0)
-                              )}
-                            </div>
-                            <div className="comment-content">
-                              <div className="comment-header">
-                                <span className="comment-author">{reply.firstName || reply.author}</span>
-                                <span className="comment-unit">{reply.unit}</span>
-                                <span className="comment-time">{formatTimeAgo(reply.timestamp)}</span>
+                              <MoreHorizontal size={14} />
+                            </button>
+                            {openCommentMenu === comment.id && (
+                              <div className="comment-menu">
+                                <button onClick={() => { setEditingCommentId(comment.id); setEditCommentText(comment.text); setOpenCommentMenu(null) }}>
+                                  <Edit3 size={12} /> Edit
+                                </button>
+                                <button className="danger" onClick={() => handleDeleteComment(comment.id)}>
+                                  <Trash2 size={12} /> Delete
+                                </button>
                               </div>
-                              <p className="comment-text">{reply.text}</p>
-                            </div>
+                            )}
                           </div>
-                        ))}
+                        )}
                       </div>
-                    )}
+                      {isEditing ? (
+                        <div className="comment-edit-inline">
+                          <input
+                            type="text"
+                            value={editCommentText}
+                            onChange={(e) => setEditCommentText(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleEditComment(comment.id); if (e.key === 'Escape') { setEditingCommentId(null); setEditCommentText('') } }}
+                            autoFocus
+                          />
+                          <div className="comment-edit-actions">
+                            <button onClick={() => { setEditingCommentId(null); setEditCommentText('') }}>Cancel</button>
+                            <button className="save" onClick={() => handleEditComment(comment.id)} disabled={!editCommentText.trim()}>Save</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="comment-text">{comment.text}</p>
+                          <button
+                            className="comment-reply-btn"
+                            onClick={() => handleReply(comment.id, comment.firstName || comment.author)}
+                          >
+                            Reply
+                          </button>
+                        </>
+                      )}
+
+                      {/* Replies (one level max) */}
+                      {comment.replies && comment.replies.length > 0 && (
+                        <div className="comment-replies">
+                          {comment.replies.map(reply => (
+                            <div key={reply.id} className="comment-item reply">
+                              <div
+                                className="comment-avatar"
+                                style={{ background: reply.avatar ? 'transparent' : 'linear-gradient(135deg, #8A8075, #6B6560)' }}
+                              >
+                                {reply.avatar ? (
+                                  <img src={reply.avatar} alt={reply.author} />
+                                ) : (
+                                  reply.author.charAt(0)
+                                )}
+                              </div>
+                              <div className="comment-content">
+                                <div className="comment-header">
+                                  <span className="comment-author">{reply.firstName || reply.author}</span>
+                                  <span className="comment-unit">{reply.unit}</span>
+                                  <span className="comment-time">{formatTimeAgo(reply.timestamp)}</span>
+                                </div>
+                                <p className="comment-text">{reply.text}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : (
             <div className="no-comments">

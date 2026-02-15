@@ -239,6 +239,27 @@ export async function addComment(postId, userId, content) {
   return data[0]
 }
 
+export async function updateComment(commentId, content) {
+  const { data, error } = await supabase
+    .from('post_comments')
+    .update({ content })
+    .eq('id', commentId)
+    .select()
+
+  if (error) throw error
+  return data[0]
+}
+
+export async function deleteComment(commentId) {
+  const { error } = await supabase
+    .from('post_comments')
+    .delete()
+    .eq('id', commentId)
+
+  if (error) throw error
+  return true
+}
+
 /**
  * Get all post IDs that a user has liked
  * @param {string} userId - User UUID

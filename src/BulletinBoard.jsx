@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Pin, Car, Box, ShoppingBag, Briefcase, Search, Plus, X, Send, MessageCircle, Clock, ChevronRight, Sun, Cloud, CloudRain, Snowflake, Moon, Mail, Phone } from 'lucide-react'
+import { ArrowLeft, Pin, Car, Box, ShoppingBag, Briefcase, Search, Plus, X, Send, MessageCircle, Clock, ChevronRight, Sun, Cloud, CloudRain, Snowflake, Moon, Mail, Phone, MoreHorizontal, Edit3, Trash2 } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
-import { getListings, createListing } from './services/bulletinService'
+import { getListings, createListing, updateListing, deleteListing } from './services/bulletinService'
 import EmptyState from './components/EmptyState'
 import './BulletinBoard.css'
 
@@ -187,6 +187,8 @@ function BulletinBoard({ onBack }) {
   const [postSharePhone, setPostSharePhone] = useState(false)
   const [postContactEmail, setPostContactEmail] = useState('')
   const [postContactPhone, setPostContactPhone] = useState('')
+  const [openListingMenu, setOpenListingMenu] = useState(null)
+  const [editingListing, setEditingListing] = useState(null)
 
   // Weather and time state - matches Home exactly
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -271,7 +273,8 @@ function BulletinBoard({ onBack }) {
             timestamp: new Date(listing.created_at).getTime(),
             color: categoryColors[listing.category] || '#6b7280',
             contact_email: listing.contact_email || null,
-            contact_phone: listing.contact_phone || null
+            contact_phone: listing.contact_phone || null,
+            authorId: listing.author_id || listing.user_id || null
           }
         })
         setListings(transformedData)
@@ -312,10 +315,71 @@ function BulletinBoard({ onBack }) {
     setShowContactModal(true)
   }
 
+  const handleStartEdit = (listing) => {
+    setEditingListing(listing)
+    setPostForm({
+      category: listing.category,
+      title: listing.title,
+      description: '',
+      price: listing.price === 'Free' ? '' : listing.price.replace(/^\$/, ''),
+      details: listing.details || ''
+    })
+    setPostShareEmail(!!listing.contact_email)
+    setPostSharePhone(!!listing.contact_phone)
+    setPostContactEmail(listing.contact_email || '')
+    setPostContactPhone(listing.contact_phone || '')
+    setOpenListingMenu(null)
+    setShowPostModal(true)
+  }
+
+  const handleDeleteListing = async (listingId) => {
+    if (!window.confirm('Delete this listing? This can\'t be undone.')) return
+
+    setOpenListingMenu(null)
+    setListings(prev => prev.filter(l => l.id !== listingId))
+
+    if (!isInDemoMode) {
+      try {
+        await deleteListing(listingId)
+      } catch (err) {
+        console.error('[BulletinBoard] Delete listing error:', err)
+      }
+    }
+  }
+
   const handlePostSubmit = async () => {
     if (!postForm.title.trim()) return
 
-    if (isInDemoMode) {
+    if (editingListing) {
+      // EDIT mode
+      const updated = {
+        ...editingListing,
+        category: postForm.category,
+        title: postForm.title,
+        details: postForm.details,
+        price: postForm.price || 'Free',
+        color: categoryColors[categoryToDb[postForm.category] || postForm.category] || '#6b7280',
+        contact_email: postShareEmail && postContactEmail.trim() ? postContactEmail.trim() : null,
+        contact_phone: postSharePhone && postContactPhone.trim() ? postContactPhone.trim() : null
+      }
+      setListings(prev => prev.map(l => l.id === editingListing.id ? updated : l))
+
+      if (!isInDemoMode) {
+        try {
+          const dbCategory = categoryToDb[postForm.category] || postForm.category
+          await updateListing(editingListing.id, {
+            category: dbCategory,
+            title: postForm.title,
+            description: postForm.details,
+            price: postForm.price ? parseFloat(postForm.price.replace(/[^0-9.]/g, '')) : null,
+            contact_email: postShareEmail && postContactEmail.trim() ? postContactEmail.trim() : null,
+            contact_phone: postSharePhone && postContactPhone.trim() ? postContactPhone.trim() : null
+          })
+        } catch (err) {
+          console.error('[BulletinBoard] Edit listing error:', err)
+        }
+      }
+    } else if (isInDemoMode) {
       // Demo mode: add to local state only
       const newListing = {
         id: Date.now(),
@@ -360,7 +424,8 @@ function BulletinBoard({ onBack }) {
             timestamp: new Date(listing.created_at).getTime(),
             color: categoryColors[listing.category] || '#6b7280',
             contact_email: listing.contact_email || null,
-            contact_phone: listing.contact_phone || null
+            contact_phone: listing.contact_phone || null,
+            authorId: listing.author_id || listing.user_id || null
           }
         })
         setListings(transformedData)
@@ -370,6 +435,7 @@ function BulletinBoard({ onBack }) {
     }
 
     setShowPostModal(false)
+    setEditingListing(null)
     setPostForm({
       category: 'parking',
       title: '',
@@ -494,7 +560,9 @@ function BulletinBoard({ onBack }) {
               onCta={() => setShowPostModal(true)}
             />
           ) : (
-            filteredListings.map(listing => (
+            filteredListings.map(listing => {
+              const isOwn = listing.authorId === userProfile?.id
+              return (
               <article key={listing.id} className="listing-card">
                 <div className="listing-header">
                   <span
@@ -503,10 +571,32 @@ function BulletinBoard({ onBack }) {
                   >
                     {getCategoryLabel(listing.category)}
                   </span>
-                  <span className="listing-time">
-                    <Clock size={12} />
-                    {formatTimeAgo(listing.timestamp)}
-                  </span>
+                  <div className="listing-header-right">
+                    <span className="listing-time">
+                      <Clock size={12} />
+                      {formatTimeAgo(listing.timestamp)}
+                    </span>
+                    {isOwn && (
+                      <div className="listing-menu-wrapper">
+                        <button
+                          className="listing-menu-btn"
+                          onClick={() => setOpenListingMenu(openListingMenu === listing.id ? null : listing.id)}
+                        >
+                          <MoreHorizontal size={16} />
+                        </button>
+                        {openListingMenu === listing.id && (
+                          <div className="listing-menu">
+                            <button onClick={() => handleStartEdit(listing)}>
+                              <Edit3 size={12} /> Edit
+                            </button>
+                            <button className="danger" onClick={() => handleDeleteListing(listing.id)}>
+                              <Trash2 size={12} /> Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <h3 className="listing-title">{listing.title}</h3>
@@ -543,18 +633,19 @@ function BulletinBoard({ onBack }) {
                   )}
                 </div>
               </article>
-            ))
+              )
+            })
           )}
         </div>
       </main>
 
       {/* Post Listing Modal */}
       {showPostModal && (
-        <div className="modal-overlay" onClick={() => setShowPostModal(false)}>
+        <div className="modal-overlay" onClick={() => { setShowPostModal(false); setEditingListing(null) }}>
           <div className="bulletin-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 className="modal-title">Post a Listing</h3>
-              <button className="modal-close" onClick={() => setShowPostModal(false)}>
+              <h3 className="modal-title">{editingListing ? 'Edit Listing' : 'Post a Listing'}</h3>
+              <button className="modal-close" onClick={() => { setShowPostModal(false); setEditingListing(null) }}>
                 <X size={20} />
               </button>
             </div>
@@ -680,7 +771,7 @@ function BulletinBoard({ onBack }) {
             </div>
 
             <div className="modal-footer">
-              <button className="modal-cancel" onClick={() => setShowPostModal(false)}>
+              <button className="modal-cancel" onClick={() => { setShowPostModal(false); setEditingListing(null) }}>
                 Cancel
               </button>
               <button
@@ -689,7 +780,7 @@ function BulletinBoard({ onBack }) {
                 disabled={!postForm.title.trim() || !((postShareEmail && postContactEmail.trim()) || (postSharePhone && postContactPhone.trim()))}
               >
                 <Send size={16} />
-                <span>Post Listing</span>
+                <span>{editingListing ? 'Save Changes' : 'Post Listing'}</span>
               </button>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ChevronLeft, Check, HelpCircle, X, CalendarPlus, Send, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
+import { ChevronLeft, Check, HelpCircle, X, CalendarPlus, Send, Sun, Cloud, CloudRain, Snowflake, Moon, MoreHorizontal, Edit3, Trash2 } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import { supabase } from './lib/supabase'
 import './EventDetail.css'
@@ -15,6 +15,9 @@ function EventDetail({ event, onBack, onNavigate }) {
   const [organizer, setOrganizer] = useState(null)
   const [orgAvatarUrl, setOrgAvatarUrl] = useState(null)
   const [isPostingComment, setIsPostingComment] = useState(false)
+  const [openCommentMenu, setOpenCommentMenu] = useState(null)
+  const [editingCommentId, setEditingCommentId] = useState(null)
+  const [editCommentText, setEditCommentText] = useState('')
 
   // Resolve the real event ID (strip occurrence suffix like "uuid-2026-01-15T...")
   const realEventId = typeof event?.id === 'string' && event.id.includes('-') && event.id.length > 36
@@ -289,6 +292,49 @@ function EventDetail({ event, onBack, onNavigate }) {
     }
   }
 
+  // Edit event comment
+  const handleEditComment = async (commentId) => {
+    const trimmed = editCommentText.trim()
+    if (!trimmed) return
+
+    // Optimistic update
+    setComments(prev => prev.map(c => c.id === commentId ? { ...c, text: trimmed } : c))
+    setEditingCommentId(null)
+    setEditCommentText('')
+
+    if (!isInDemoMode) {
+      try {
+        const { error } = await supabase
+          .from('event_comments')
+          .update({ content: trimmed })
+          .eq('id', commentId)
+        if (error) console.error('[Comments] Edit error:', error)
+      } catch (err) {
+        console.error('[Comments] Edit failed:', err)
+      }
+    }
+  }
+
+  // Delete event comment
+  const handleDeleteComment = async (commentId) => {
+    if (!window.confirm('Delete this comment? This can\'t be undone.')) return
+
+    setComments(prev => prev.filter(c => c.id !== commentId))
+    setOpenCommentMenu(null)
+
+    if (!isInDemoMode) {
+      try {
+        const { error } = await supabase
+          .from('event_comments')
+          .delete()
+          .eq('id', commentId)
+        if (error) console.error('[Comments] Delete error:', error)
+      } catch (err) {
+        console.error('[Comments] Delete failed:', err)
+      }
+    }
+  }
+
   // Add to Calendar (.ics download)
   const handleAddToCalendar = () => {
     const startDate = event.start_time
@@ -455,24 +501,64 @@ function EventDetail({ event, onBack, onNavigate }) {
           <div className="event-detail-comments">
             {comments.length > 0 && (
               <div className="comments-list">
-                {comments.map(comment => (
-                  <div key={comment.id} className="comment-item">
-                    {comment.avatar ? (
-                      <img src={comment.avatar} alt={comment.author} className="comment-avatar" />
-                    ) : (
-                      <div className="comment-avatar comment-avatar-fallback">
-                        {(comment.author || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                {comments.map(comment => {
+                  const isOwn = comment.userId === userProfile?.id
+                  const isEditing = editingCommentId === comment.id
+                  return (
+                    <div key={comment.id} className="comment-item">
+                      {comment.avatar ? (
+                        <img src={comment.avatar} alt={comment.author} className="comment-avatar" />
+                      ) : (
+                        <div className="comment-avatar comment-avatar-fallback">
+                          {(comment.author || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="comment-content">
+                        <div className="comment-header">
+                          <span className="comment-author">{comment.author}</span>
+                          <span className="comment-time">{comment.timestamp}</span>
+                          {isOwn && !isEditing && (
+                            <div className="comment-menu-wrapper">
+                              <button
+                                className="comment-menu-btn"
+                                onClick={() => setOpenCommentMenu(openCommentMenu === comment.id ? null : comment.id)}
+                              >
+                                <MoreHorizontal size={14} />
+                              </button>
+                              {openCommentMenu === comment.id && (
+                                <div className="comment-menu">
+                                  <button onClick={() => { setEditingCommentId(comment.id); setEditCommentText(comment.text); setOpenCommentMenu(null) }}>
+                                    <Edit3 size={12} /> Edit
+                                  </button>
+                                  <button className="danger" onClick={() => handleDeleteComment(comment.id)}>
+                                    <Trash2 size={12} /> Delete
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        {isEditing ? (
+                          <div className="comment-edit-inline">
+                            <input
+                              type="text"
+                              value={editCommentText}
+                              onChange={(e) => setEditCommentText(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') handleEditComment(comment.id); if (e.key === 'Escape') { setEditingCommentId(null); setEditCommentText('') } }}
+                              autoFocus
+                            />
+                            <div className="comment-edit-actions">
+                              <button onClick={() => { setEditingCommentId(null); setEditCommentText('') }}>Cancel</button>
+                              <button className="save" onClick={() => handleEditComment(comment.id)} disabled={!editCommentText.trim()}>Save</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="comment-text">{comment.text}</p>
+                        )}
                       </div>
-                    )}
-                    <div className="comment-content">
-                      <div className="comment-header">
-                        <span className="comment-author">{comment.author}</span>
-                        <span className="comment-time">{comment.timestamp}</span>
-                      </div>
-                      <p className="comment-text">{comment.text}</p>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
 
