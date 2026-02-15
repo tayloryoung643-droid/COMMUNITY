@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Calendar, ChevronRight, ChevronLeft, List, Grid3X3, Sun, Cloud, CloudRain, Snowflake, Moon, AlertCircle, Plus, MoreVertical, Edit3, Trash2 } from 'lucide-react'
+import { Calendar, ChevronRight, ChevronLeft, List, Grid3X3, Sun, Cloud, CloudRain, Snowflake, Moon, AlertCircle, Plus, MoreVertical, Edit3, Trash2, CalendarSync } from 'lucide-react'
 import HamburgerMenu from './HamburgerMenu'
 import { useAuth } from './contexts/AuthContext'
 import { eventsData } from './eventsData'
@@ -7,6 +7,7 @@ import { getEvents, deleteEvent } from './services/eventService'
 import { expandAllEvents } from './utils/recurrenceUtils'
 import { supabase } from './lib/supabase'
 import EventModal from './components/EventModal'
+import CalendarSyncModal from './components/CalendarSyncModal'
 import EmptyState from './components/EmptyState'
 import './CalendarView.css'
 
@@ -21,7 +22,8 @@ function CalendarView({ onNavigate }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Event creation/editing state
+  // Modal state
+  const [showSyncModal, setShowSyncModal] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingEvent, setEditingEvent] = useState(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -499,11 +501,22 @@ function CalendarView({ onNavigate }) {
       </div>
 
       <main className="calendar-view-content">
-        {/* Create Event Button */}
-        <button className="create-event-button" onClick={() => setShowCreateModal(true)}>
-          <Plus size={20} />
-          <span>Create Event</span>
-        </button>
+        {/* Event Action Buttons */}
+        <div className="create-event-button-container">
+          {!isInDemoMode && (
+            <button
+              className="sync-calendar-button"
+              onClick={() => setShowSyncModal(true)}
+            >
+              <CalendarSync size={20} />
+              <span>Sync</span>
+            </button>
+          )}
+          <button className="create-event-button" onClick={() => setShowCreateModal(true)}>
+            <Plus size={20} />
+            <span>Create Event</span>
+          </button>
+        </div>
 
         {/* View Toggle */}
         <div className="calendar-view-controls">
@@ -706,6 +719,14 @@ function CalendarView({ onNavigate }) {
         )
         )}
       </main>
+
+      {/* Calendar Sync Modal */}
+      <CalendarSyncModal
+        isOpen={showSyncModal}
+        onClose={() => setShowSyncModal(false)}
+        buildingId={userProfile?.building_id}
+        buildingName={userProfile?.building_name}
+      />
 
       {/* Event Modal (create & edit) */}
       <EventModal
