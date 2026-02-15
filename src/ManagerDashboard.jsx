@@ -477,8 +477,12 @@ function ManagerDashboard({ onLogout, buildingData }) {
   const unreadCount = notifications.filter(n => n.unread).length
 
   // Handle announcement success (from modal)
-  const handleAnnouncementSuccess = () => {
-    showToastMessage('Announcement posted successfully!')
+  const handleAnnouncementSuccess = (result) => {
+    if (result?.emailSentTo > 0) {
+      showToastMessage(`Announcement posted! Sending email to ${result.emailSentTo} resident${result.emailSentTo !== 1 ? 's' : ''}...`)
+    } else {
+      showToastMessage('Announcement posted successfully!')
+    }
   }
 
   // Handle package success (from modal)

@@ -1,6 +1,7 @@
-import { useState } from 'react'
-import { Megaphone, X, Image, Bell, Send } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Megaphone, X, Image, Bell, Send, Mail } from 'lucide-react'
 import { createPost, getPosts } from '../services/communityPostService'
+import { getAnnouncementEmailRecipients, sendAnnouncementEmails } from '../services/announcementEmailService'
 import './AnnouncementModal.css'
 
 const CATEGORIES = [
@@ -19,6 +20,23 @@ function AnnouncementModal({ isOpen, onClose, onSuccess, userProfile, isInDemoMo
     sendNotification: true
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [sendEmail, setSendEmail] = useState(true)
+  const [emailRecipients, setEmailRecipients] = useState(null)
+
+  // Load email recipient counts when modal opens (non-demo only)
+  useEffect(() => {
+    if (!isOpen) {
+      // Reset email toggle on close so it defaults to ON next open
+      setSendEmail(true)
+      setEmailRecipients(null)
+      return
+    }
+    if (isInDemoMode || !userProfile?.building_id) return
+
+    getAnnouncementEmailRecipients(userProfile.building_id, userProfile.id)
+      .then(result => setEmailRecipients(result))
+      .catch(err => console.error('[AnnouncementModal] Error loading email recipients:', err))
+  }, [isOpen, isInDemoMode, userProfile?.building_id, userProfile?.id])
 
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }))
@@ -67,9 +85,24 @@ function AnnouncementModal({ isOpen, onClose, onSuccess, userProfile, isInDemoMo
           content,
           is_announcement: true
         })
+
+        // Fire-and-forget: send emails if toggled on and we have recipients
+        let emailSentTo = 0
+        if (sendEmail && emailRecipients?.recipients?.length > 0) {
+          emailSentTo = emailRecipients.recipients.length
+          sendAnnouncementEmails(emailRecipients.recipients, {
+            title: form.title.trim(),
+            message: form.message.trim(),
+            category: form.category,
+            buildingName: userProfile.building_name || 'Your Building',
+            managerName: userProfile.full_name || 'Your building manager',
+            buildingId: userProfile.building_id
+          }).catch(err => console.error('[AnnouncementModal] Email send error:', err))
+        }
+
         resetForm()
         onClose()
-        if (onSuccess) onSuccess()
+        if (onSuccess) onSuccess({ emailSentTo })
       } catch (err) {
         console.error('[AnnouncementModal] Error creating announcement:', err)
         alert('Failed to post announcement. Please try again.')
@@ -152,6 +185,29 @@ function AnnouncementModal({ isOpen, onClose, onSuccess, userProfile, isInDemoMo
               <span>Send push notification to all residents</span>
             </label>
           </div>
+
+          {!isInDemoMode && emailRecipients && emailRecipients.recipients.length > 0 && (
+            <div className="form-checkbox">
+              <input
+                type="checkbox"
+                id="send-email"
+                checked={sendEmail}
+                onChange={(e) => setSendEmail(e.target.checked)}
+              />
+              <label htmlFor="send-email">
+                <Mail size={16} />
+                <span>Send email to all residents</span>
+              </label>
+              {sendEmail && (
+                <p className="email-helper-text">
+                  Sends to {emailRecipients.recipients.length} resident{emailRecipients.recipients.length !== 1 ? 's' : ''}
+                  {emailRecipients.invitedCount > 0 && (
+                    <> — including {emailRecipients.invitedCount} who haven't joined the app yet</>
+                  )}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="modal-footer">

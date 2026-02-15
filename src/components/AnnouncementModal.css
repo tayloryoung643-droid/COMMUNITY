@@ -147,6 +147,7 @@
   align-items: center;
   gap: 8px;
   margin-top: 12px;
+  flex-wrap: wrap;
 }
 
 .announcement-modal .form-checkbox input[type="checkbox"] {
@@ -167,6 +168,14 @@
 
 .announcement-modal .form-checkbox label svg {
   color: #D97706;
+}
+
+.announcement-modal .form-checkbox .email-helper-text {
+  margin: 4px 0 0 26px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #8B7E74;
+  width: 100%;
 }
 
 .announcement-modal .modal-footer {
