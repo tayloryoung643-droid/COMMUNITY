@@ -71,7 +71,7 @@ function Join({ onSuccess, onBackToLogin }) {
 
       // Lookup invite by token
       const { data: inviteData, error: inviteError } = await supabase
-        .from('resident_invites')
+        .from('invitations')
         .select('*, buildings(*)')
         .eq('token', token)
         .single()
@@ -83,8 +83,8 @@ function Join({ onSuccess, onBackToLogin }) {
         return
       }
 
-      // Check if already accepted
-      if (inviteData.status === 'accepted') {
+      // Check if already used
+      if (inviteData.status === 'joined') {
         setError('This invitation has already been used. Please sign in with your account or contact your building manager.')
         setLoading(false)
         return
@@ -161,9 +161,9 @@ function Join({ onSuccess, onBackToLogin }) {
 
       const userPayload = {
         building_id: invite.building_id,
-        full_name: invite.full_name,
+        full_name: invite.name,
         email: invite.email,
-        unit_number: invite.unit_number || null,
+        unit_number: invite.unit || null,
         phone: invite.phone || null,
         role: 'resident',
         trust_tier: 1,
@@ -196,13 +196,13 @@ function Join({ onSuccess, onBackToLogin }) {
         }
       }
 
-      // 3. Mark invite as accepted
-      console.log('[Join] Marking invite as accepted...')
+      // 3. Mark invite as joined
+      console.log('[Join] Marking invite as joined...')
       const { error: updateInviteError } = await supabase
-        .from('resident_invites')
+        .from('invitations')
         .update({
-          status: 'accepted',
-          accepted_at: new Date().toISOString()
+          status: 'joined',
+          joined_at: new Date().toISOString()
         })
         .eq('id', invite.id)
 
@@ -300,7 +300,7 @@ function Join({ onSuccess, onBackToLogin }) {
   }
 
   // Get first name for greeting
-  const firstName = invite?.full_name?.split(' ')[0] || 'there'
+  const firstName = invite?.name?.split(' ')[0] || 'there'
 
   // Valid invite - show signup form
   return (
@@ -410,14 +410,14 @@ function Join({ onSuccess, onBackToLogin }) {
           </div>
 
           {/* Unit info if available */}
-          {invite?.unit_number && (
+          {invite?.unit && (
             <p style={{
               fontSize: '12px',
               color: '#6B7280',
               textAlign: 'center',
               marginTop: '16px'
             }}>
-              You'll be registered as a resident of Unit {invite.unit_number}
+              You'll be registered as a resident of Unit {invite.unit}
             </p>
           )}
 

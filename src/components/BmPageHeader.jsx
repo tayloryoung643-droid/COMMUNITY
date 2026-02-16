@@ -9,21 +9,24 @@ function BmPageHeader({
   subtitle,
   backgroundUrl
 }) {
-  // Default fallback image (same as Resident side)
-  const defaultImage = 'https://jsjocdxqxfcashrhjbgn.supabase.co/storage/v1/object/public/building-images/5e3b6dae-b373-414e-9707-b6e182525ea6/background.jpg'
-  const heroImageUrl = backgroundUrl || defaultImage
+  const hasImage = !!backgroundUrl
 
   return (
     <section className="bm-hero-section">
       <div className="bm-hero-image-container">
-        {/* THE SAME building image - sharp in the hero */}
-        <img
-          src={heroImageUrl}
-          alt="Building"
-          className="bm-hero-image"
-        />
-        <div className="bm-hero-warm-overlay"></div>
-        <div className="bm-hero-gradient-overlay"></div>
+        {hasImage ? (
+          <>
+            <img
+              src={backgroundUrl}
+              alt="Building"
+              className="bm-hero-image"
+            />
+            <div className="bm-hero-warm-overlay"></div>
+            <div className="bm-hero-gradient-overlay"></div>
+          </>
+        ) : (
+          <div className="bm-hero-gradient-fallback"></div>
+        )}
 
         {/* Page Title - Centered in Hero */}
         <div className="bm-hero-text-container">

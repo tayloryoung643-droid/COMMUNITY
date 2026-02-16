@@ -299,7 +299,11 @@ export async function processInviteBatch(buildingId, invitedBy, residents, build
     }
 
     if (result.success) {
-      await updateInvitationStatus(inv.id, 'sent')
+      // Save token and mark as sent so the invite link works
+      await supabase
+        .from('invitations')
+        .update({ status: 'sent', token: result.token })
+        .eq('id', inv.id)
       sentCount++
     } else {
       await updateInvitationStatus(inv.id, 'failed')
@@ -388,7 +392,11 @@ export async function sendSingleInvite(invitationId, email, fullName, buildingNa
   const result = await sendInviteEmail(email, fullName, buildingName)
 
   if (result.success) {
-    await updateInvitationStatus(invitationId, 'sent')
+    // Save token and mark as sent so the invite link works
+    await supabase
+      .from('invitations')
+      .update({ status: 'sent', token: result.token })
+      .eq('id', invitationId)
     return { success: true }
   } else {
     await updateInvitationStatus(invitationId, 'failed')

@@ -315,7 +315,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'ai-assistant', label: 'AI Assistant', icon: Sparkles },
     { id: 'residents', label: 'Residents', icon: Users },
-    { id: 'messages', label: 'Messages', icon: MessageSquare, badge: 2 },
+    { id: 'messages', label: 'Messages', icon: MessageSquare },
     { id: 'divider1', divider: true },
     { id: 'community', label: 'Community', icon: Users },
     { id: 'calendar', label: 'Events', icon: Calendar },
@@ -903,7 +903,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
               >
                 <item.icon size={20} />
                 <span>{item.label}</span>
-                {item.badge && <span className="nav-badge">{item.badge}</span>}
+                {item.id === 'messages' && statsData.unreadMessages > 0 && <span className="nav-badge">{statsData.unreadMessages}</span>}
               </button>
             )
           })}

@@ -25,6 +25,7 @@ import ManagerOnboardingStep2 from './ManagerOnboardingStep2'
 import ManagerOnboardingStep3 from './ManagerOnboardingStep3'
 import ManagerOnboardingStep4 from './ManagerOnboardingStep4'
 import { processInviteBatch } from './services/invitationService'
+import { replaceFaqItems } from './services/faqService'
 import ManagerDashboard from './ManagerDashboard'
 import LoadingSplash from './components/LoadingSplash'
 import ResidentSignupEntry from './ResidentSignupEntry'
@@ -407,7 +408,6 @@ function App() {
           address: formData.building.address,
           total_floors: formData.building.floors,
           total_units: formData.building.units,
-          access_code: formData.building.code,
         })
         .select()
         .single()
@@ -510,6 +510,30 @@ function App() {
       return // Don't navigate away on error
     }
 
+    // Save FAQ items if any were created during onboarding
+    if (formData.faq) {
+      try {
+        const faqItems = Object.values(formData.faq).flatMap(cat =>
+          cat.items.map(item => ({
+            category: cat.title,
+            question: item.question,
+            answer: item.answer
+          }))
+        )
+        if (faqItems.length > 0) {
+          await replaceFaqItems(result.building.id, faqItems, {
+            createdBy: result.user.id,
+            sourceType: 'onboarding_ai',
+            sourceName: 'Onboarding wizard'
+          })
+          console.log('[Onboarding] FAQ items saved:', faqItems.length)
+        }
+      } catch (err) {
+        console.error('[Onboarding] Failed to save FAQ items:', err)
+        // Non-blocking: building was still created successfully
+      }
+    }
+
     // Send real invites if residents were imported
     if (formData.invitesSent && formData.residents?.length > 0) {
       try {
@@ -545,6 +569,29 @@ function App() {
     if (!result.success) {
       alert(`Error: ${result.error}\n\nPlease try again.`)
       return // Don't navigate away on error
+    }
+
+    // Save FAQ items if any were created during onboarding
+    if (formData.faq) {
+      try {
+        const faqItems = Object.values(formData.faq).flatMap(cat =>
+          cat.items.map(item => ({
+            category: cat.title,
+            question: item.question,
+            answer: item.answer
+          }))
+        )
+        if (faqItems.length > 0) {
+          await replaceFaqItems(result.building.id, faqItems, {
+            createdBy: result.user.id,
+            sourceType: 'onboarding_ai',
+            sourceName: 'Onboarding wizard'
+          })
+          console.log('[Onboarding] FAQ items saved:', faqItems.length)
+        }
+      } catch (err) {
+        console.error('[Onboarding] Failed to save FAQ items:', err)
+      }
     }
 
     // Clear localStorage onboarding data since we're done

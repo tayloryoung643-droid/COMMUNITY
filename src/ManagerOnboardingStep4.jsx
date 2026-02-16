@@ -6,7 +6,6 @@ import {
   Building2,
   Users,
   FileText,
-  Copy,
   Mail,
   Sparkles,
   Rocket,
@@ -17,12 +16,10 @@ import {
 import './ManagerOnboardingStep4.css'
 
 function ManagerOnboardingStep4({ onBack, onLaunch, onSkip, initialData }) {
-  const [codeCopied, setCodeCopied] = useState(false)
   const [isSending, setIsSending] = useState(false)
 
   // Extract data from previous steps
   const buildingName = initialData?.building?.name || 'Your Building'
-  const buildingCode = initialData?.building?.code || 'BUILDING'
   const managerName = initialData?.manager?.name || 'Property Manager'
 
   // Count FAQ items
@@ -34,17 +31,6 @@ function ManagerOnboardingStep4({ onBack, onLaunch, onSkip, initialData }) {
   const allResidents = initialData?.residents || []
   const residentCount = allResidents.length
   const readyResidentCount = allResidents.filter(r => r.selected !== false && r.hasEmail).length
-
-  // Copy building code to clipboard
-  const copyCode = async () => {
-    try {
-      await navigator.clipboard.writeText(buildingCode)
-      setCodeCopied(true)
-      setTimeout(() => setCodeCopied(false), 2000)
-    } catch (err) {
-      console.error('Failed to copy:', err)
-    }
-  }
 
   // Handle send invites — real sending happens in App.jsx after building creation
   const handleSendInvites = async () => {
@@ -137,17 +123,6 @@ function ManagerOnboardingStep4({ onBack, onLaunch, onSkip, initialData }) {
             </div>
           </div>
 
-          <div className="building-code-display">
-            <span className="code-label">Your building code</span>
-            <div className="code-box">
-              <span className="code-value">{buildingCode}</span>
-              <button className="copy-btn" onClick={copyCode}>
-                {codeCopied ? <Check size={18} /> : <Copy size={18} />}
-                {codeCopied ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
-          </div>
-
           <div className="setup-stats">
             <div className={`stat-item ${faqCount > 0 ? 'ready' : 'pending'}`}>
               <FileText size={18} />
@@ -192,10 +167,6 @@ function ManagerOnboardingStep4({ onBack, onLaunch, onSkip, initialData }) {
                 </p>
                 <div className="email-cta">
                   <div className="fake-button">Join Your Building</div>
-                </div>
-                <div className="email-code">
-                  <span>Your building code: </span>
-                  <strong>{buildingCode}</strong>
                 </div>
               </div>
             </div>
@@ -243,25 +214,6 @@ function ManagerOnboardingStep4({ onBack, onLaunch, onSkip, initialData }) {
             </div>
           )}
 
-          {/* Divider */}
-          <div className="divider">
-            <span>OR</span>
-          </div>
-
-          {/* Manual Share Option */}
-          <div className="manual-share">
-            <h3>Share your building code manually</h3>
-            <div className="share-code-box">
-              <span className="share-code">{buildingCode}</span>
-              <button className="copy-btn-large" onClick={copyCode}>
-                {codeCopied ? <Check size={20} /> : <Copy size={20} />}
-                {codeCopied ? 'Copied!' : 'Copy Code'}
-              </button>
-            </div>
-            <p className="share-note">
-              Share this code with residents - they can join anytime at <strong>community-app.com</strong>
-            </p>
-          </div>
         </div>
 
         {/* Bottom Navigation */}

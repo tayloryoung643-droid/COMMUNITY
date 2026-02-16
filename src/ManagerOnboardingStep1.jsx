@@ -4,14 +4,12 @@ import {
   MapPin,
   Layers,
   Hash,
-  Key,
   User,
   Mail,
   Phone,
   Lock,
   Upload,
   X,
-  Check,
   AlertCircle,
   ArrowRight,
   ArrowLeft
@@ -26,7 +24,6 @@ function ManagerOnboardingStep1({ onBack, onContinue, initialData }) {
   const [buildingAddress, setBuildingAddress] = useState(initialData?.building?.address || '')
   const [numberOfFloors, setNumberOfFloors] = useState(initialData?.building?.floors?.toString() || '')
   const [numberOfUnits, setNumberOfUnits] = useState(initialData?.building?.units?.toString() || '')
-  const [buildingCode, setBuildingCode] = useState(initialData?.building?.code || '')
 
   // Property Manager Information - pre-populate from initialData if available
   const [managerName, setManagerName] = useState(initialData?.manager?.name || '')
@@ -41,17 +38,6 @@ function ManagerOnboardingStep1({ onBack, onContinue, initialData }) {
   const [touched, setTouched] = useState({})
   const [submitAttempted, setSubmitAttempted] = useState(false)
   const [agreedToTerms, setAgreedToTerms] = useState(false)
-
-  // Building code validation
-  const validateBuildingCode = (code) => {
-    if (!code) return { valid: false, message: '' }
-    if (code.length < 4) return { valid: false, message: 'Must be at least 4 characters' }
-    if (code.length > 8) return { valid: false, message: 'Must be 8 characters or less' }
-    if (!/^[a-zA-Z0-9]+$/.test(code)) return { valid: false, message: 'Letters and numbers only' }
-    return { valid: true, message: 'Looks good!' }
-  }
-
-  const buildingCodeValidation = validateBuildingCode(buildingCode)
 
   // Email validation
   const validateEmail = (email) => {
@@ -75,7 +61,6 @@ function ManagerOnboardingStep1({ onBack, onContinue, initialData }) {
       buildingAddress.trim() &&
       numberOfFloors &&
       numberOfUnits &&
-      buildingCodeValidation.valid &&
       managerName.trim() &&
       validateEmail(managerEmail) &&
       validatePhone(managerPhone) &&
@@ -125,7 +110,6 @@ function ManagerOnboardingStep1({ onBack, onContinue, initialData }) {
         address: buildingAddress,
         floors: parseInt(numberOfFloors),
         units: parseInt(numberOfUnits),
-        code: buildingCode.toUpperCase(),
         logo: logoFile
       },
       manager: {
@@ -281,31 +265,6 @@ function ManagerOnboardingStep1({ onBack, onContinue, initialData }) {
               </div>
             </div>
 
-            {/* Building Code */}
-            <div className={`form-group ${showError('buildingCode', !buildingCodeValidation.valid && buildingCode) ? 'error' : ''} ${buildingCode && buildingCodeValidation.valid ? 'success' : ''}`}>
-              <label htmlFor="building-code">
-                <Key size={16} />
-                Building Code <span className="required">*</span>
-              </label>
-              <input
-                id="building-code"
-                type="text"
-                placeholder="e.g., PARA2024"
-                value={buildingCode}
-                onChange={(e) => setBuildingCode(e.target.value.toUpperCase())}
-                onBlur={() => handleBlur('buildingCode')}
-                maxLength={8}
-              />
-              <div className="input-helper-row">
-                <span className="helper-text">Choose a memorable code for residents to join your building</span>
-                {buildingCode && (
-                  <span className={`validation-badge ${buildingCodeValidation.valid ? 'valid' : 'invalid'}`}>
-                    {buildingCodeValidation.valid ? <Check size={12} /> : <AlertCircle size={12} />}
-                    {buildingCodeValidation.message}
-                  </span>
-                )}
-              </div>
-            </div>
           </div>
         </section>
 
