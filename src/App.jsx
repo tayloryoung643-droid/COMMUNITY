@@ -401,6 +401,9 @@ function App() {
 
       // 2. Insert the building into public.buildings
       console.log('[Onboarding] Creating building...')
+      // Generate a random access code (required by DB, but no longer shown in UI)
+      const autoCode = crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()
+
       const { data: newBuilding, error: buildingError } = await supabase
         .from('buildings')
         .insert({
@@ -408,6 +411,7 @@ function App() {
           address: formData.building.address,
           total_floors: formData.building.floors,
           total_units: formData.building.units,
+          access_code: autoCode,
         })
         .select()
         .single()
