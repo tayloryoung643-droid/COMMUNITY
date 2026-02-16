@@ -180,15 +180,18 @@ function MaintenanceRequest({ onBack }) {
         urgency: form.urgency
       })
 
+      let photoSignedUrl = null
       if (photoFile && result?.id) {
         try {
           await uploadMaintenancePhoto(photoFile, result.id)
+          // Use the local preview as the signed URL for immediate display
+          photoSignedUrl = photoPreview
         } catch (photoErr) {
           console.error('[MaintenanceRequest] Photo upload failed:', photoErr)
         }
       }
 
-      setRequests(prev => [result, ...prev])
+      setRequests(prev => [{ ...result, photo_signed_url: photoSignedUrl }, ...prev])
       setShowModal(false)
       resetForm()
       showToastMsg('Request submitted successfully!')
@@ -269,6 +272,14 @@ function MaintenanceRequest({ onBack }) {
                   </div>
                   <h3 className="maintenance-card-title">{req.title}</h3>
                   <p className="maintenance-card-desc">{req.description}</p>
+                  {req.photo_signed_url && (
+                    <img
+                      src={req.photo_signed_url}
+                      alt="Maintenance issue"
+                      className="maintenance-card-photo"
+                      onError={(e) => { e.target.style.display = 'none' }}
+                    />
+                  )}
                   <div className="maintenance-card-footer">
                     <span className="maintenance-urgency" style={{ color: urgency.color }}>
                       <AlertTriangle size={14} />

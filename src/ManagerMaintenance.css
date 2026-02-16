@@ -267,6 +267,15 @@
   line-height: 1.5;
 }
 
+.mm-card-photo {
+  width: 100%;
+  max-height: 250px;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-md);
+  display: block;
+}
+
 .mm-card-meta {
   margin-bottom: var(--spacing-md);
   padding-bottom: var(--spacing-md);

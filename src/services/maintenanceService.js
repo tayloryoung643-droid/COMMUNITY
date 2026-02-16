@@ -2,6 +2,19 @@ import { supabase } from '../lib/supabase'
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+const SIGNED_URL_EXPIRY = 3600 // 1 hour
+
+async function signPhotoUrl(path) {
+  if (!path) return null
+  const { data, error } = await supabase.storage
+    .from('maintenance-images')
+    .createSignedUrl(path, SIGNED_URL_EXPIRY)
+  if (error) {
+    console.warn('[maintenanceService] Error signing photo URL:', error)
+    return null
+  }
+  return data?.signedUrl || null
+}
 
 /**
  * Create a new maintenance request
@@ -36,7 +49,15 @@ export async function getMyRequests(userId) {
     throw new Error('Failed to load requests.')
   }
 
-  return data || []
+  if (!data || data.length === 0) return []
+
+  // Sign photo URLs
+  const results = await Promise.all(data.map(async (req) => ({
+    ...req,
+    photo_signed_url: await signPhotoUrl(req.photo_url)
+  })))
+
+  return results
 }
 
 /**
@@ -68,17 +89,20 @@ export async function getBuildingRequests(buildingId) {
     profiles = profileData || []
   }
 
-  // Step 3: Merge profiles into requests
-  return requests.map(request => {
+  // Step 3: Merge profiles into requests and sign photo URLs
+  const results = await Promise.all(requests.map(async (request) => {
     const profile = profiles.find(p => p.id === request.user_id)
     return {
       ...request,
+      photo_signed_url: await signPhotoUrl(request.photo_url),
       user: {
         full_name: profile?.full_name || 'Unknown Resident',
         unit_number: profile?.unit_number || request.unit_number
       }
     }
-  })
+  }))
+
+  return results
 }
 
 /**

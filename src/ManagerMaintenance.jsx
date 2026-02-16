@@ -318,6 +318,14 @@ function ManagerMaintenance() {
 
                 <h3 className="mm-card-title">{req.title}</h3>
                 <p className="mm-card-desc">{req.description}</p>
+                {req.photo_signed_url && (
+                  <img
+                    src={req.photo_signed_url}
+                    alt="Maintenance issue"
+                    className="mm-card-photo"
+                    onError={(e) => { e.target.style.display = 'none' }}
+                  />
+                )}
 
                 <div className="mm-card-meta">
                   <div className="mm-card-resident">

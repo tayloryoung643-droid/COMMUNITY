@@ -99,6 +99,15 @@
   line-height: 1.5;
 }
 
+.maintenance-card-photo {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  display: block;
+}
+
 .maintenance-card-footer {
   display: flex;
   justify-content: space-between;
