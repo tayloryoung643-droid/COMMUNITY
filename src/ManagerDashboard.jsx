@@ -39,7 +39,8 @@ import {
   Trash2,
   Loader2,
   AlertTriangle,
-  MessageSquarePlus
+  MessageSquarePlus,
+  Flag
 } from 'lucide-react'
 import './ManagerDashboard.css'
 import { useAuth } from './contexts/AuthContext'
@@ -57,6 +58,7 @@ import ManagerFAQ from './ManagerFAQ'
 import ManagerDocuments from './ManagerDocuments'
 import ManagerMaintenance from './ManagerMaintenance'
 import ManagerSettings from './ManagerSettings'
+import ManagerReports from './ManagerReports'
 import ManagerFeedback from './ManagerFeedback'
 import AnnouncementModal from './components/AnnouncementModal'
 import EventModal from './components/EventModal'
@@ -291,6 +293,10 @@ function ManagerDashboard({ onLogout, buildingData }) {
         title: 'Documents',
         subtitle: 'Building files and resources'
       },
+      'reports': {
+        title: 'Content Reports',
+        subtitle: 'Review flagged community content'
+      },
       'feedback': {
         title: 'Help & Feedback',
         subtitle: 'Report bugs, suggest features, ask questions'
@@ -319,6 +325,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
     { id: 'maintenance', label: 'Maintenance', icon: Wrench },
     { id: 'faq', label: 'Building FAQ', icon: HelpCircle },
     { id: 'documents', label: 'Documents', icon: FileText },
+    { id: 'reports', label: 'Content Reports', icon: Flag },
     { id: 'feedback', label: 'Help & Feedback', icon: MessageSquarePlus },
     { id: 'divider2', divider: true },
     { id: 'settings', label: 'Settings', icon: Settings }
@@ -578,6 +585,10 @@ function ManagerDashboard({ onLogout, buildingData }) {
 
     if (activeNav === 'documents') {
       return <ManagerDocuments />
+    }
+
+    if (activeNav === 'reports') {
+      return <ManagerReports />
     }
 
     if (activeNav === 'feedback') {

@@ -258,7 +258,7 @@
   color: #5B8A8A;
 }
 
-.join-form input {
+.join-form input:not(.terms-checkbox) {
   width: 100%;
   padding: 14px 14px 14px 44px;
   font-size: 15px;
@@ -270,11 +270,11 @@
   transition: all 0.3s ease;
 }
 
-.join-form input::placeholder {
+.join-form input:not(.terms-checkbox)::placeholder {
   color: #9CA3AF;
 }
 
-.join-form input:focus {
+.join-form input:not(.terms-checkbox):focus {
   outline: none;
   border-color: #5B8A8A;
   background: white;
@@ -358,13 +358,15 @@
   margin: 16px 0 4px;
 }
 
-.terms-checkbox {
-  width: 18px;
+.terms-checkbox-label .terms-checkbox {
+  width: 18px !important;
+  min-width: 18px;
   height: 18px;
   margin-top: 2px;
   flex-shrink: 0;
   accent-color: #5B9A9A;
   cursor: pointer;
+  padding: 0;
 }
 
 .terms-checkbox-text {

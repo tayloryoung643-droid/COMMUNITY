@@ -55,18 +55,21 @@ function CommunityGuidelinesAgreement({ onAccepted }) {
         <div className="guidelines-agreement-body">
           <GuidelinesContent />
 
-          {/* Checkbox */}
-          <label className="guidelines-checkbox-label">
-            <input
-              type="checkbox"
-              checked={agreed}
-              onChange={e => setAgreed(e.target.checked)}
-            />
-            <span className="guidelines-checkbox-custom" />
-            <span className="guidelines-checkbox-text">
-              I've read and agree to follow these community guidelines. I understand that violations may result in content removal.
-            </span>
-          </label>
+          {/* Agreement Section */}
+          <div className="guidelines-agreement-section">
+            <h3 className="guidelines-agreement-section-title">Your Agreement</h3>
+            <label className={`guidelines-checkbox-label ${agreed ? 'checked' : ''}`}>
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={e => setAgreed(e.target.checked)}
+              />
+              <span className="guidelines-checkbox-custom" />
+              <span className="guidelines-checkbox-text">
+                I've read and agree to follow these community guidelines. I understand that violations may result in content removal.
+              </span>
+            </label>
+          </div>
 
           {/* Join Button */}
           <button
