@@ -8,15 +8,20 @@
   );
   position: relative;
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Background orbs - warm golden tones */
+/* Background orbs - warm golden tones, GPU-accelerated */
 .onboarding-container .bg-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
+  filter: blur(60px);
   opacity: 0.3;
   pointer-events: none;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .onboarding-container .bg-orb-1 {
@@ -39,13 +44,10 @@
 
 @keyframes float {
   0%, 100% {
-    transform: translate(0, 0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
-  33% {
-    transform: translate(30px, -30px) scale(1.05);
-  }
-  66% {
-    transform: translate(-20px, 20px) scale(0.95);
+  50% {
+    transform: translate3d(20px, -20px, 0) scale(1.03);
   }
 }
 

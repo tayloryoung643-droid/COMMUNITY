@@ -1,6 +1,6 @@
 /* Step 4 - Launch specific styles - Warm Light Theme */
 
-/* Extra background orb for celebration */
+/* Extra background orb for celebration — GPU-accelerated via base .bg-orb */
 .onboarding-container .bg-orb-3 {
   width: 350px;
   height: 350px;

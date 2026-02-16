@@ -22,6 +22,7 @@ import {
   ScrollText,
   Phone
 } from 'lucide-react'
+import { extractFaqsFromText } from './services/faqService'
 import './ManagerOnboardingStep2.css'
 
 function ManagerOnboardingStep2({ onBack, onContinue, onSkip, initialData }) {
@@ -105,83 +106,118 @@ function ManagerOnboardingStep2({ onBack, onContinue, onSkip, initialData }) {
            Object.values(answers).some(a => a.trim().length > 0)
   }
 
-  // Simulate AI processing
-  const generateFAQ = async () => {
-    setIsProcessing(true)
+  // Collect user input from whichever tab has content
+  const collectInputText = async () => {
+    const parts = []
 
-    const steps = [
-      'Reading your documents...',
-      'Extracting building information...',
-      'Organizing by category...',
-      'Generating FAQ answers...',
-      'Finalizing your FAQ...'
-    ]
-
-    for (const step of steps) {
-      setProcessingStep(step)
-      await new Promise(resolve => setTimeout(resolve, 800))
+    // Pasted text
+    if (pastedText.trim()) {
+      parts.push(pastedText.trim())
     }
 
-    // Simulate AI-generated FAQ based on common building info
-    const simulatedFAQ = {
-      amenities: {
-        icon: Dumbbell,
-        title: 'Amenities',
-        items: [
-          { id: 1, question: 'What are the gym hours?', answer: 'The fitness center is open 24/7 for all residents. Key fob access required after 10 PM.' },
-          { id: 2, question: 'How do I book the party room?', answer: 'Party room reservations can be made through the management office. A $200 refundable deposit is required. Maximum capacity is 50 guests.' },
-          { id: 3, question: 'Is there a pool?', answer: 'Yes! The rooftop pool is open May through September, 8 AM to 10 PM daily. Guests must be accompanied by residents.' }
-        ]
-      },
-      parking: {
-        icon: Car,
-        title: 'Parking',
-        items: [
-          { id: 4, question: 'How many parking spots do I get?', answer: 'Each unit includes one assigned parking spot. Additional spots are $150/month based on availability.' },
-          { id: 5, question: 'Where can guests park?', answer: 'Guest parking is available in the visitor lot on P1. Maximum 4 hours. Register your guest\'s vehicle at the front desk.' },
-          { id: 6, question: 'Are electric vehicle chargers available?', answer: 'Yes, we have 6 EV charging stations on P2. Usage is first-come, first-served with a 4-hour limit.' }
-        ]
-      },
-      pets: {
-        icon: PawPrint,
-        title: 'Pets',
-        items: [
-          { id: 7, question: 'Are pets allowed?', answer: 'Yes! Dogs and cats are welcome. Maximum 2 pets per unit with a combined weight limit of 80 lbs.' },
-          { id: 8, question: 'Where can I walk my dog?', answer: 'There\'s a designated dog run on the ground floor courtyard. Please clean up after your pet. Waste stations are provided.' },
-          { id: 9, question: 'Is there a pet deposit?', answer: 'A $500 pet deposit is required, plus $50/month pet rent per pet.' }
-        ]
-      },
-      packages: {
-        icon: Package,
-        title: 'Mail & Packages',
-        items: [
-          { id: 10, question: 'Where do I pick up packages?', answer: 'Packages are held in the secure package room on the lobby level. You\'ll receive an email notification when a package arrives.' },
-          { id: 11, question: 'What are mailroom hours?', answer: 'The mailroom is accessible 24/7 with your key fob. Mail is typically delivered by 3 PM.' },
-          { id: 12, question: 'Can I receive large deliveries?', answer: 'Large items and furniture deliveries must be scheduled with the front desk at least 24 hours in advance.' }
-        ]
-      },
-      rules: {
-        icon: ScrollText,
-        title: 'Building Rules',
-        items: [
-          { id: 13, question: 'What are the quiet hours?', answer: 'Quiet hours are 10 PM to 8 AM on weekdays, and 11 PM to 9 AM on weekends. Please be respectful of neighbors.' },
-          { id: 14, question: 'Can I have a BBQ on my balcony?', answer: 'Open flame grills are not permitted on balconies. Electric grills are allowed. The rooftop has shared gas grills for resident use.' },
-          { id: 15, question: 'What\'s the smoking policy?', answer: 'This is a smoke-free building. Smoking is only permitted in the designated outdoor area on the P1 level.' }
-        ]
-      },
-      contact: {
-        icon: Phone,
-        title: 'Contact Information',
-        items: [
-          { id: 16, question: 'How do I contact management?', answer: 'The management office is open Mon-Fri 9 AM to 5 PM. Call (555) 123-4567 or email management@building.com' },
-          { id: 17, question: 'Who do I call for emergencies?', answer: 'For after-hours emergencies, call the 24/7 maintenance hotline at (555) 987-6543. For life-threatening emergencies, call 911.' },
-          { id: 18, question: 'How do I submit a maintenance request?', answer: 'Submit maintenance requests through the resident portal or app. Non-urgent requests are typically addressed within 48 hours.' }
-        ]
+    // Answered questions
+    const questionLabels = {
+      gymHours: 'Gym/fitness center hours',
+      parkingPolicy: 'Parking policy',
+      petPolicy: 'Pet policy',
+      mailRoomHours: 'Mail room hours',
+      quietHours: 'Quiet hours',
+      laundryRules: 'Laundry room rules'
+    }
+    const answeredParts = Object.entries(answers)
+      .filter(([, v]) => v.trim())
+      .map(([k, v]) => `${questionLabels[k]}: ${v.trim()}`)
+    if (answeredParts.length > 0) {
+      parts.push(answeredParts.join('\n'))
+    }
+
+    // Uploaded files — read text content from each file
+    for (const f of uploadedFiles) {
+      try {
+        const text = await f.file.text()
+        if (text.trim()) parts.push(text.trim())
+      } catch (err) {
+        console.warn('[Onboarding FAQ] Could not read file:', f.name, err)
       }
     }
 
-    setGeneratedFAQ(simulatedFAQ)
-    setExpandedCategories(Object.keys(simulatedFAQ))
+    return parts.join('\n\n')
+  }
+
+  // Category icon mapping for AI-returned categories
+  const CATEGORY_ICONS = {
+    'Amenities': Dumbbell,
+    'Parking': Car,
+    'Pets': PawPrint,
+    'Packages & Mail': Package,
+    'Building Policies': ScrollText,
+    'General': ScrollText,
+    'Maintenance': ScrollText,
+    'Access & Security': ScrollText,
+    'Billing & Payments': ScrollText,
+    'Moving & Elevator': ScrollText,
+    'Trash & Recycling': ScrollText,
+    'Safety & Emergency': Phone,
+  }
+
+  // Generate FAQ using real AI extraction
+  const generateFAQ = async () => {
+    setIsProcessing(true)
+    setProcessingStep('Collecting your content...')
+
+    try {
+      const inputText = await collectInputText()
+
+      if (!inputText || inputText.trim().length < 50) {
+        console.warn('[Onboarding FAQ] Input too short:', inputText?.length || 0, 'chars')
+        setIsProcessing(false)
+        setProcessingStep('')
+        return
+      }
+
+      console.log('[Onboarding FAQ] Sending', inputText.length, 'chars to AI')
+      setProcessingStep('AI is analyzing your content...')
+
+      const result = await extractFaqsFromText(inputText)
+
+      if (result.error || !result.items || result.items.length === 0) {
+        console.error('[Onboarding FAQ] Extraction failed:', result.error)
+        setProcessingStep(result.error || 'Could not generate FAQ. Try adding more content.')
+        setTimeout(() => { setIsProcessing(false); setProcessingStep('') }, 3000)
+        return
+      }
+
+      console.log('[Onboarding FAQ] Got', result.items.length, 'FAQ items from AI')
+
+      // Group flat items into categorized structure the UI expects
+      const grouped = {}
+      let idCounter = 1
+      for (const item of result.items) {
+        const cat = item.category || 'General'
+        const key = cat.toLowerCase().replace(/[^a-z0-9]/g, '_')
+        if (!grouped[key]) {
+          grouped[key] = {
+            icon: CATEGORY_ICONS[cat] || ScrollText,
+            title: cat,
+            items: []
+          }
+        }
+        grouped[key].items.push({
+          id: idCounter++,
+          question: item.question,
+          answer: item.answer
+        })
+      }
+
+      setGeneratedFAQ(grouped)
+      setExpandedCategories(Object.keys(grouped))
+    } catch (err) {
+      console.error('[Onboarding FAQ] Unexpected error:', err)
+      setProcessingStep('Something went wrong. Please try again.')
+      setTimeout(() => { setIsProcessing(false); setProcessingStep('') }, 3000)
+      return
+    }
+
     setIsProcessing(false)
     setProcessingStep('')
   }
