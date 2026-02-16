@@ -1,0 +1,413 @@
+/* ============================================
+   MAINTENANCE REQUEST - Resident View
+   Matches BulletinBoard visual system
+   ============================================ */
+
+.maintenance-container {
+  min-height: 100vh;
+  background: #F5F0E8;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Content */
+.maintenance-content {
+  padding: 0 16px 100px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* New Request Button */
+.new-request-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 500;
+  color: white;
+  background: #1A1A1A;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 20px;
+}
+
+.new-request-button:hover {
+  background: #333;
+  transform: translateY(-1px);
+}
+
+/* Request List */
+.maintenance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Request Card */
+.maintenance-card {
+  background: #FFFCF7;
+  border: none;
+  border-radius: 18px;
+  padding: 18px 16px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02);
+}
+
+.maintenance-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.maintenance-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.maintenance-status-badge {
+  display: inline-flex;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.maintenance-time {
+  font-size: 12px;
+  color: #8A8075;
+}
+
+.maintenance-card-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1A1A1A;
+  margin: 0 0 6px 0;
+}
+
+.maintenance-card-desc {
+  font-size: 14px;
+  color: #8A8075;
+  margin: 0 0 14px 0;
+  line-height: 1.5;
+}
+
+.maintenance-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.maintenance-urgency {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.maintenance-unit {
+  font-size: 12px;
+  color: #8A8075;
+}
+
+/* Modal */
+.maintenance-container .modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 200;
+  animation: mtFadeIn 0.2s ease;
+}
+
+@keyframes mtFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.maintenance-modal {
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #FFFCF7;
+  border-radius: 20px;
+  animation: mtSlideUp 0.3s ease;
+}
+
+@keyframes mtSlideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.maintenance-container .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  position: sticky;
+  top: 0;
+  background: #FFFCF7;
+  z-index: 1;
+}
+
+.maintenance-container .modal-title {
+  font-size: 17px;
+  font-weight: 500;
+  color: #1A1A1A;
+  margin: 0;
+}
+
+.maintenance-container .modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #8A8075;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.maintenance-container .modal-close:hover {
+  background: #F3EEE5;
+  color: #1A1A1A;
+}
+
+.maintenance-container .modal-body {
+  padding: 20px;
+}
+
+.maintenance-container .modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.maintenance-container .modal-cancel {
+  flex: 1;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #4A4A4A;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.maintenance-container .modal-cancel:hover {
+  background: #F3EEE5;
+}
+
+.maintenance-container .modal-submit {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 500;
+  color: white;
+  background: #1A1A1A;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.maintenance-container .modal-submit:hover:not(:disabled) {
+  background: #333;
+}
+
+.maintenance-container .modal-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Form */
+.maintenance-container .form-group {
+  margin-bottom: 20px;
+}
+
+.maintenance-container .form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4A4A4A;
+  margin-bottom: 8px;
+}
+
+.maintenance-container .form-group input,
+.maintenance-container .form-group textarea,
+.maintenance-container .form-group select {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-family: inherit;
+  color: #1A1A1A;
+  background: #F3EEE5;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.maintenance-container .form-group input::placeholder,
+.maintenance-container .form-group textarea::placeholder {
+  color: #8A8075;
+}
+
+.maintenance-container .form-group input:focus,
+.maintenance-container .form-group textarea:focus,
+.maintenance-container .form-group select:focus {
+  outline: none;
+  border-color: #8A8075;
+  background: #FFFCF7;
+}
+
+.maintenance-container .form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.readonly-input {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Urgency Buttons */
+.urgency-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.urgency-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #8A8075;
+  background: #F3EEE5;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.urgency-btn:hover {
+  background: #F0EDE8;
+  color: #4A4A4A;
+}
+
+.urgency-btn.active {
+  border-color: transparent;
+}
+
+/* Photo Upload */
+.photo-upload-area {
+  width: 100%;
+}
+
+.photo-upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 28px 20px;
+  color: #8A8075;
+  background: #F3EEE5;
+  border: 2px dashed rgba(0, 0, 0, 0.1);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.photo-upload-label:hover {
+  background: #F0EDE8;
+  border-color: rgba(0, 0, 0, 0.15);
+  color: #4A4A4A;
+}
+
+.photo-upload-label span {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.photo-preview {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.photo-preview img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+  border-radius: 14px;
+}
+
+.remove-photo {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Toast */
+.maintenance-toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #1A1A1A;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 12px;
+  z-index: 300;
+  animation: mtToastIn 0.3s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes mtToastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}

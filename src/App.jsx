@@ -36,6 +36,7 @@ import ResidentMessages from './ResidentMessages'
 import ResidentFAQ from './ResidentFAQ'
 import ResidentDocuments from './ResidentDocuments'
 import InviteNeighbors from './InviteNeighbors'
+import MaintenanceRequest from './MaintenanceRequest'
 import Terms from './Terms'
 import Privacy from './Privacy'
 
@@ -634,6 +635,8 @@ function App() {
       setCurrentScreen('documents')
     } else if (featureTitle === 'Invite Neighbors') {
       setCurrentScreen('invite-neighbors')
+    } else if (featureTitle === 'Maintenance') {
+      setCurrentScreen('maintenance')
     }
   }
 
@@ -673,7 +676,7 @@ function App() {
     'home', 'announcements', 'packages', 'events', 'neighbors', 'emergency',
     'elevator-booking', 'community', 'bulletin-board', 'settings', 'building-info',
     'calendar', 'building', 'event-detail', 'post-detail', 'messages', 'faq', 'documents',
-    'invite-neighbors'
+    'invite-neighbors', 'maintenance'
   ]
   const showBottomNav = residentScreens.includes(currentScreen)
 
@@ -741,6 +744,14 @@ function App() {
     return (
       <MobileShell bottomNav={bottomNav}>
         <BulletinBoard onBack={handleBack} />
+      </MobileShell>
+    )
+  }
+
+  if (currentScreen === 'maintenance') {
+    return (
+      <MobileShell bottomNav={bottomNav}>
+        <MaintenanceRequest onBack={() => setCurrentScreen('building')} />
       </MobileShell>
     )
   }

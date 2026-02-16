@@ -55,6 +55,7 @@ import ManagerElevator from './ManagerElevator'
 import ManagerBulletin from './ManagerBulletin'
 import ManagerFAQ from './ManagerFAQ'
 import ManagerDocuments from './ManagerDocuments'
+import ManagerMaintenance from './ManagerMaintenance'
 import ManagerSettings from './ManagerSettings'
 import ManagerFeedback from './ManagerFeedback'
 import AnnouncementModal from './components/AnnouncementModal'
@@ -278,6 +279,10 @@ function ManagerDashboard({ onLogout, buildingData }) {
         title: 'Bulletin Board',
         subtitle: 'Resident listings'
       },
+      'maintenance': {
+        title: 'Maintenance',
+        subtitle: 'Resident maintenance requests'
+      },
       'faq': {
         title: 'Building FAQ',
         subtitle: 'Common questions and answers'
@@ -311,6 +316,7 @@ function ManagerDashboard({ onLogout, buildingData }) {
     { id: 'packages', label: 'Packages', icon: Package },
     { id: 'elevator', label: 'Elevator Booking', icon: ArrowUpDown },
     { id: 'bulletin', label: 'Bulletin Board', icon: ClipboardList },
+    { id: 'maintenance', label: 'Maintenance', icon: Wrench },
     { id: 'faq', label: 'Building FAQ', icon: HelpCircle },
     { id: 'documents', label: 'Documents', icon: FileText },
     { id: 'feedback', label: 'Help & Feedback', icon: MessageSquarePlus },
@@ -560,6 +566,10 @@ function ManagerDashboard({ onLogout, buildingData }) {
 
     if (activeNav === 'bulletin') {
       return <ManagerBulletin />
+    }
+
+    if (activeNav === 'maintenance') {
+      return <ManagerMaintenance />
     }
 
     if (activeNav === 'faq') {
