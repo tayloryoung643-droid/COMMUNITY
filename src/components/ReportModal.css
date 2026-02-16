@@ -1,0 +1,226 @@
+/* Report Modal */
+.report-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 10000;
+  animation: reportFadeIn 0.2s ease;
+}
+
+@keyframes reportFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.report-modal {
+  width: 100%;
+  max-width: 440px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: #FAF8F5;
+  border-radius: 20px 20px 0 0;
+  animation: reportSlideUp 0.3s ease;
+}
+
+@media (min-width: 480px) {
+  .report-modal-overlay {
+    align-items: center;
+  }
+  .report-modal {
+    border-radius: 20px;
+    margin: 20px;
+  }
+}
+
+@keyframes reportSlideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header */
+.report-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(200, 185, 165, 0.2);
+}
+
+.report-modal-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #2C2520;
+}
+
+.report-modal-title-row h3 {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.report-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #8B7E74;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.report-modal-close:hover {
+  background: rgba(200, 185, 165, 0.15);
+  color: #2C2520;
+}
+
+/* Body */
+.report-modal-body {
+  padding: 20px;
+}
+
+.report-prompt {
+  font-size: 14px;
+  font-weight: 500;
+  color: #5A5147;
+  margin: 0 0 14px 0;
+}
+
+.report-reasons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.report-reason-btn {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #4A4A4A;
+  text-align: left;
+  background: #FFFCF7;
+  border: 1px solid rgba(200, 185, 165, 0.3);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.report-reason-btn:hover {
+  background: #F5EEE4;
+  border-color: rgba(200, 185, 165, 0.5);
+}
+
+.report-reason-btn.selected {
+  background: #F5EEE4;
+  border-color: #C8A96E;
+  color: #2C2520;
+  font-weight: 600;
+}
+
+/* Details textarea */
+.report-details-input {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #2C2520;
+  background: #FFFCF7;
+  border: 1px solid rgba(200, 185, 165, 0.3);
+  border-radius: 12px;
+  resize: vertical;
+  min-height: 70px;
+  outline: none;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.report-details-input::placeholder {
+  color: #B8A080;
+}
+
+.report-details-input:focus {
+  border-color: #C8A96E;
+}
+
+/* Footer */
+.report-modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px 24px;
+  border-top: 1px solid rgba(200, 185, 165, 0.2);
+}
+
+.report-cancel-btn {
+  flex: 1;
+  padding: 13px 20px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #5A5147;
+  background: transparent;
+  border: 1px solid rgba(200, 185, 165, 0.3);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.report-cancel-btn:hover {
+  background: #F5EEE4;
+}
+
+.report-submit-btn {
+  flex: 1;
+  padding: 13px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  color: white;
+  background: #C8A96E;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.report-submit-btn:hover:not(:disabled) {
+  background: #B8964F;
+  transform: translateY(-1px);
+}
+
+.report-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Success State */
+.report-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+  color: #5B8A72;
+}
+
+.report-success h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2C2520;
+  margin: 16px 0 8px;
+}
+
+.report-success p {
+  font-size: 14px;
+  color: #8B7E74;
+  margin: 0;
+  line-height: 1.5;
+}

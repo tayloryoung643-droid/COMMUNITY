@@ -5,6 +5,7 @@ import { supabase } from './lib/supabase'
 import { getPosts, createPost, deletePost, updatePost, likePost, unlikePost, getUserLikes } from './services/communityPostService'
 import HamburgerMenu from './HamburgerMenu'
 import EmptyState from './components/EmptyState'
+import ReportModal from './components/ReportModal'
 import './CommunityFeed.css'
 
 // Demo posts data - used when in demo mode
@@ -160,6 +161,9 @@ function CommunityFeed({ onNavigate }) {
   const [editPostText, setEditPostText] = useState('')
   const [toastMessage, setToastMessage] = useState('')
   const [showToast, setShowToast] = useState(false)
+  const [reportModalOpen, setReportModalOpen] = useState(false)
+  const [reportTarget, setReportTarget] = useState(null)
+  const [reportedPosts, setReportedPosts] = useState(new Set())
 
   const showToastMsg = (msg) => {
     setToastMessage(msg)
@@ -883,46 +887,64 @@ function CommunityFeed({ onNavigate }) {
                         <span className="post-unit">{post.unit}</span>
                         <span className="header-separator">·</span>
                         <span className="post-time">{formatTimeAgo(post.timestamp)}</span>
-                        {isOwnPost(post) && (
-                          <div className="post-menu-wrapper" style={{ marginLeft: 'auto' }}>
-                            <button
-                              className="post-menu-btn"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setOpenMenuId(openMenuId === post.id ? null : post.id)
-                              }}
-                            >
-                              <MoreHorizontal size={16} />
-                            </button>
-                            {openMenuId === post.id && (
-                              <div className="post-menu" onClick={(e) => e.stopPropagation()}>
+                        <div className="post-menu-wrapper" style={{ marginLeft: 'auto' }}>
+                          <button
+                            className="post-menu-btn"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setOpenMenuId(openMenuId === post.id ? null : post.id)
+                            }}
+                          >
+                            <MoreHorizontal size={16} />
+                          </button>
+                          {openMenuId === post.id && (
+                            <div className="post-menu" onClick={(e) => e.stopPropagation()}>
+                              {isOwnPost(post) ? (
+                                <>
+                                  <button
+                                    className="menu-item"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      e.preventDefault()
+                                      handleStartEdit(post)
+                                    }}
+                                  >
+                                    <Edit3 size={14} />
+                                    <span>Edit Post</span>
+                                  </button>
+                                  <div className="menu-divider" />
+                                  <button
+                                    className="menu-item danger"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      e.preventDefault()
+                                      handleDeletePost(post)
+                                    }}
+                                  >
+                                    <Trash2 size={14} />
+                                    <span>Delete Post</span>
+                                  </button>
+                                </>
+                              ) : (
                                 <button
-                                  className="menu-item"
+                                  className={`menu-item report ${reportedPosts.has(post.id) ? 'disabled' : ''}`}
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     e.preventDefault()
-                                    handleStartEdit(post)
+                                    if (reportedPosts.has(post.id)) return
+                                    setOpenMenuId(null)
+                                    setReportTarget({ contentType: 'post', contentId: post.id })
+                                    setReportModalOpen(true)
                                   }}
+                                  disabled={reportedPosts.has(post.id)}
                                 >
-                                  <Edit3 size={14} />
-                                  <span>Edit Post</span>
+                                  <Flag size={14} />
+                                  <span>{reportedPosts.has(post.id) ? 'Already Reported' : 'Report'}</span>
                                 </button>
-                                <div className="menu-divider" />
-                                <button
-                                  className="menu-item danger"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    e.preventDefault()
-                                    handleDeletePost(post)
-                                  }}
-                                >
-                                  <Trash2 size={14} />
-                                  <span>Delete Post</span>
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        )}
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       <div className="post-content">
@@ -1054,6 +1076,20 @@ function CommunityFeed({ onNavigate }) {
           <span>{toastMessage}</span>
         </div>
       )}
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={reportModalOpen}
+        onClose={() => { setReportModalOpen(false); setReportTarget(null) }}
+        contentType={reportTarget?.contentType || 'post'}
+        contentId={reportTarget?.contentId}
+        onReported={() => {
+          if (reportTarget?.contentId) {
+            setReportedPosts(prev => new Set([...prev, reportTarget.contentId]))
+          }
+          showToastMsg('Thanks for reporting. Your building manager will review this.')
+        }}
+      />
     </div>
   )
 }

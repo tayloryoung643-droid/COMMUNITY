@@ -913,6 +913,26 @@
   background: rgba(239, 68, 68, 0.1);
 }
 
+.menu-item.report {
+  color: #f59e0b;
+}
+
+.menu-item.report:hover {
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.menu-item.report.disabled,
+.menu-item.report:disabled {
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.menu-item.report.disabled:hover,
+.menu-item.report:disabled:hover {
+  background: none;
+}
+
 .menu-divider {
   height: 1px;
   background: rgba(255, 255, 255, 0.08);
