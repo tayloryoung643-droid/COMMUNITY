@@ -9,9 +9,10 @@ const AI_API_URL = '/api/chat';
  * Send a message to the AI assistant
  * @param {Array} messages - Array of {role: 'user'|'assistant', content: string}
  * @param {string} systemPrompt - Optional custom system prompt
+ * @param {Object} options - Optional settings { maxTokens }
  * @returns {Promise<{success: boolean, message: string, error?: string}>}
  */
-export async function sendMessage(messages, systemPrompt = null) {
+export async function sendMessage(messages, systemPrompt = null, options = {}) {
   try {
     const response = await fetch(AI_API_URL, {
       method: 'POST',
@@ -21,6 +22,7 @@ export async function sendMessage(messages, systemPrompt = null) {
       body: JSON.stringify({
         messages,
         systemPrompt,
+        maxTokens: options.maxTokens || undefined,
       }),
     });
 

@@ -175,7 +175,8 @@ export async function extractFaqsFromText(rawText) {
 
   const result = await sendMessage(
     [{ role: 'user', content: rawText }],
-    FAQ_SYSTEM_PROMPT
+    FAQ_SYSTEM_PROMPT,
+    { maxTokens: 4096 }
   )
 
   if (!result.success) {

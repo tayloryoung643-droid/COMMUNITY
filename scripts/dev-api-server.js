@@ -35,7 +35,7 @@ const server = http.createServer(async (req, res) => {
     req.on('data', chunk => body += chunk);
     req.on('end', async () => {
       try {
-        const { messages, systemPrompt } = JSON.parse(body);
+        const { messages, systemPrompt, maxTokens } = JSON.parse(body);
 
         if (!process.env.ANTHROPIC_API_KEY) {
           res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -43,11 +43,12 @@ const server = http.createServer(async (req, res) => {
           return;
         }
 
-        console.log('[dev-api] Calling Anthropic...');
+        const tokenLimit = Math.min(Math.max(parseInt(maxTokens) || 1024, 256), 8192);
+        console.log('[dev-api] Calling Anthropic... (max_tokens:', tokenLimit + ')');
 
         const response = await anthropic.messages.create({
           model: 'claude-sonnet-4-20250514',
-          max_tokens: 1024,
+          max_tokens: tokenLimit,
           system: systemPrompt || 'You are a helpful AI assistant for building managers.',
           messages: messages,
         });
