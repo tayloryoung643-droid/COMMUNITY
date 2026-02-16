@@ -44,6 +44,7 @@ import {
   createFaqItem,
   extractFaqsFromText
 } from './services/faqService'
+import { extractTextFromFile } from './services/fileReaderService'
 import './ManagerFAQ.css'
 
 // Demo FAQs data - used when in demo mode
@@ -269,7 +270,7 @@ function ManagerFAQ() {
       if (method === 'paste') {
         textContent = pasteText
       } else if (method === 'file' && uploadedFile) {
-        textContent = await readFileAsText(uploadedFile)
+        textContent = await extractTextFromFile(uploadedFile)
       }
 
       if (!textContent || textContent.trim().length < 50) {
@@ -300,15 +301,6 @@ function ManagerFAQ() {
     } finally {
       setExtracting(false)
     }
-  }
-
-  const readFileAsText = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = (e) => resolve(e.target.result)
-      reader.onerror = (e) => reject(e)
-      reader.readAsText(file)
-    })
   }
 
   const openImportModal = () => {

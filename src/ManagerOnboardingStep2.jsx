@@ -23,6 +23,7 @@ import {
   Phone
 } from 'lucide-react'
 import { extractFaqsFromText } from './services/faqService'
+import { extractTextFromFile } from './services/fileReaderService'
 import './ManagerOnboardingStep2.css'
 
 function ManagerOnboardingStep2({ onBack, onContinue, onSkip, initialData }) {
@@ -131,13 +132,19 @@ function ManagerOnboardingStep2({ onBack, onContinue, onSkip, initialData }) {
       parts.push(answeredParts.join('\n'))
     }
 
-    // Uploaded files — read text content from each file
+    // Uploaded files — extract text using PDF/DOCX/text parsers
     for (const f of uploadedFiles) {
       try {
-        const text = await f.file.text()
-        if (text.trim()) parts.push(text.trim())
+        console.log('[Onboarding FAQ] Reading file:', f.name, f.type)
+        const text = await extractTextFromFile(f.file)
+        if (text.trim()) {
+          console.log('[Onboarding FAQ] Extracted', text.length, 'chars from', f.name)
+          parts.push(text.trim())
+        } else {
+          console.warn('[Onboarding FAQ] No text extracted from:', f.name)
+        }
       } catch (err) {
-        console.warn('[Onboarding FAQ] Could not read file:', f.name, err)
+        console.error('[Onboarding FAQ] Could not read file:', f.name, err)
       }
     }
 
