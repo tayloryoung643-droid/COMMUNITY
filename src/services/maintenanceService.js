@@ -43,9 +43,10 @@ export async function getMyRequests(userId) {
  * Get all maintenance requests for a building (BM view)
  */
 export async function getBuildingRequests(buildingId) {
-  const { data, error } = await supabase
+  // Step 1: Fetch maintenance requests (no FK join to avoid PGRST200)
+  const { data: requests, error } = await supabase
     .from('maintenance_requests')
-    .select('*, user:users(full_name, unit_number)')
+    .select('id, building_id, user_id, unit_number, title, description, urgency, status, photo_url, created_at, updated_at')
     .eq('building_id', buildingId)
     .order('created_at', { ascending: false })
 
@@ -54,7 +55,30 @@ export async function getBuildingRequests(buildingId) {
     throw new Error('Failed to load maintenance requests.')
   }
 
-  return data || []
+  if (!requests || requests.length === 0) return []
+
+  // Step 2: Fetch user profiles for all requesters
+  const userIds = [...new Set(requests.map(r => r.user_id).filter(Boolean))]
+  let profiles = []
+  if (userIds.length > 0) {
+    const { data: profileData } = await supabase
+      .from('users')
+      .select('id, full_name, avatar_url, unit_number, email')
+      .in('id', userIds)
+    profiles = profileData || []
+  }
+
+  // Step 3: Merge profiles into requests
+  return requests.map(request => {
+    const profile = profiles.find(p => p.id === request.user_id)
+    return {
+      ...request,
+      user: {
+        full_name: profile?.full_name || 'Unknown Resident',
+        unit_number: profile?.unit_number || request.unit_number
+      }
+    }
+  })
 }
 
 /**
