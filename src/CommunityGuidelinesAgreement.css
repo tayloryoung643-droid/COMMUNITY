@@ -1,0 +1,161 @@
+/* ============================================
+   COMMUNITY GUIDELINES AGREEMENT
+   Warm cream/gold theme — shown once after signup
+   ============================================ */
+
+.guidelines-agreement-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #FAF8F5;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.guidelines-agreement-page {
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.guidelines-agreement-header {
+  padding: 48px 24px 28px;
+  text-align: center;
+  background: linear-gradient(180deg, #F5EEE4 0%, #FAF8F5 100%);
+}
+
+.guidelines-brand {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #B8A080;
+  margin-bottom: 16px;
+}
+
+.guidelines-agreement-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2C2520;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.01em;
+}
+
+.guidelines-agreement-header p {
+  font-size: 14.5px;
+  color: #8B7E74;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Body */
+.guidelines-agreement-body {
+  padding: 24px 24px 48px;
+  flex: 1;
+}
+
+/* Checkbox */
+.guidelines-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 28px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  padding: 16px;
+  background: #FFFCF7;
+  border: 1px solid rgba(200, 185, 165, 0.3);
+  border-radius: 14px;
+  transition: all 0.2s ease;
+}
+
+.guidelines-checkbox-label:hover {
+  border-color: rgba(200, 185, 165, 0.5);
+}
+
+.guidelines-checkbox-label input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.guidelines-checkbox-custom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #C8B9A5;
+  border-radius: 6px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  transition: all 0.2s ease;
+  background: #FFFCF7;
+}
+
+.guidelines-checkbox-label input:checked + .guidelines-checkbox-custom {
+  background: #5B8A72;
+  border-color: #5B8A72;
+}
+
+.guidelines-checkbox-label input:checked + .guidelines-checkbox-custom::after {
+  content: '✓';
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.guidelines-checkbox-text {
+  font-size: 13.5px;
+  color: #5A5147;
+  line-height: 1.5;
+}
+
+/* Join Button */
+.guidelines-join-btn {
+  width: 100%;
+  padding: 16px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  background: #C8B9A5;
+  border: none;
+  border-radius: 14px;
+  cursor: not-allowed;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  letter-spacing: 0.01em;
+}
+
+.guidelines-join-btn.enabled {
+  background: #5B8A72;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(91, 138, 114, 0.25);
+}
+
+.guidelines-join-btn.enabled:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(91, 138, 114, 0.3);
+}
+
+.guidelines-join-btn:disabled {
+  opacity: 0.7;
+}
+
+.guidelines-join-btn.enabled:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+/* Footer Note */
+.guidelines-footer-note {
+  text-align: center;
+  font-size: 12px;
+  color: #B8A080;
+  margin: 0;
+  line-height: 1.5;
+}

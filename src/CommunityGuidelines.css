@@ -1,0 +1,34 @@
+/* ============================================
+   COMMUNITY GUIDELINES - Reference Page
+   Warm cream theme, matches BulletinBoard pattern
+   ============================================ */
+
+.community-guidelines-container {
+  min-height: 100vh;
+  background: #F5F0E8;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.community-guidelines-content {
+  padding: 0 20px 100px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.community-guidelines-intro {
+  margin-bottom: 24px;
+}
+
+.community-guidelines-intro h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2C2520;
+  margin: 0 0 4px 0;
+}
+
+.community-guidelines-intro p {
+  font-size: 14px;
+  color: #8B7E74;
+  margin: 0;
+}

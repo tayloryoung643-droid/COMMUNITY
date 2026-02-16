@@ -37,6 +37,8 @@ import ResidentFAQ from './ResidentFAQ'
 import ResidentDocuments from './ResidentDocuments'
 import InviteNeighbors from './InviteNeighbors'
 import MaintenanceRequest from './MaintenanceRequest'
+import CommunityGuidelines from './CommunityGuidelines'
+import CommunityGuidelinesAgreement from './CommunityGuidelinesAgreement'
 import Terms from './Terms'
 import Privacy from './Privacy'
 
@@ -637,6 +639,8 @@ function App() {
       setCurrentScreen('invite-neighbors')
     } else if (featureTitle === 'Maintenance') {
       setCurrentScreen('maintenance')
+    } else if (featureTitle === 'Guidelines') {
+      setCurrentScreen('guidelines')
     }
   }
 
@@ -670,13 +674,28 @@ function App() {
     return <LoadingSplash theme="neutral" />
   }
 
+  // Guidelines gate — show agreement screen if user hasn't accepted yet
+  // Skip for: demo users, unauthenticated users, users still in signup/onboarding, legal pages
+  const skipGuidelinesScreens = ['login', 'join', 'terms', 'privacy', 'resident-signup', 'resident-address-search', 'resident-join-building', 'resident-create-building', 'manager-onboarding-1', 'manager-onboarding-2', 'manager-onboarding-3', 'manager-onboarding-4']
+  const needsGuidelines = user && userProfile && userProfile.building_id && !userProfile.guidelines_accepted_at && !isDemoMode && !userProfile.is_demo && !skipGuidelinesScreens.includes(currentScreen)
+
+  if (needsGuidelines) {
+    return (
+      <CommunityGuidelinesAgreement
+        onAccepted={() => {
+          // After accepting, let the normal routing take over
+          // refreshUserProfile is called inside the component
+        }}
+      />
+    )
+  }
 
   // Define which screens are resident screens (should show bottom nav)
   const residentScreens = [
     'home', 'announcements', 'packages', 'events', 'neighbors', 'emergency',
     'elevator-booking', 'community', 'bulletin-board', 'settings', 'building-info',
     'calendar', 'building', 'event-detail', 'post-detail', 'messages', 'faq', 'documents',
-    'invite-neighbors', 'maintenance'
+    'invite-neighbors', 'maintenance', 'guidelines'
   ]
   const showBottomNav = residentScreens.includes(currentScreen)
 
@@ -752,6 +771,14 @@ function App() {
     return (
       <MobileShell bottomNav={bottomNav}>
         <MaintenanceRequest onBack={() => setCurrentScreen('building')} />
+      </MobileShell>
+    )
+  }
+
+  if (currentScreen === 'guidelines') {
+    return (
+      <MobileShell bottomNav={bottomNav}>
+        <CommunityGuidelines onBack={() => setCurrentScreen('building')} />
       </MobileShell>
     )
   }

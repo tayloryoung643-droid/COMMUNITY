@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Calendar, Wrench, ClipboardList, HelpCircle, FileText, Camera, User, Users, Settings, Phone, ChevronRight, Home as HomeIcon, MessageSquare, Building2, Sun, Cloud, CloudRain, Snowflake, Moon } from 'lucide-react'
+import { Calendar, Wrench, ClipboardList, HelpCircle, FileText, Camera, User, Users, Settings, Phone, ChevronRight, Home as HomeIcon, MessageSquare, Building2, Sun, Cloud, CloudRain, Snowflake, Moon, ScrollText } from 'lucide-react'
 import { useAuth } from './contexts/AuthContext'
 import HamburgerMenu from './HamburgerMenu'
 import FeedbackModal from './components/FeedbackModal'
@@ -136,6 +136,13 @@ function Building({ onNavigate }) {
                 <Users size={20} />
               </div>
               <span className="list-item-label">Invite Neighbors</span>
+              <ChevronRight size={18} className="list-item-arrow" />
+            </button>
+            <button className="list-item" onClick={() => handleFeatureClick('Guidelines')}>
+              <div className="list-item-icon">
+                <ScrollText size={20} />
+              </div>
+              <span className="list-item-label">Community Guidelines</span>
               <ChevronRight size={18} className="list-item-arrow" />
             </button>
           </div>

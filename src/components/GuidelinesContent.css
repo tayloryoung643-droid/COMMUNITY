@@ -1,0 +1,38 @@
+/* Shared Guidelines Content */
+.guidelines-items {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.guideline-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.guideline-emoji-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: rgba(210, 195, 170, 0.2);
+  border-radius: 12px;
+  flex-shrink: 0;
+  font-size: 20px;
+}
+
+.guideline-text h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2C2520;
+  margin: 0 0 4px 0;
+}
+
+.guideline-text p {
+  font-size: 13.5px;
+  color: #7A7265;
+  margin: 0;
+  line-height: 1.5;
+}
