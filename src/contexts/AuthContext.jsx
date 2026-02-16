@@ -101,12 +101,16 @@ export const AuthProvider = ({ children }) => {
 
   const loadUserProfile = async (userId) => {
     try {
-      // Fetch user profile first (without buildings join to avoid RLS issues)
+      console.time('[AuthContext] loadUserProfile total')
+
+      // Step 1: Fetch user profile (need building_id before we can parallelize)
+      console.time('[AuthContext] profile fetch')
       const { data: profile, error: profileError } = await supabase
         .from('users')
         .select('*')
         .eq('id', userId)
         .single()
+      console.timeEnd('[AuthContext] profile fetch')
 
       if (profileError) {
         console.error('Error loading user profile:', profileError)
@@ -118,55 +122,75 @@ export const AuthProvider = ({ children }) => {
         return
       }
 
-      // If user has an avatar, generate a signed URL
+      // Step 2: Fire all independent requests in parallel
+      // - Avatar signed URL (if avatar exists)
+      // - Building data (if building_id exists)
+      console.time('[AuthContext] parallel fetches')
+      const promises = []
+
+      // Avatar signed URL
+      const avatarPromiseIndex = profile.avatar_url ? promises.length : -1
       if (profile.avatar_url) {
-        try {
-          const { data: avatarData, error: avatarError } = await supabase.storage
+        promises.push(
+          supabase.storage
             .from('profile-images')
             .createSignedUrl(profile.avatar_url, 3600)
+            .catch(err => { console.warn('[AuthContext] Avatar URL failed:', err); return null })
+        )
+      }
 
-          if (!avatarError && avatarData?.signedUrl) {
-            profile.avatar_signed_url = avatarData.signedUrl
-          }
-        } catch (err) {
-          console.warn('[AuthContext] Failed to create avatar signed URL:', err)
+      // Building fetch
+      const buildingPromiseIndex = profile.building_id ? promises.length : -1
+      if (profile.building_id) {
+        promises.push(
+          supabase
+            .from('buildings')
+            .select('*')
+            .eq('id', profile.building_id)
+            .single()
+        )
+      }
+
+      const results = await Promise.all(promises)
+      console.timeEnd('[AuthContext] parallel fetches')
+
+      // Process avatar result
+      if (avatarPromiseIndex >= 0) {
+        const avatarResult = results[avatarPromiseIndex]
+        if (avatarResult?.data?.signedUrl) {
+          profile.avatar_signed_url = avatarResult.data.signedUrl
         }
       }
 
-      // Fetch building separately if user has a building_id
+      // Process building result + set profile immediately (don't wait for bg image)
       let profileWithBuilding = { ...profile }
-      if (profile.building_id) {
-        const { data: building, error: buildingError } = await supabase
-          .from('buildings')
-          .select('*')
-          .eq('id', profile.building_id)
-          .single()
-
+      let bgImagePath = null
+      if (buildingPromiseIndex >= 0) {
+        const { data: building, error: buildingError } = results[buildingPromiseIndex]
         if (!buildingError && building) {
           profileWithBuilding.buildings = building
-
-          // If building has a background image, create signed URL and preload it
-          if (building.background_image_url) {
-            const signedUrl = await createSignedBackgroundUrl(building.background_image_url)
-            if (signedUrl) {
-              setBuildingBackgroundUrl(signedUrl)
-              // Preload the image so it's cached for instant display
-              preloadImage(signedUrl)
-              console.log('[AuthContext] Building background preloaded:', signedUrl)
-            }
-          }
+          bgImagePath = building.background_image_url
         }
       }
 
+      // Set profile NOW — unblocks the UI render
       setUserProfile(profileWithBuilding)
-      // Note: isDemoMode is only set true by explicit loginAsDemo() call
-      // Real users loaded from DB should never be in demo mode
+      console.timeEnd('[AuthContext] loadUserProfile total')
       console.log('[AuthContext] Profile loaded:', {
-        isDemoMode: false, // Real users are never in demo mode
         sessionUserId: userId,
         profileId: profileWithBuilding.id,
         buildingId: profileWithBuilding.building_id
       })
+
+      // Step 3: Background image — fire-and-forget, don't block UI
+      if (bgImagePath) {
+        createSignedBackgroundUrl(bgImagePath).then(signedUrl => {
+          if (signedUrl) {
+            setBuildingBackgroundUrl(signedUrl)
+            preloadImage(signedUrl)
+          }
+        })
+      }
     } catch (error) {
       console.error('Error loading user profile:', error)
     }

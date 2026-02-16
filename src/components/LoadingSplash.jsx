@@ -6,7 +6,7 @@ function LoadingSplash({ theme = 'warm', message = 'Loading your building...', f
   const [showSlowMessage, setShowSlowMessage] = useState(false)
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowSlowMessage(true), 5000)
+    const timer = setTimeout(() => setShowSlowMessage(true), 8000)
     return () => clearTimeout(timer)
   }, [])
 
@@ -18,6 +18,17 @@ function LoadingSplash({ theme = 'warm', message = 'Loading your building...', f
         </div>
         <h1 className="loading-splash-brand">COMMUNITY</h1>
         <p className="loading-splash-message">{message}</p>
+
+        {/* Skeleton cards hint at the dashboard layout */}
+        <div className="loading-skeleton">
+          <div className="skeleton-bar skeleton-bar-wide"></div>
+          <div className="skeleton-row">
+            <div className="skeleton-card"></div>
+            <div className="skeleton-card"></div>
+          </div>
+          <div className="skeleton-bar skeleton-bar-narrow"></div>
+        </div>
+
         {showSlowMessage && (
           <p className="loading-splash-slow">Taking longer than usual...</p>
         )}

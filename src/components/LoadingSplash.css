@@ -118,3 +118,47 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* Skeleton loader */
+.loading-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 280px;
+  margin-top: 24px;
+  animation: fadeIn 0.6s ease 0.3s both;
+}
+
+.skeleton-bar {
+  height: 14px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease infinite;
+}
+
+.skeleton-bar-wide { width: 100%; }
+.skeleton-bar-narrow { width: 60%; }
+
+.skeleton-row {
+  display: flex;
+  gap: 12px;
+}
+
+.skeleton-card {
+  flex: 1;
+  height: 56px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease infinite;
+}
+
+.skeleton-card:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
