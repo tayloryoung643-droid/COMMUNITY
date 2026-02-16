@@ -353,55 +353,12 @@ function App() {
   }
 
   // Shared function to create building and link manager
+  // Order: building first → auth user → link user to building
+  // This prevents orphaned auth accounts if building creation fails.
   const createBuildingAndLinkManager = async (formData) => {
     try {
-      // 1. FIRST: Create the auth account (or sign in if already exists)
-      console.log('[Onboarding] Creating auth account for:', formData.manager.email)
-
-      let authUser = null
-
-      // Try to sign up first
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: formData.manager.email,
-        password: formData.manager.password,
-      })
-
-      if (signUpError) {
-        // Check if user already exists - try signing in instead
-        if (signUpError.message.includes('already registered') ||
-            signUpError.message.includes('already exists') ||
-            signUpError.message.includes('User already registered')) {
-          console.log('[Onboarding] User exists, attempting sign in...')
-
-          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-            email: formData.manager.email,
-            password: formData.manager.password,
-          })
-
-          if (signInError) {
-            console.error('[Onboarding] Sign in failed:', signInError)
-            return { success: false, error: `Account exists but sign in failed: ${signInError.message}` }
-          }
-
-          authUser = signInData.user
-          console.log('[Onboarding] Signed in existing user:', authUser.id)
-        } else {
-          // Some other signup error
-          console.error('[Onboarding] Sign up failed:', signUpError)
-          return { success: false, error: `Failed to create account: ${signUpError.message}` }
-        }
-      } else {
-        authUser = signUpData.user
-        console.log('[Onboarding] Created new auth user:', authUser.id)
-      }
-
-      if (!authUser) {
-        return { success: false, error: 'Failed to authenticate user' }
-      }
-
-      // 2. Insert the building into public.buildings
+      // 1. FIRST: Create the building (before auth so we never orphan a user)
       console.log('[Onboarding] Creating building...')
-      // Generate a random access code (required by DB, but no longer shown in UI)
       const autoCode = crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()
 
       const { data: newBuilding, error: buildingError } = await supabase
@@ -423,12 +380,50 @@ function App() {
 
       console.log('[Onboarding] Building created:', newBuilding)
 
-      // 3. Update the user's record with building_id and role='manager'
+      // 2. Create the auth account (or sign in if already exists)
+      console.log('[Onboarding] Creating auth account for:', formData.manager.email)
+      let authUser = null
+
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: formData.manager.email,
+        password: formData.manager.password,
+      })
+
+      if (signUpError) {
+        if (signUpError.message.includes('already registered') ||
+            signUpError.message.includes('already exists') ||
+            signUpError.message.includes('User already registered')) {
+          console.log('[Onboarding] User exists, attempting sign in...')
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: formData.manager.email,
+            password: formData.manager.password,
+          })
+
+          if (signInError) {
+            console.error('[Onboarding] Sign in failed:', signInError)
+            return { success: false, error: `Account exists but sign in failed: ${signInError.message}` }
+          }
+
+          authUser = signInData.user
+          console.log('[Onboarding] Signed in existing user:', authUser.id)
+        } else {
+          console.error('[Onboarding] Sign up failed:', signUpError)
+          return { success: false, error: `Failed to create account: ${signUpError.message}` }
+        }
+      } else {
+        authUser = signUpData.user
+        console.log('[Onboarding] Created new auth user:', authUser.id)
+      }
+
+      if (!authUser) {
+        return { success: false, error: 'Failed to authenticate user' }
+      }
+
+      // 3. Link the user to the building
       console.log('[Onboarding] Linking user to building...')
       console.log('[Onboarding] Auth user ID:', authUser.id)
       console.log('[Onboarding] Building ID to set:', newBuilding.id)
 
-      // First check if user row exists
       const { data: existingUser, error: fetchError } = await supabase
         .from('users')
         .select('id, email, building_id')
@@ -438,9 +433,7 @@ function App() {
       console.log('[Onboarding] Fetch existing user result:', { existingUser, fetchError })
 
       if (existingUser) {
-        // User row exists, update it
         console.log('[Onboarding] User row exists, updating with building_id...')
-
         const { data: updatedUser, error: updateError } = await supabase
           .from('users')
           .update({
@@ -460,7 +453,6 @@ function App() {
           return { success: false, error: `Failed to link manager to building: ${updateError.message}` }
         }
 
-        // Verify the update worked
         if (!updatedUser || updatedUser.building_id !== newBuilding.id) {
           console.error('[Onboarding] Update may have been blocked by RLS. Expected building_id:', newBuilding.id, 'Got:', updatedUser?.building_id)
           return { success: false, error: 'Failed to update user - RLS may be blocking the update. Check Supabase policies.' }
@@ -468,9 +460,7 @@ function App() {
 
         console.log('[Onboarding] User successfully updated:', updatedUser)
       } else {
-        // User row doesn't exist, insert it
         console.log('[Onboarding] User row does not exist, inserting new row...')
-
         const { data: insertedUser, error: insertError } = await supabase
           .from('users')
           .insert({
@@ -495,7 +485,6 @@ function App() {
       }
 
       console.log('[Onboarding] User linked to building:', newBuilding.id)
-
       return { success: true, building: newBuilding, user: authUser }
     } catch (err) {
       console.error('[Onboarding] Unexpected error:', err)
