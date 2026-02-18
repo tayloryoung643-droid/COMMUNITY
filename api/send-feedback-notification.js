@@ -40,7 +40,8 @@ export default async function handler(req, res) {
   try {
     const { data, error } = await resend.emails.send({
       from: 'Community <noreply@mail.communityhq.space>',
-      to: ['tayloryoung643@gmail.com'],
+      to: ['taylor@communityhq.space'],
+      replyTo: userEmail || undefined,
       subject: emailSubject,
       html: `
         <!DOCTYPE html>
