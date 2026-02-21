@@ -286,16 +286,16 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 16px 40px;
-  font-size: 18px;
+  padding: 18px 44px;
+  font-size: 20px;
   font-weight: 600;
-  color: white;
-  background: linear-gradient(135deg, #5B8A8A, #5B9A6B);
-  border: none;
+  color: #1a1a1a;
+  background: linear-gradient(135deg, rgba(91, 138, 138, 0.15), rgba(91, 154, 107, 0.15));
+  border: 2px solid rgba(91, 138, 138, 0.3);
   border-radius: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 20px rgba(91, 138, 138, 0.25);
+  box-shadow: 0 4px 20px rgba(91, 138, 138, 0.1);
 }
 
 .generate-btn:hover:not(.disabled) {
@@ -684,7 +684,7 @@
   padding: 16px;
   font-size: 16px;
   font-weight: 500;
-  color: #5B8A8A;
+  color: #1a1a1a;
   background: transparent;
   border: 2px dashed rgba(120, 100, 80, 0.2);
   border-radius: 16px;
@@ -694,7 +694,7 @@
 
 .add-faq-btn:hover {
   background: rgba(91, 138, 138, 0.08);
-  border-color: #5B8A8A;
+  border-color: #1a1a1a;
 }
 
 /* Add FAQ Form */
