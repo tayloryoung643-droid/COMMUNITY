@@ -91,10 +91,11 @@ function ManagerResidents() {
       // 1. Fetch joined users
       const { data: activeUsers, error: usersError } = await supabase
         .from('users')
-        .select('*')
+        .select('id, full_name, email, phone, unit_number, role, created_at')
         .eq('building_id', buildingId)
         .eq('role', 'resident')
         .order('created_at', { ascending: false })
+        .limit(200)
 
       if (usersError) console.error('[ManagerResidents] Users error:', usersError)
 

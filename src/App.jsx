@@ -275,8 +275,8 @@ function App() {
     console.log('[App] Resident signup success:', result)
     setBuildingCode(result.building?.access_code || '')
     setSelectedBuilding(result.building)
-    // Refresh user profile to ensure it's loaded after signup
-    await refreshUserProfile()
+    // Pass userId explicitly — React state may not have updated yet
+    await refreshUserProfile(result.user?.id)
     // Clear URL params and navigate to resident home
     window.history.replaceState({}, '', '/')
     setCurrentScreen('home')
@@ -286,8 +286,8 @@ function App() {
     console.log('[App] Join via invite success:', result)
     setBuildingCode(result.building?.access_code || '')
     setSelectedBuilding(result.building)
-    // Refresh user profile to ensure it's loaded after signup
-    await refreshUserProfile()
+    // Pass userId explicitly — React state may not have updated yet
+    await refreshUserProfile(result.user?.id)
     // Clear URL params and navigate to resident home
     window.history.replaceState({}, '', '/')
     setCurrentScreen('home')
@@ -711,7 +711,12 @@ function App() {
 
   // Show loading splash while auth + profile loads, or during login transition
   if (loading || loginTransitioning) {
-    return <LoadingSplash theme="neutral" />
+    return <LoadingSplash
+      theme="neutral"
+      onContinue={() => {
+        setLoginTransitioning(false)
+      }}
+    />
   }
 
   // Guidelines gate — show agreement screen if user hasn't accepted yet

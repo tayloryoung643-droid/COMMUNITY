@@ -7,6 +7,7 @@ export async function getPosts(buildingId) {
     .select('*')
     .eq('building_id', buildingId)
     .order('created_at', { ascending: false })
+    .limit(20)
 
   if (postsError) throw postsError
   if (!posts || posts.length === 0) return []

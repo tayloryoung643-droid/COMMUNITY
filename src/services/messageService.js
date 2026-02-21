@@ -7,6 +7,7 @@ export async function getMessages(buildingId) {
     .select('*, sender:from_user_id(id, full_name, unit_number, email, phone, role), recipient:to_user_id(id, full_name, unit_number, email, phone, role)')
     .eq('building_id', buildingId)
     .order('created_at', { ascending: false })
+    .limit(50)
 
   if (error) {
     console.error('[messageService.getMessages] Error:', error)
@@ -122,6 +123,7 @@ export async function getResidents(buildingId) {
     .eq('building_id', buildingId)
     .eq('role', 'resident')
     .order('unit_number', { ascending: true })
+    .limit(200)
 
   if (error) {
     console.error('[messageService.getResidents] Error:', error)

@@ -52,6 +52,7 @@ export async function getListings(buildingId) {
     .select('*')
     .eq('building_id', buildingId)
     .order('created_at', { ascending: false })
+    .limit(50)
 
   if (error) throw error
 
@@ -117,6 +118,7 @@ export async function getActiveListings(buildingId) {
     .eq('building_id', buildingId)
     .eq('status', 'active')
     .order('created_at', { ascending: false })
+    .limit(20)
 
   if (error) throw error
 

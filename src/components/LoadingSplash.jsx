@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Building2 } from 'lucide-react'
 import './LoadingSplash.css'
 
-function LoadingSplash({ theme = 'warm', message = 'Loading your building...', fadeOut = false }) {
+function LoadingSplash({ theme = 'warm', message = 'Loading your building...', fadeOut = false, onContinue }) {
   const [showSlowMessage, setShowSlowMessage] = useState(false)
 
   useEffect(() => {
@@ -30,7 +30,14 @@ function LoadingSplash({ theme = 'warm', message = 'Loading your building...', f
         </div>
 
         {showSlowMessage && (
-          <p className="loading-splash-slow">Taking longer than usual...</p>
+          <>
+            <p className="loading-splash-slow">Taking longer than usual...</p>
+            {onContinue && (
+              <button className="loading-splash-continue" onClick={onContinue}>
+                Tap here to continue
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -203,17 +203,60 @@ function formatRelativeTime(date) {
  * Fetch recent activity from all relevant tables
  */
 async function fetchRecentActivity(buildingId) {
-  const activities = []
-
   try {
-    // 1. Community Posts - when someone creates a post
-    const { data: posts } = await supabase
-      .from('community_posts')
-      .select('id, content, created_at, author:author_id(full_name, unit_number)')
-      .eq('building_id', buildingId)
-      .order('created_at', { ascending: false })
-      .limit(5)
+    const sevenDaysAgo = new Date(Date.now() - 7 * 86400000)
 
+    // Fetch all activity sources in parallel
+    const [postsResult, newUsersResult, eventsResult, packagesResult, bookingsResult, bulletinsResult] = await Promise.allSettled([
+      supabase
+        .from('community_posts')
+        .select('id, content, created_at, author:author_id(full_name, unit_number)')
+        .eq('building_id', buildingId)
+        .order('created_at', { ascending: false })
+        .limit(5),
+
+      supabase
+        .from('users')
+        .select('id, full_name, unit_number, created_at')
+        .eq('building_id', buildingId)
+        .eq('role', 'resident')
+        .gte('created_at', sevenDaysAgo.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(5),
+
+      supabase
+        .from('events')
+        .select('id, title, location, created_at, start_time')
+        .eq('building_id', buildingId)
+        .order('created_at', { ascending: false })
+        .limit(5),
+
+      supabase
+        .from('packages')
+        .select('id, unit_number, carrier, created_at, status')
+        .eq('building_id', buildingId)
+        .order('created_at', { ascending: false })
+        .limit(5),
+
+      supabase
+        .from('elevator_bookings')
+        .select('id, user_id, start_time, end_time, created_at, users:user_id(full_name, unit_number)')
+        .eq('building_id', buildingId)
+        .order('created_at', { ascending: false })
+        .limit(5),
+
+      supabase
+        .from('bulletin_listings')
+        .select('id, title, created_at, author:author_id(full_name)')
+        .eq('building_id', buildingId)
+        .order('created_at', { ascending: false })
+        .limit(5),
+    ])
+
+    const activities = []
+
+    // 1. Community Posts
+    const posts = postsResult.status === 'fulfilled' ? postsResult.value.data : null
     if (posts) {
       posts.forEach(post => {
         activities.push({
@@ -229,19 +272,8 @@ async function fetchRecentActivity(buildingId) {
       })
     }
 
-    // 2. New Residents - users who recently joined
-    const sevenDaysAgo = new Date()
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-
-    const { data: newUsers } = await supabase
-      .from('users')
-      .select('id, full_name, unit_number, created_at')
-      .eq('building_id', buildingId)
-      .eq('role', 'resident')
-      .gte('created_at', sevenDaysAgo.toISOString())
-      .order('created_at', { ascending: false })
-      .limit(5)
-
+    // 2. New Residents
+    const newUsers = newUsersResult.status === 'fulfilled' ? newUsersResult.value.data : null
     if (newUsers) {
       newUsers.forEach(user => {
         activities.push({
@@ -257,14 +289,8 @@ async function fetchRecentActivity(buildingId) {
       })
     }
 
-    // 3. Events - recently created events
-    const { data: events } = await supabase
-      .from('events')
-      .select('id, title, location, created_at, start_time')
-      .eq('building_id', buildingId)
-      .order('created_at', { ascending: false })
-      .limit(5)
-
+    // 3. Events
+    const events = eventsResult.status === 'fulfilled' ? eventsResult.value.data : null
     if (events) {
       events.forEach(event => {
         activities.push({
@@ -280,14 +306,8 @@ async function fetchRecentActivity(buildingId) {
       })
     }
 
-    // 4. Packages - recently logged packages
-    const { data: packages } = await supabase
-      .from('packages')
-      .select('id, unit_number, carrier, created_at, status')
-      .eq('building_id', buildingId)
-      .order('created_at', { ascending: false })
-      .limit(5)
-
+    // 4. Packages
+    const packages = packagesResult.status === 'fulfilled' ? packagesResult.value.data : null
     if (packages) {
       packages.forEach(pkg => {
         const statusText = pkg.status === 'picked_up' ? 'picked up' : 'logged'
@@ -304,63 +324,43 @@ async function fetchRecentActivity(buildingId) {
       })
     }
 
-    // 5. Elevator Bookings (if table exists)
-    try {
-      const { data: bookings } = await supabase
-        .from('elevator_bookings')
-        .select('id, user_id, start_time, end_time, created_at, users:user_id(full_name, unit_number)')
-        .eq('building_id', buildingId)
-        .order('created_at', { ascending: false })
-        .limit(5)
+    // 5. Elevator Bookings
+    const bookings = bookingsResult.status === 'fulfilled' ? bookingsResult.value.data : null
+    if (bookings) {
+      bookings.forEach(booking => {
+        const bookingDate = new Date(booking.start_time)
+        const dateStr = bookingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        const startTime = bookingDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+        const endTime = new Date(booking.end_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
 
-      if (bookings) {
-        bookings.forEach(booking => {
-          const bookingDate = new Date(booking.start_time)
-          const dateStr = bookingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-          const startTime = bookingDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-          const endTime = new Date(booking.end_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-
-          activities.push({
-            id: `elevator-${booking.id}`,
-            text: `${booking.users?.full_name || 'A resident'} booked elevator`,
-            detail: `${dateStr}, ${startTime} - ${endTime}`,
-            time: formatRelativeTime(booking.created_at),
-            timestamp: new Date(booking.created_at).getTime(),
-            type: 'elevator_booking',
-            color: 'teal',
-            navTarget: 'residents'
-          })
+        activities.push({
+          id: `elevator-${booking.id}`,
+          text: `${booking.users?.full_name || 'A resident'} booked elevator`,
+          detail: `${dateStr}, ${startTime} - ${endTime}`,
+          time: formatRelativeTime(booking.created_at),
+          timestamp: new Date(booking.created_at).getTime(),
+          type: 'elevator_booking',
+          color: 'teal',
+          navTarget: 'residents'
         })
-      }
-    } catch (e) {
-      // Table might not exist, skip silently
+      })
     }
 
-    // 6. Bulletin Board Posts (if table exists)
-    try {
-      const { data: bulletins } = await supabase
-        .from('bulletin_listings')
-        .select('id, title, created_at, author:author_id(full_name)')
-        .eq('building_id', buildingId)
-        .order('created_at', { ascending: false })
-        .limit(5)
-
-      if (bulletins) {
-        bulletins.forEach(bulletin => {
-          activities.push({
-            id: `bulletin-${bulletin.id}`,
-            text: `New bulletin: ${bulletin.title}`,
-            detail: `Posted by ${bulletin.author?.full_name || 'Anonymous'}`,
-            time: formatRelativeTime(bulletin.created_at),
-            timestamp: new Date(bulletin.created_at).getTime(),
-            type: 'bulletin',
-            color: 'yellow',
-            navTarget: 'community'
-          })
+    // 6. Bulletin Board Posts
+    const bulletins = bulletinsResult.status === 'fulfilled' ? bulletinsResult.value.data : null
+    if (bulletins) {
+      bulletins.forEach(bulletin => {
+        activities.push({
+          id: `bulletin-${bulletin.id}`,
+          text: `New bulletin: ${bulletin.title}`,
+          detail: `Posted by ${bulletin.author?.full_name || 'Anonymous'}`,
+          time: formatRelativeTime(bulletin.created_at),
+          timestamp: new Date(bulletin.created_at).getTime(),
+          type: 'bulletin',
+          color: 'yellow',
+          navTarget: 'community'
         })
-      }
-    } catch (e) {
-      // Table might not exist, skip silently
+      })
     }
 
     // Sort all activities by timestamp (newest first) and limit to 10

@@ -109,6 +109,24 @@
   animation: fadeIn 0.4s ease;
 }
 
+.loading-splash-continue {
+  margin-top: 12px;
+  padding: 10px 28px;
+  border: none;
+  border-radius: 20px;
+  background: #5B8A8A;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  animation: fadeIn 0.4s ease;
+  transition: background 0.2s;
+}
+
+.loading-splash-continue:hover {
+  background: #4a7a7a;
+}
+
 @keyframes splashPulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.5; transform: scale(0.95); }

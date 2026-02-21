@@ -291,9 +291,11 @@ export const AuthProvider = ({ children }) => {
   }
 
   // Force refresh user profile (useful after signup)
-  const refreshUserProfile = async () => {
-    if (user?.id) {
-      await loadUserProfile(user.id)
+  // Accepts optional userId for cases where React state hasn't updated yet
+  const refreshUserProfile = async (userId) => {
+    const id = userId || user?.id
+    if (id) {
+      await loadUserProfile(id)
     }
   }
 

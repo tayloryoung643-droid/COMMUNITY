@@ -75,6 +75,7 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
       const buildingId = userProfile?.building_id
       if (!buildingId) {
         console.log('[Home] MODE: REAL but no building_id - showing empty states')
+        setDataLoading(false)
         return
       }
 
@@ -82,37 +83,81 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
       setDataLoading(true)
 
       try {
-        // Fetch packages for this building
-        const { data: packages, error: packagesError } = await supabase
-          .from('packages')
-          .select('*')
-          .eq('building_id', buildingId)
-          .eq('status', 'pending')
-          .order('created_at', { ascending: false })
-          .limit(5)
+        // Fetch all data in parallel for faster loading
+        const sevenDaysAgo = new Date(Date.now() - 7 * 86400000)
 
-        if (!packagesError) {
-          setRealPackages(packages || [])
-          console.log('[Home] Packages fetched:', packages?.length || 0)
+        const [packagesResult, eventsResult, postsResult, joinersResult, bulletinResult] = await Promise.allSettled([
+          // 1. Packages
+          supabase
+            .from('packages')
+            .select('*')
+            .eq('building_id', buildingId)
+            .eq('status', 'pending')
+            .order('created_at', { ascending: false })
+            .limit(5),
+
+          // 2. Events
+          supabase
+            .from('events')
+            .select('*')
+            .eq('building_id', buildingId)
+            .gte('start_time', new Date().toISOString())
+            .order('start_time', { ascending: true })
+            .limit(5),
+
+          // 3. Community posts with avatar signed URLs
+          (async () => {
+            const postsData = await getCommunityPosts(buildingId)
+            const avatarUrlMap = {}
+            const authorsWithAvatars = (postsData || [])
+              .filter(p => p.author?.avatar_url)
+              .map(p => ({ id: p.author.id, avatar_url: p.author.avatar_url }))
+              .filter((a, i, arr) => arr.findIndex(x => x.id === a.id) === i)
+            await Promise.all(
+              authorsWithAvatars.map(async (author) => {
+                try {
+                  const { data: urlData } = await supabase.storage
+                    .from('profile-images')
+                    .createSignedUrl(author.avatar_url, 3600)
+                  if (urlData?.signedUrl) avatarUrlMap[author.id] = urlData.signedUrl
+                } catch (e) { /* ignore */ }
+              })
+            )
+            ;(postsData || []).forEach(post => {
+              if (post.author?.id && avatarUrlMap[post.author.id]) {
+                post.author.avatar_signed_url = avatarUrlMap[post.author.id]
+              }
+            })
+            return postsData
+          })(),
+
+          // 4. New joiners
+          supabase
+            .from('users')
+            .select('id, full_name, unit_number, created_at')
+            .eq('building_id', buildingId)
+            .eq('role', 'resident')
+            .gte('created_at', sevenDaysAgo.toISOString())
+            .order('created_at', { ascending: false })
+            .limit(5),
+
+          // 5. Bulletin listings
+          getActiveListings(buildingId),
+        ])
+
+        // Process results — each is independent so one failure doesn't block others
+        if (packagesResult.status === 'fulfilled' && !packagesResult.value.error) {
+          setRealPackages(packagesResult.value.data || [])
+          console.log('[Home] Packages fetched:', packagesResult.value.data?.length || 0)
         }
 
-        // Fetch events for this building
-        const { data: events, error: eventsError } = await supabase
-          .from('events')
-          .select('*')
-          .eq('building_id', buildingId)
-          .gte('start_time', new Date().toISOString())
-          .order('start_time', { ascending: true })
-          .limit(5)
-
-        if (!eventsError && events) {
-          // Expand recurring events for next 90 days
+        if (eventsResult.status === 'fulfilled' && !eventsResult.value.error) {
+          const events = eventsResult.value.data
           const today = new Date()
           const ninetyDaysOut = new Date()
           ninetyDaysOut.setDate(ninetyDaysOut.getDate() + 90)
           const expandedEvents = expandAllEvents(events, today, ninetyDaysOut)
 
-          // Transform events to match the expected format
           const transformedEvents = expandedEvents.map(event => {
             const eventDate = event.start_time ? new Date(event.start_time) : null
             const dateStr = eventDate ? eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''
@@ -137,76 +182,31 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
           })
           setRealEvents(transformedEvents)
           console.log('[Home] Events fetched:', transformedEvents.length)
-        } else if (eventsError) {
-          console.error('[Home] Events fetch error:', eventsError)
+        } else if (eventsResult.status === 'rejected') {
+          console.error('[Home] Events fetch error:', eventsResult.reason)
         }
 
-        // Fetch community posts with dynamic like/comment counts + avatar signed URLs
-        try {
-          const postsData = await getCommunityPosts(buildingId)
-          // Generate signed avatar URLs for post authors
-          const avatarUrlMap = {}
-          const authorsWithAvatars = (postsData || [])
-            .filter(p => p.author?.avatar_url)
-            .map(p => ({ id: p.author.id, avatar_url: p.author.avatar_url }))
-            .filter((a, i, arr) => arr.findIndex(x => x.id === a.id) === i)
-          await Promise.all(
-            authorsWithAvatars.map(async (author) => {
-              try {
-                const { data: urlData } = await supabase.storage
-                  .from('profile-images')
-                  .createSignedUrl(author.avatar_url, 3600)
-                if (urlData?.signedUrl) avatarUrlMap[author.id] = urlData.signedUrl
-              } catch (e) { /* ignore */ }
-            })
-          )
-          // Attach signed URLs to posts
-          ;(postsData || []).forEach(post => {
-            if (post.author?.id && avatarUrlMap[post.author.id]) {
-              post.author.avatar_signed_url = avatarUrlMap[post.author.id]
-            }
-          })
-          setRealPosts(postsData || [])
-          console.log('[Home] Posts fetched:', postsData?.length || 0)
-        } catch (postsError) {
-          console.error('[Home] Posts fetch error:', postsError)
+        if (postsResult.status === 'fulfilled') {
+          setRealPosts(postsResult.value || [])
+          console.log('[Home] Posts fetched:', postsResult.value?.length || 0)
+        } else {
+          console.error('[Home] Posts fetch error:', postsResult.reason)
         }
 
-        // Fetch new joiners (users who joined in the last 7 days)
-        const sevenDaysAgo = new Date()
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-
-        const { data: joiners, error: joinersError } = await supabase
-          .from('users')
-          .select('id, full_name, unit_number, created_at')
-          .eq('building_id', buildingId)
-          .eq('role', 'resident')
-          .gte('created_at', sevenDaysAgo.toISOString())
-          .order('created_at', { ascending: false })
-          .limit(5)
-
-        if (!joinersError) {
-          setNewJoiners(joiners || [])
-          console.log('[Home] New joiners fetched:', joiners?.length || 0)
+        if (joinersResult.status === 'fulfilled' && !joinersResult.value.error) {
+          setNewJoiners(joinersResult.value.data || [])
+          console.log('[Home] New joiners fetched:', joinersResult.value.data?.length || 0)
         }
 
-        // Fetch bulletin listings for this building
-        try {
-          const bulletinData = await getActiveListings(buildingId)
-          setBulletinListings(bulletinData || [])
-          console.log('[Home] Bulletin listings fetched:', bulletinData?.length || 0)
-        } catch (bulletinError) {
-          console.error('[Home] Bulletin fetch error:', bulletinError)
+        if (bulletinResult.status === 'fulfilled') {
+          setBulletinListings(bulletinResult.value || [])
+          console.log('[Home] Bulletin listings fetched:', bulletinResult.value?.length || 0)
+        } else {
+          console.error('[Home] Bulletin fetch error:', bulletinResult.reason)
           setBulletinListings([])
         }
 
-        console.log('[Home] Data fetch complete:', {
-          isDemoMode: false,
-          buildingId,
-          packages: packages?.length || 0,
-          events: events?.length || 0,
-          joiners: joiners?.length || 0
-        })
+        console.log('[Home] All data fetched in parallel')
       } catch (error) {
         console.error('[Home] Error fetching data:', error)
       } finally {
@@ -578,7 +578,14 @@ function Home({ buildingCode, onNavigate, isDemoMode, userProfile }) {
     >
       {/* Loading splash for initial data load */}
       {!initialLoadDone && (
-        <LoadingSplash theme="warm" fadeOut={splashFading} />
+        <LoadingSplash
+          theme="warm"
+          fadeOut={splashFading}
+          onContinue={() => {
+            setDataLoading(false)
+            setInitialLoadDone(true)
+          }}
+        />
       )}
 
       {/* Ambient background - real DOM element, same image as hero */}
