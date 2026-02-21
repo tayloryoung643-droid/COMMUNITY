@@ -1350,10 +1350,10 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.875rem 1.5rem;
-  background: linear-gradient(135deg, var(--md-accent), #4a9494);
-  border: none;
+  background: transparent;
+  border: 2px solid var(--md-accent);
   border-radius: 10px;
-  color: white;
+  color: #1a1a1a;
   font-size: 0.9375rem;
   font-weight: 500;
   cursor: pointer;

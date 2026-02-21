@@ -550,6 +550,7 @@ function App() {
 
     // Clear localStorage onboarding data since we're done
     localStorage.removeItem('onboardingData')
+    await refreshUserProfile(result.user.id)
     setCurrentScreen('manager-dashboard')
   }
 
@@ -589,7 +590,7 @@ function App() {
 
     // Clear localStorage onboarding data since we're done
     localStorage.removeItem('onboardingData')
-
+    await refreshUserProfile(result.user.id)
     setCurrentScreen('manager-dashboard')
   }
 

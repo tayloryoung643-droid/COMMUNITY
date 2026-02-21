@@ -630,9 +630,9 @@
   padding: 16px 40px;
   font-size: 18px;
   font-weight: 600;
-  color: white;
-  background: linear-gradient(135deg, #5B8A8A, #5B9A6B);
-  border: none;
+  color: #1a1a1a;
+  background: transparent;
+  border: 2px solid #5B8A8A;
   border-radius: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
